@@ -46,3 +46,5 @@ StyleX conventions in this repo:
 ## Copy style
 
 No emojis and no em dashes anywhere: UI copy, code comments, docs, commit messages. Currency is RM via `src/lib/format.ts`.
+
+Commit messages carry no `Co-Authored-By` trailer.
