@@ -1,0 +1,4 @@
+# Supply chain cooldown: refuse any package version published less than 10 days ago.
+# Value is in seconds (10 days = 864000). See README "Dependency policy".
+[install]
+minimumReleaseAge = 864000
