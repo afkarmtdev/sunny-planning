@@ -13,9 +13,16 @@ export const colors = stylex.defineVars({
   kraft: "#E8DCC8",
 });
 
+// Baloo 2, Nunito, Silkscreen, and Gaegu are all Latin-only, so each family
+// chain appends a CJK-capable fallback: Latin glyphs render in the primary
+// pixel-cute face, and Chinese characters fall through to the CJK face. ZCOOL
+// KuaiLe is a rounded, playful display face matching Baloo 2; Noto Sans SC is
+// the workhorse body; Ma Shan Zheng is a brush script standing in for Gaegu's
+// handwriting. Silkscreen only ever shows Latin numerals, but Noto Sans SC
+// backs it too so a stray CJK glyph never boxes.
 export const fonts = stylex.defineVars({
-  display: "'Baloo 2', sans-serif",
-  body: "'Nunito', sans-serif",
-  lcd: "'Silkscreen', monospace",
-  hand: "'Gaegu', cursive",
+  display: "'Baloo 2', 'ZCOOL KuaiLe', sans-serif",
+  body: "'Nunito', 'Noto Sans SC', sans-serif",
+  lcd: "'Silkscreen', 'Noto Sans SC', monospace",
+  hand: "'Gaegu', 'Ma Shan Zheng', cursive",
 });

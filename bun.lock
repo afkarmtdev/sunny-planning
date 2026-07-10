@@ -7,8 +7,11 @@
       "dependencies": {
         "@fontsource/baloo-2": "5.2.7",
         "@fontsource/gaegu": "5.2.8",
+        "@fontsource/ma-shan-zheng": "5.2.9",
+        "@fontsource/noto-sans-sc": "5.2.9",
         "@fontsource/nunito": "5.2.7",
         "@fontsource/silkscreen": "5.2.8",
+        "@fontsource/zcool-kuaile": "5.2.8",
         "@stylexjs/stylex": "0.19.0",
         "@supabase/supabase-js": "2.108.2",
         "react": "19.2.7",
@@ -238,9 +241,15 @@
 
     "@fontsource/gaegu": ["@fontsource/gaegu@5.2.8", "", {}, "sha512-3rjyZGlUOQJo5zx0/1YFiFYKv4SZtaPiORncSXX4guo2P/sTMbxUIJRJWe14IS+CbkSrDppu24Y/KpXyQSFyhA=="],
 
+    "@fontsource/ma-shan-zheng": ["@fontsource/ma-shan-zheng@5.2.9", "", {}, "sha512-5Pvpb5q6sq00/g+yLLE8iYWcsAqnoIqCloBsjN0bphkGWU3Wp3EfT0CgTsKOiLsPM8GN3AUP0ZaFM2/JR33C/g=="],
+
+    "@fontsource/noto-sans-sc": ["@fontsource/noto-sans-sc@5.2.9", "", {}, "sha512-bTUIWGBgJDpwi5qAr+x0/lcgv80IHTB9vl6s2f6EymZEa7qYV99yNRBZuKFT+SYDKVunZrjCEhWtpxqmbXWl5Q=="],
+
     "@fontsource/nunito": ["@fontsource/nunito@5.2.7", "", {}, "sha512-pmtBq0H9ex9nk+RtJYEJOD9pag393iHETnl/PVKleF4i06cd0ttngK5ZCTgYb5eOqR3Xdlrjtev8m7bmgYprew=="],
 
     "@fontsource/silkscreen": ["@fontsource/silkscreen@5.2.8", "", {}, "sha512-PfVe2BRZdjY/UIEXsrpzCo/W8FIGo6jEEMHuQiKfma+E5LXb6WfFFBfCEsO89ZWOSwl2mLE1Yq0d8gagmcaBpQ=="],
+
+    "@fontsource/zcool-kuaile": ["@fontsource/zcool-kuaile@5.2.8", "", {}, "sha512-pIeFNRM0rwrJkO+TP7WG+KXvqy0YFRrPecNNzHTNOQLYhxrqN67/wzyx3fH+Ky63Y/Am5heB5XIzsEx/Io+P4w=="],
 
     "@isaacs/cliui": ["@isaacs/cliui@9.0.0", "", {}, "sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg=="],
 

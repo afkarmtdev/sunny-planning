@@ -12,6 +12,8 @@ import { ProfileSheet } from "../components/ProfileSheet";
 import { IconPencil } from "../components/icons";
 import { useApp } from "../store/useApp";
 import { longDate } from "../lib/dates";
+import { useT, LOCALES } from "../lib/i18n";
+import { sfx } from "../lib/sfx";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import {
   notificationPermission,
@@ -132,10 +134,40 @@ const styles = stylex.create({
   dangerBtn: {
     color: colors.heartPop,
   },
+  segTrack: {
+    display: "flex",
+    borderWidth: 2.5,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: colors.white,
+    margin: 12,
+  },
+  segBtn: {
+    flex: 1,
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 13,
+    paddingBlock: 9,
+    textAlign: "center",
+    cursor: "pointer",
+    color: colors.ink,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    borderLeftWidth: { default: 2.5, ":first-child": 0 },
+    borderLeftStyle: "solid",
+    borderLeftColor: colors.ink,
+  },
+  segBtnOn: {
+    backgroundColor: colors.heartPop,
+    color: colors.white,
+  },
 });
 
 export function Settings() {
   const navigate = useNavigate();
+  const t = useT();
   const profile = useApp((s) => s.profile);
   const prefs = useApp((s) => s.prefs);
   const setPref = useApp((s) => s.setPref);
@@ -169,9 +201,7 @@ export function Settings() {
   };
 
   const notifyHint =
-    permission === "denied"
-      ? "Blocked. Turn notifications on for this site in your browser."
-      : "A nudge on days you have a date planned";
+    permission === "denied" ? t("settings.notify.blocked") : t("settings.notify.hint");
 
   const doReset = () => {
     resetDemo();
@@ -188,56 +218,76 @@ export function Settings() {
     navigate("/login");
   };
 
-  const birthday = profile.birthdayISO ? longDate(profile.birthdayISO) : "Not set";
+  const birthday = profile.birthdayISO ? longDate(profile.birthdayISO) : t("common.notSet");
 
   return (
     <Screen dots gap={14}>
-      <BackButton label="Home" to="/" />
-      <div {...stylex.props(styles.title)}>Settings</div>
+      <BackButton label={t("common.home")} to="/" />
+      <div {...stylex.props(styles.title)}>{t("settings.title")}</div>
 
       <Card xstyle={styles.profileCard} onClick={() => setEditing(true)}>
         <Avatar initial={profile.initial} color={profile.color} photoUrl={profile.avatarUrl} size={56} />
         <div>
-          <div {...stylex.props(styles.profileName)}>{profile.displayName || "Add your name"}</div>
-          <div {...stylex.props(styles.profileSub)}>Birthday: {birthday}</div>
+          <div {...stylex.props(styles.profileName)}>{profile.displayName || t("settings.addName")}</div>
+          <div {...stylex.props(styles.profileSub)}>{t("settings.birthday", { date: birthday })}</div>
         </div>
         <span {...stylex.props(styles.editPill)}>
           <IconPencil />
         </span>
       </Card>
 
-      <div {...stylex.props(styles.sectionLabel)}>Preferences</div>
+      <div {...stylex.props(styles.sectionLabel)}>{t("settings.section.language")}</div>
+      <Card>
+        <div {...stylex.props(styles.segTrack)} role="group" aria-label={t("settings.section.language")}>
+          {LOCALES.map((loc) => (
+            <button
+              key={loc.id}
+              type="button"
+              aria-pressed={prefs.locale === loc.id}
+              onClick={() => {
+                if (prefs.locale !== loc.id) sfx.pop();
+                setPref("locale", loc.id);
+              }}
+              {...stylex.props(styles.segBtn, prefs.locale === loc.id && styles.segBtnOn)}
+            >
+              {loc.name}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <div {...stylex.props(styles.sectionLabel)}>{t("settings.section.preferences")}</div>
       <Card>
         <div {...stylex.props(styles.rows)}>
           <div {...stylex.props(styles.row)}>
             <div {...stylex.props(styles.rowText)}>
-              <span {...stylex.props(styles.rowLabel)}>Sound effects</span>
-              <span {...stylex.props(styles.rowHint)}>Chiptune blips on taps and saves</span>
+              <span {...stylex.props(styles.rowLabel)}>{t("settings.sound.label")}</span>
+              <span {...stylex.props(styles.rowHint)}>{t("settings.sound.hint")}</span>
             </div>
-            <Toggle label="Sound effects" on={prefs.soundOn} onChange={(v) => setPref("soundOn", v)} />
+            <Toggle label={t("settings.sound.label")} on={prefs.soundOn} onChange={(v) => setPref("soundOn", v)} />
           </div>
           <div {...stylex.props(styles.row, styles.rowLast)}>
             <div {...stylex.props(styles.rowText)}>
-              <span {...stylex.props(styles.rowLabel)}>Touch feedback</span>
-              <span {...stylex.props(styles.rowHint)}>Little vibrations on supported phones</span>
+              <span {...stylex.props(styles.rowLabel)}>{t("settings.haptics.label")}</span>
+              <span {...stylex.props(styles.rowHint)}>{t("settings.haptics.hint")}</span>
             </div>
-            <Toggle label="Touch feedback" on={prefs.hapticsOn} onChange={(v) => setPref("hapticsOn", v)} />
+            <Toggle label={t("settings.haptics.label")} on={prefs.hapticsOn} onChange={(v) => setPref("hapticsOn", v)} />
           </div>
         </div>
       </Card>
 
       {notificationsSupported() && (
         <>
-          <div {...stylex.props(styles.sectionLabel)}>Notifications</div>
+          <div {...stylex.props(styles.sectionLabel)}>{t("settings.section.notifications")}</div>
           <Card>
             <div {...stylex.props(styles.rows)}>
               <div {...stylex.props(styles.row, styles.rowLast)}>
                 <div {...stylex.props(styles.rowText)}>
-                  <span {...stylex.props(styles.rowLabel)}>Date-day reminder</span>
+                  <span {...stylex.props(styles.rowLabel)}>{t("settings.notify.label")}</span>
                   <span {...stylex.props(styles.rowHint)}>{notifyHint}</span>
                 </div>
                 <Toggle
-                  label="Date-day reminder"
+                  label={t("settings.notify.label")}
                   on={notifyOn}
                   onChange={(v) => void toggleNotify(v)}
                 />
@@ -247,12 +297,12 @@ export function Settings() {
         </>
       )}
 
-      <div {...stylex.props(styles.sectionLabel)}>About</div>
+      <div {...stylex.props(styles.sectionLabel)}>{t("settings.section.about")}</div>
       <Card>
         <div {...stylex.props(styles.rows)}>
           <div {...stylex.props(styles.row, styles.rowLast)}>
             <div {...stylex.props(styles.rowText)}>
-              <span {...stylex.props(styles.rowLabel)}>Version</span>
+              <span {...stylex.props(styles.rowLabel)}>{t("settings.version.label")}</span>
               <span {...stylex.props(styles.rowHint)}>Sunny Planning</span>
             </div>
             <span {...stylex.props(styles.rowValue)}>v{__APP_VERSION__}</span>
@@ -261,38 +311,38 @@ export function Settings() {
       </Card>
 
       <button type="button" {...stylex.props(styles.actionBtn)} onClick={() => setConfirmReset(true)}>
-        Reset demo data
+        {t("settings.reset")}
       </button>
       <button
         type="button"
         {...stylex.props(styles.actionBtn, styles.dangerBtn)}
         onClick={() => setConfirmLogout(true)}
       >
-        Log out
+        {t("settings.logout")}
       </button>
 
       <ProfileSheet open={editing} onClose={() => setEditing(false)} />
 
       <ConfirmDialog
         open={confirmReset}
-        title="Reset demo data?"
-        message="This clears everything and reloads the seeded demo. There is no undo."
-        confirmLabel="Reset"
-        cancelLabel="Keep my data"
+        title={t("settings.reset.title")}
+        message={t("settings.reset.message")}
+        confirmLabel={t("settings.reset.confirm")}
+        cancelLabel={t("settings.reset.cancel")}
         tone="danger"
         onConfirm={doReset}
         onClose={() => setConfirmReset(false)}
       />
       <ConfirmDialog
         open={confirmLogout}
-        title="Log out?"
+        title={t("settings.logout.title")}
         message={
           isSupabaseConfigured
-            ? "You will need your magic link to hop back in."
-            : "This takes you back to the welcome screen."
+            ? t("settings.logout.message.auth")
+            : t("settings.logout.message.demo")
         }
-        confirmLabel="Log out"
-        cancelLabel="Stay"
+        confirmLabel={t("settings.logout")}
+        cancelLabel={t("settings.logout.cancel")}
         tone="danger"
         onConfirm={() => void doLogout()}
         onClose={() => setConfirmLogout(false)}

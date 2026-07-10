@@ -4,6 +4,7 @@ import type { Expense, Itinerary, Member, Photo, Profile, SkinId, Stop, Venue, V
 import { itineraryTotal } from "../lib/derive";
 import { addDaysISO, nowISO, parseISO, todayISO } from "../lib/dates";
 import { DEFAULT_AVATAR_COLOR } from "../lib/avatar";
+import type { Locale } from "../lib/i18n/core";
 import { fireTodayNotification } from "../lib/notify";
 import { deleteReceipt } from "../lib/receipts";
 import { demoInviteCode, demoItineraries, demoPhotos, demoVenues } from "../data/demo";
@@ -55,6 +56,8 @@ type Prefs = {
   hapticsOn: boolean;
   /** Opt-in (needs OS permission) reminder when a date is planned for today. */
   notifyToday: boolean;
+  /** UI language; read by `useT()` so a change re-renders every screen. */
+  locale: Locale;
 };
 
 // A blank profile for a brand-new install; `onboarded: false` sends first
@@ -226,7 +229,7 @@ export const useApp = create<AppState>()(
       members: [],
       inviteCode: demoInviteCode,
       dayOf: { itineraryId: null, stopIdx: 0, completed: false },
-      prefs: { soundOn: true, hapticsOn: true, notifyToday: false },
+      prefs: { soundOn: true, hapticsOn: true, notifyToday: false, locale: "en" },
       profile: FRESH_PROFILE,
 
       setPref: (key, value) => set((s) => ({ prefs: { ...s.prefs, [key]: value } })),
@@ -643,7 +646,7 @@ export const useApp = create<AppState>()(
     }),
     {
       name: "sunny-planning-v1",
-      version: 7,
+      version: 8,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as {
           itineraries?: Itinerary[];
@@ -717,8 +720,9 @@ export const useApp = create<AppState>()(
         // a partial pre-v6 profile is merged over the blank default.
         const profile: Profile = { ...FRESH_PROFILE, ...(state.profile ?? {}), onboarded: true };
 
-        // Ensure new preference keys have a default for pre-v6 users.
-        const prefs: Prefs = { soundOn: true, hapticsOn: true, notifyToday: false, ...(state.prefs ?? {}) };
+        // Ensure new preference keys have a default (v8 adds locale) for
+        // pre-existing users.
+        const prefs: Prefs = { soundOn: true, hapticsOn: true, notifyToday: false, locale: "en", ...(state.prefs ?? {}) };
 
         const { expenses: _expenses, ...rest } = state;
         return { ...rest, itineraries, venues, profile, prefs };

@@ -73,6 +73,23 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,png,woff2}"],
+        // The CJK font subsets (for the zh / zh-pinyin locales) are large and
+        // split into hundreds of files; precaching them all would bloat the SW
+        // install to roughly 12 MB. Keep them out of the precache and let each
+        // subset cache at runtime the first time a page actually uses it, so an
+        // English-only user never downloads them.
+        globIgnores: ["**/noto-sans-sc-*", "**/zcool-kuaile-*", "**/ma-shan-zheng-*"],
+        runtimeCaching: [
+          {
+            urlPattern: /(?:noto-sans-sc|zcool-kuaile|ma-shan-zheng)-.*\.woff2?$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "cjk-fonts",
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
