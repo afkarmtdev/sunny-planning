@@ -78,6 +78,15 @@ export function IconShare({ size = 13 }: IconProps) {
   );
 }
 
+export function IconPencil({ size = 14 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" aria-hidden>
+      <path d="M9.6 1.6 12.4 4.4 5.7 11.2 2.8 8.3Z" fill="currentColor" />
+      <path d="M1.2 12.8 2.2 9.0 5.0 11.8Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function IconPlus({ size = 12 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden>

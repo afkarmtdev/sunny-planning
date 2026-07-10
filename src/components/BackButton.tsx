@@ -40,14 +40,16 @@ const styles = stylex.create({
 type Props = {
   label: string;
   to?: string;
+  /** Overrides the default navigation, e.g. to confirm before leaving. */
+  onClick?: () => void;
 };
 
-export function BackButton({ label, to }: Props) {
+export function BackButton({ label, to, onClick }: Props) {
   const navigate = useNavigate();
   return (
     <button
       type="button"
-      onClick={() => (to ? navigate(to) : navigate(-1))}
+      onClick={() => (onClick ? onClick() : to ? navigate(to) : navigate(-1))}
       {...stylex.props(styles.row)}
     >
       <span {...stylex.props(styles.circle)}>
