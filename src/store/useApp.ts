@@ -14,12 +14,24 @@ type DayOf = {
   completed: boolean;
 };
 
+/**
+ * User preferences, read imperatively by `src/lib/sfx.ts` and edited from the
+ * Settings screen. Both default to on. New keys land here so the Settings
+ * toggles stay pure wiring over this one slice.
+ */
+type Prefs = {
+  soundOn: boolean;
+  hapticsOn: boolean;
+};
+
 type AppState = {
   itineraries: Itinerary[];
   photos: Photo[];
   venues: Venue[];
   inviteCode: string;
   dayOf: DayOf;
+  prefs: Prefs;
+  setPref: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
 
   createItinerary: () => string;
   /** Commit a freshly created date, clearing its draft flag. */
@@ -111,6 +123,9 @@ export const useApp = create<AppState>()(
       venues: demoVenues,
       inviteCode: demoInviteCode,
       dayOf: { itineraryId: null, stopIdx: 0, completed: false },
+      prefs: { soundOn: true, hapticsOn: true },
+
+      setPref: (key, value) => set((s) => ({ prefs: { ...s.prefs, [key]: value } })),
 
       createItinerary: () => {
         const id = `it-${uid()}`;

@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import type { StyleXStyles } from "@stylexjs/stylex";
 import type { ReactNode } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
+import { sfx } from "../lib/sfx";
 
 const styles = stylex.create({
   base: {
@@ -66,7 +67,13 @@ export function JellyButton({ children, variant = "primary", onClick, fullWidth,
     <button
       type="button"
       disabled={disabled}
-      onClick={onClick}
+      onClick={
+        onClick &&
+        (() => {
+          sfx.press();
+          onClick();
+        })
+      }
       {...stylex.props(styles.base, styles[variant], fullWidth && styles.fullWidth, xstyle)}
     >
       {children}

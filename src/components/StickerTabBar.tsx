@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { NavLink } from "react-router-dom";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { IconClock, IconCoin, IconHeart, IconHome, IconPaw, IconPhoto } from "./icons";
+import { sfx } from "../lib/sfx";
 
 const styles = stylex.create({
   bar: {
@@ -87,7 +88,7 @@ export function StickerTabBar() {
   return (
     <nav {...barProps} className={`${barProps.className ?? ""} no-print`}>
       {TABS.map((tab) => (
-        <NavLink key={tab.to} to={tab.to} end={tab.end} {...stylex.props(styles.link)}>
+        <NavLink key={tab.to} to={tab.to} end={tab.end} onClick={() => sfx.tap()} {...stylex.props(styles.link)}>
           {({ isActive }) => (
             <div {...stylex.props(styles.tab, isActive && styles.tabActive, styles.sticker(tab.rot))}>
               {tab.icon(isActive)}
