@@ -37,11 +37,24 @@ StyleX conventions in this repo:
 ## Architecture
 
 - **State**: one Zustand store, `src/store/useApp.ts`, persisted to localStorage key `sunny-planning-v1`. Seed data (`src/data/demo.ts`, matching the design mockups around July 2026) loads on first run; clearing that key resets the demo. Derived numbers (month totals, streak weeks, mascot happiness, next planned date) are computed in `src/lib/derive.ts` and never stored.
-- **Supabase is optional**: `src/lib/supabase.ts` exposes `isSupabaseConfigured` from `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`. Absent env vars mean demo mode: `RequireAuth` passes everyone and Login's button just enters the app. Present env vars gate the app behind a session and Login sends real magic links. The couple-space schema with RLS is `supabase/schema.sql`; screens still read and write only the local store, so server data sync is the known open work.
+- **Supabase is optional**: `src/lib/supabase.ts` exposes `isSupabaseConfigured` from `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` (the client-safe publishable key `sb_publishable_...`, which respects RLS; the legacy `VITE_SUPABASE_ANON_KEY` name still resolves as a fallback, and the RLS-bypassing secret key must never be a `VITE_` var). Absent env vars mean demo mode: `RequireAuth` passes everyone and Login's button just enters the app. Present env vars gate the app behind a session and Login sends real magic links. The couple-space schema with RLS lives in `supabase/migrations/` (ordered up/down SQL, see its README) with a demo `supabase/seed.sql`. Screens read and write only the local store; `src/lib/sync.ts` is the one bridge to Postgres, pushing collection changes and the profile in the background and pulling partner changes over Realtime. Before adding a synced entity or debugging why a store write does not reach Supabase, follow the `store-supabase-sync` skill.
 - **Routing** (`src/App.tsx`): a data router (`createBrowserRouter`) so screens can call `useBlocker` to guard unsaved edits; do not revert it to the plain `BrowserRouter`/`Routes` form. Tab roots (`/`, `/plan/:id`, `/today`, `/costs`, `/album`, `/ratings`) render inside `TabLayout`, which appends the `StickerTabBar`. `/plan/:id/export`, `/invite`, and `/print/:id` sit outside it (back button instead of tabs). `/plan` redirects to the next planned itinerary, creating one when none exists.
 - **Day-of flow**: `store.dayOf` holds `{ itineraryId, stopIdx, completed }`. `advanceDay` on the final stop completes the date: itinerary status flips to completed and an expense is appended (keyed by `itineraryId`). `resetDay` reverses both.
 - **PDF export**: `ExportPicker` saves the skin on the itinerary, then navigates to `/print/:id?skin=...`. `src/print/PrintView.tsx` styles the document per skin (Strawberry Milk, Retro LCD, Scrapbook, Love Letter) and auto-calls `window.print()`; saving as PDF from the dialog is the export. Printing depends on the `.no-print` class and `@page` rules in `src/global.css`.
 - **Design language**: tokens (shellPink, bubblegum, heartPop, cream, lcdMint, marmalade, lavender, ink), fonts (Baloo 2 display, Nunito body, Silkscreen for LCD numerals, Gaegu handwriting), 2-3px ink borders, hard offset shadows, sticker rotations. Sprites live in `src/assets/sunny/`.
+
+## Supabase migrations
+
+The couple-space backend lives in `supabase/migrations/` as ordered, reversible
+SQL: each migration is a pair, `NNNN_name.up.sql` and `NNNN_name.down.sql`
+(Laravel-style up/down). The `up` files concatenated in order are the full schema;
+there is no `schema.sql`. Every migration body is wrapped in `begin; ... commit;`
+so it applies atomically, an error mid-file rolls the whole thing back rather than
+leaving the schema half-applied. Keep migrations transaction-safe (no `create
+index concurrently`, `alter type ... add value`, or `vacuum`). Never edit an
+applied migration; add the next numbered pair, and keep the local store model and
+the schema in step. Apply them in ascending order in the Supabase SQL editor;
+`supabase/seed.sql` loads the demo dataset. See `supabase/migrations/README.md`.
 
 ## No native browser UI
 
@@ -83,3 +96,7 @@ to it from this file so it is discoverable, as the `form-save-discard` section d
 No emojis and no em dashes anywhere: UI copy, code comments, docs, commit messages. Currency is RM via `src/lib/format.ts`.
 
 Commit messages carry no `Co-Authored-By` trailer.
+
+When a batch of work spans several distinct features or concerns, split it into
+separate themed commits (one coherent change each) rather than one sweeping
+commit, even when the files overlap. Stage per theme with `git add -p` if needed.

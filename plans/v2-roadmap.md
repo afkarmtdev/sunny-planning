@@ -6,11 +6,13 @@ states added alongside the splash screen.
 
 ## What already exists (changes the difficulty math)
 
-- `supabase/schema.sql` already models the coop world: spaces, space_members
-  (with display_initial and color), invites with codes, plus RLS policies. It has
-  never been wired to the UI; screens read and write only the local Zustand store.
+- `supabase/migrations/` models the coop world: spaces, space_members (with
+  display_initial and color), invites with codes, plus RLS policies, Realtime,
+  Storage buckets, and the space/invite RPCs; `supabase/seed.sql` loads a demo
+  space. It has never been wired to the UI; screens read and write only the local
+  Zustand store.
 - `src/screens/Login.tsx`, `Invite.tsx`, and `AcceptInvite.tsx` exist. Login already
-  sends real magic links when `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are set,
+  sends real magic links when `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are set,
   and passes everyone through in demo mode.
 - The loading and splash design export is extracted at
   `design/extracted/loading-splash/loading-splash.html` (three screens: 00 Splash,
@@ -290,7 +292,7 @@ pending sync.** Every stored record now carries an `Audit` mixin (`createdAt` / 
 `deletedBy`), defined in `src/lib/types.ts`. Timestamps are stamped live in `useApp.ts`
 (`createdAudit` / `touchedAudit`, with `patchItinerary` auto-bumping `updatedAt`); all the
 `*By` fields stay unset until auth supplies the acting member. The persist store bumped to
-v5 with a best-effort backfill. `supabase/schema.sql` mirrors the columns (the `*By`
+v5 with a best-effort backfill. `supabase/migrations/` mirrors the columns (the `*By`
 columns reference `auth.users`) with a `set_updated_at` trigger per table. Convention
 captured in the `audit-trail` skill. What remains for feature 7 proper: populate the `*By`
 fields from `auth.uid()` in the sync layer, and the author-chip UI.

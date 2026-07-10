@@ -23,8 +23,8 @@ With no environment variables the app runs in demo mode: seeded data from the de
 
 To wire up Supabase:
 
-1. Create a project, then run `supabase/schema.sql` in the SQL editor.
-2. Copy `.env.example` to `.env.local` and fill in the project URL and anon key.
+1. Create a project, then run the migrations in `supabase/migrations/` (ascending order) in the SQL editor. Optionally run `supabase/seed.sql` for the demo dataset. See `supabase/migrations/README.md`.
+2. Copy `.env.example` to `.env.local` and fill in the project URL and publishable key (`sb_publishable_...`, under Project Settings > API keys). It is client-safe and respects RLS; never use the secret key here.
 3. Enable the Email (magic link) provider under Authentication.
 
 With env vars present the app requires a session and the login screen sends real magic links. Data sync against the schema is the next step; screens currently read and write the local store.

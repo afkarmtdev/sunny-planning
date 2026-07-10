@@ -65,7 +65,8 @@ its `dateISO`), so existing users' history is not blank. `*By` stays unset.
 
 ## Supabase schema
 
-`supabase/schema.sql` mirrors this: every content table has `created_at`,
+`supabase/migrations/` mirrors this: every content table has `created_at`,
 `created_by`, `updated_at`, `updated_by`, `deleted_at`, `deleted_by` (the `*By`
 columns reference `auth.users`), plus a `set_updated_at` trigger per table that
-keeps `updated_at` fresh on update. Keep the local model and schema in step.
+keeps `updated_at` fresh on update. Keep the local model and schema in step; add a
+new numbered migration (never edit an applied one) when the model changes.
