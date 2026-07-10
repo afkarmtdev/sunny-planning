@@ -16,6 +16,12 @@ export function parseISO(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/** ISO date `n` days after `iso` (n may be negative). */
+export function addDaysISO(iso: string, n: number): string {
+  const d = parseISO(iso);
+  return toISODate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n));
+}
+
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -40,6 +46,16 @@ export function stampDate(iso: string): string {
 export function isSameMonth(iso: string, ref: Date): boolean {
   const d = parseISO(iso);
   return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+}
+
+/** "July 2026" */
+export function monthLabel(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+/** First day of the month, shifted by delta months. */
+export function addMonths(d: Date, delta: number): Date {
+  return new Date(d.getFullYear(), d.getMonth() + delta, 1);
 }
 
 /** Monday 00:00 of the week containing d. */
