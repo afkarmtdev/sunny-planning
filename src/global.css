@@ -9,6 +9,13 @@ body,
   padding: 0;
 }
 
+/* Block the browser's own pull-to-refresh/overscroll so our themed
+   PullToRefresh gesture owns the top-of-page pull. */
+html,
+body {
+  overscroll-behavior-y: contain;
+}
+
 body {
   background: #ffe9f4;
   color: #332b33;

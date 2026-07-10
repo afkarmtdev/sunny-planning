@@ -109,6 +109,15 @@ Mirror later in Supabase as a `deleted_at timestamptz` column so sync carries it
 
 ### General settings screen (10, 10.1, 10.2, 14)
 
+**Status (2026-07-10): DONE (language picker deferred with i18n).** `src/screens/Settings.tsx`
+at `/settings`, reached from a gear button in the Home header. Composed from the existing
+design language (sticker cards, ink borders, Sunny in the corner). Holds the profile summary
+(opens `ProfileSheet`), a Preferences card with themed `Toggle`s wiring `prefs.soundOn` /
+`prefs.hapticsOn`, a Notifications card (see 18b), the app version (`__APP_VERSION__`), and
+reset-demo / logout actions (both themed `ConfirmDialog`, `tone="danger"`). `resetDemo` clears
+the persist key and reseeds; logout calls `supabase.auth.signOut()` when configured, else back
+to Login. The language picker (10.3) lands with the deferred i18n work.
+
 New route plus tab-bar or Home entry point. Settings is NOT one of the nine screens
 in the design doc, so it must be composed from the existing design language (sticker
 cards, ink borders, Sunny in the corner) rather than invented freestyle. Contents:
@@ -127,11 +136,23 @@ the session flag back to Login in demo mode.
 
 ### User profile (1)
 
+**Status (2026-07-10): DONE.** New `profile` slice in `useApp.ts` (`displayName`, `initial`,
+`color`, `birthdayISO`, `onboarded`), typed in `src/lib/types.ts`, colors from
+`src/lib/avatar.ts` (mirrors `space_members.color`). Edited via `ProfileSheet` (local-staged,
+commit on Save, per form-save-discard). `Avatar` component renders the initial-plus-color chip.
+Persist bumped to v6; existing users are backfilled as onboarded so they skip the wizard.
+
 Display name, avatar (initial plus color, matching what `space_members` already
 stores), and birthday. Lives in a new store slice, local-first; becomes the synced
 profile in Milestone 4. Feeds the birthday special and first-time setup.
 
 ### First-time setup (17) and coop-optional (8)
+
+**Status (2026-07-10): DONE (UX half of 8).** `src/screens/Onboarding.tsx` at `/welcome`, gated
+by `RequireOnboarded` (redirects until `profile.onboarded`). Four steps: name, birthday
+(reusing `Calendar`, skippable), color, then the fork: "invite your partner" (routes to the
+existing Invite screen) or "just me for now". Both call `completeOnboarding` and enter the app.
+The architectural half of 8 (space-of-one) still lives in Milestone 4.
 
 Onboarding wizard on first launch or first login: your name, your birthday, pick
 your color, then a fork: "invite your partner" (existing Invite screen) or
@@ -141,12 +162,23 @@ member, so nothing else in the app cares whether you are solo).
 
 ### Birthday special (4)
 
+**Status (2026-07-10): DONE.** On a member's birthday, Home shows a takeover banner with a
+party (smitten) Sunny and a one-shot `Confetti` overlay (fired once per year via
+`birthdayCelebratedYear`). `ensureBirthdaySuggestion` (run on boot) drops a pre-filled planned
+itinerary on the birthday within its 7-day lead-up, once per year, respecting the
+one-date-per-day rule. Uses the user's own profile birthday; extends to the partner in
+Milestone 4.
+
 Depends on profile birthdays. On a member's birthday: Home takeover with a party
 Sunny sprite and banner, confetti on first open, and a suggested birthday itinerary
 one week before (a planned itinerary pre-filled with the date). Small feature,
 disproportionate delight.
 
 ### Multi-language: en / zh / zh with pinyin tone numbers (10.3)
+
+**Status (2026-07-10): DEFERRED to its own session** (user decision). The single largest chunk
+in the milestone (every screen's strings plus a CJK-capable font woven into the tokens); pulled
+out so the rest of M2/M3 could ship. The Settings language picker lands with it.
 
 Mechanical but wide. A tiny homegrown i18n module (a `t()` over three locale
 dictionaries, stored preference, no library needed) plus extracting every string
@@ -157,6 +189,9 @@ CJK-capable display and body font pairing must be added and woven into the token
 
 ### Today's itinerary, in-app reminder (18, first half)
 
+**Status (2026-07-10): DONE.** Home shows a mint speech-bubble banner when an itinerary is
+planned for today, tapping it syncs Day-of to that date and opens `/today`.
+
 On app open, if an itinerary is planned for today, show a Sunny speech-bubble banner
 on Home linking to Day-of mode. Easy and works everywhere. The real system
 notification is Milestone 3 because it needs a service worker.
@@ -165,7 +200,18 @@ notification is Milestone 3 because it needs a service worker.
 
 The app must actually be deployed somewhere for these to mean anything.
 
+**Status (2026-07-10): built, no deploy yet** (user decision). Pull-to-refresh works fully
+locally. The PWA/service-worker scaffolding, themed update prompt, and system-notification
+path are all wired and build clean (`dist/sw.js` generates), but the update ping and closed-app
+notifications can only be truly exercised once the app is hosted at a real URL.
+
 ### Pull to refresh (5)
+
+**Status (2026-07-10): DONE.** `src/components/PullToRefresh.tsx` wraps the tab Outlet in
+`TabLayout`. Touch-only, engages only at scroll-top, takes over the gesture (preventDefault)
+and pairs with `overscroll-behavior-y: contain` in `global.css` to suppress the native reload.
+Sunny is pulled down on a spring and hops on release. Cosmetic in local mode (derived values
+recompute on render); an optional `onRefresh` is the Supabase-refetch hook for Milestone 4.
 
 A touch-gesture component at the scroll root: Sunny gets pulled down on a spring and
 does a little animation on release. Suppress the browser's native reload gesture
@@ -175,6 +221,13 @@ it now so the gesture and animation are ready.
 
 ### Update ping (6) and update popup (15)
 
+**Status (2026-07-10): DONE (untestable without a deploy).** `vite-plugin-pwa` (1.3.0, already
+pinned) runs in `registerType: "prompt"` mode. `src/components/UpdatePrompt.tsx` uses
+`useRegisterSW` and shows a themed `ConfirmDialog` ("Sunny learned new tricks", with the app
+version) when a build is waiting; accepting calls `updateServiceWorker(true)` (skipWaiting +
+reload). Mounted app-wide in `App.tsx`. The waiting-build ping only fires against a real
+deployment.
+
 One feature. Add `vite-plugin-pwa` (through the add-dep skill, 10-day rule): the
 service worker polls for a new deployed build, and when one is waiting we show a
 themed prompt (ConfirmDialog styling, never a native dialog): "Sunny learned new
@@ -182,6 +235,13 @@ tricks. Update now?" Accepting calls `skipWaiting` and reloads. The app version 
 Milestone 1 appears in the prompt.
 
 ### Today's itinerary, system notification (18, second half)
+
+**Status (2026-07-10): DONE (untestable without a deploy).** `src/lib/notify.ts` wraps
+permission and firing (via the SW registration, falling back to a page Notification). Settings
+has a Notifications card whose toggle requests permission on demand (never on first load) and
+writes `prefs.notifyToday`. `notifyTodayIfDue` (store) fires at most once per day, called on
+boot and on `visibilitychange` (app wake), for a date planned today. Scheduled push while
+closed still needs a push server (deferred).
 
 With the service worker in place, request Notification permission from Settings
 (never on first load), and fire a local notification for today's itinerary when the

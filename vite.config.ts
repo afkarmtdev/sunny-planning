@@ -53,7 +53,10 @@ export default defineConfig(({ mode }) => ({
     stylexBabel(mode),
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      // "prompt" (not autoUpdate) so a waiting build surfaces the themed
+      // UpdatePrompt (see src/components/UpdatePrompt.tsx) instead of swapping
+      // silently; accepting there calls skipWaiting and reloads.
+      registerType: "prompt",
       includeAssets: ["sunny.png"],
       manifest: {
         name: "Sunny Planning",

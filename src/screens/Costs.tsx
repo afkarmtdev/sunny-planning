@@ -3,6 +3,7 @@ import { useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { Screen } from "../components/Screen";
 import { StatTile } from "../components/StatTile";
+import { SunnySprite } from "../components/SunnySprite";
 import { DateSpendSheet } from "../components/DateSpendSheet";
 import { JellyButton } from "../components/JellyButton";
 import { useApp } from "../store/useApp";
@@ -58,35 +59,6 @@ const styles = stylex.create({
     display: "flex",
     alignItems: "center",
     gap: 12,
-  },
-  coin: {
-    position: "relative",
-    width: 44,
-    height: 44,
-    borderRadius: "50%",
-    backgroundColor: colors.marmalade,
-    borderWidth: 3,
-    borderStyle: "solid",
-    borderColor: colors.cream,
-    flexShrink: 0,
-  },
-  coinRing: {
-    position: "absolute",
-    inset: 5,
-    borderRadius: "50%",
-    borderWidth: 2,
-    borderStyle: "solid",
-    borderColor: "rgba(51,43,51,0.3)",
-  },
-  coinHeart: {
-    position: "absolute",
-    top: 15,
-    left: "50%",
-    width: 9,
-    height: 9,
-    backgroundColor: colors.ink,
-    borderRadius: "50% 50% 50% 0",
-    transform: "translateX(-50%) rotate(45deg)",
   },
   hudLabel: {
     fontFamily: fonts.body,
@@ -277,10 +249,7 @@ export function Costs() {
         <div {...stylex.props(styles.hudScanlines)} />
         <div {...stylex.props(styles.hudRow)}>
           <div {...stylex.props(styles.hudMain)}>
-            <div {...stylex.props(styles.coin)} aria-hidden>
-              <div {...stylex.props(styles.coinRing)} />
-              <div {...stylex.props(styles.coinHeart)} />
-            </div>
+            <SunnySprite size={48} expression="happy" blink />
             <div>
               <div {...stylex.props(styles.hudLabel)}>
                 {isCurrentMonth ? "THIS MONTH" : monthLabel(refDate).toUpperCase()}

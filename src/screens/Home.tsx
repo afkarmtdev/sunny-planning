@@ -1,4 +1,5 @@
 import * as stylex from "@stylexjs/stylex";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { Screen } from "../components/Screen";
@@ -8,11 +9,13 @@ import { LcdLabel, LcdPanel, LcdValue } from "../components/Lcd";
 import { StatTile } from "../components/StatTile";
 import { SunnySprite } from "../components/SunnySprite";
 import { WashiTape } from "../components/WashiTape";
-import { IconPlus } from "../components/icons";
+import { Confetti } from "../components/Confetti";
+import { IconPlus, IconSliders } from "../components/icons";
 import { useApp } from "../store/useApp";
 import { dateSpend, datesLogged, happiness, isEstimateSpend, monthStats, moodFor, nextPlanned, streakWeeks } from "../lib/derive";
-import { greeting, stampDate } from "../lib/dates";
+import { greeting, isSameMonthDay, stampDate, todayISO } from "../lib/dates";
 import { rm, rmCompact } from "../lib/format";
+import { sfx } from "../lib/sfx";
 
 const styles = stylex.create({
   headerRow: {
@@ -32,7 +35,13 @@ const styles = stylex.create({
     fontSize: 26,
     color: colors.ink,
   },
-  inviteBtn: {
+  headerBtns: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  iconBtn: {
     width: 36,
     height: 36,
     borderRadius: "50%",
@@ -45,8 +54,70 @@ const styles = stylex.create({
     justifyContent: "center",
     color: colors.heartPop,
     flexShrink: 0,
-    marginBottom: 4,
     transform: { default: "translateY(0)", ":active": "translateY(2px)" },
+  },
+  settingsBtn: {
+    backgroundColor: colors.white,
+    color: colors.ink,
+  },
+  birthdayCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "14px 16px",
+    backgroundImage: "linear-gradient(180deg, #FFB3D6, #FF8FC2)",
+    overflow: "hidden",
+  },
+  birthdayText: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  },
+  birthdayTitle: {
+    fontFamily: fonts.display,
+    fontWeight: 800,
+    fontSize: 18,
+    color: colors.white,
+  },
+  birthdaySub: {
+    fontFamily: fonts.body,
+    fontWeight: 700,
+    fontSize: 12,
+    color: colors.white,
+    opacity: 0.9,
+  },
+  reminder: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "12px 16px",
+    backgroundColor: colors.lcdMint,
+    cursor: "pointer",
+  },
+  reminderText: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 1,
+    flex: 1,
+  },
+  reminderLabel: {
+    fontFamily: fonts.body,
+    fontWeight: 800,
+    fontSize: 12,
+    color: colors.ink,
+  },
+  reminderTitle: {
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  reminderGo: {
+    fontFamily: fonts.display,
+    fontWeight: 800,
+    fontSize: 12,
+    color: colors.heartPop,
+    flexShrink: 0,
   },
   shrine: {
     borderRadius: 24,
@@ -157,6 +228,10 @@ export function Home() {
   const navigate = useNavigate();
   const itineraries = useApp((s) => s.itineraries);
   const createItinerary = useApp((s) => s.createItinerary);
+  const profile = useApp((s) => s.profile);
+  const birthdayCelebratedYear = useApp((s) => s.birthdayCelebratedYear);
+  const markBirthdayCelebrated = useApp((s) => s.markBirthdayCelebrated);
+  const syncDayOf = useApp((s) => s.syncDayOf);
 
   const next = nextPlanned(itineraries);
   const pct = happiness(itineraries);
@@ -164,22 +239,80 @@ export function Home() {
   const { total: monthTotal } = monthStats(itineraries);
   const streak = streakWeeks(itineraries);
 
+  const now = new Date();
+  const year = now.getFullYear();
+  const isBirthday = Boolean(profile.birthdayISO && isSameMonthDay(profile.birthdayISO, now));
+  const firstName = profile.displayName.trim().split(" ")[0];
+  // A date planned for today: the in-app reminder that links into Day-of mode.
+  const todayPlan = itineraries.find(
+    (it) => !it.draft && it.status === "planned" && it.dateISO === todayISO()
+  );
+
+  // Fire the birthday confetti once per year, on the first Home open that day.
+  const [confettiKey, setConfettiKey] = useState(0);
+  useEffect(() => {
+    if (isBirthday && birthdayCelebratedYear !== year) {
+      setConfettiKey(year);
+      markBirthdayCelebrated(year);
+      sfx.success();
+    }
+  }, [isBirthday, birthdayCelebratedYear, year, markBirthdayCelebrated]);
+
+  const openTodaysDate = () => {
+    if (!todayPlan) return;
+    syncDayOf(todayPlan.id);
+    navigate("/today");
+  };
+
   return (
     <Screen dots gap={16}>
+      <Confetti fireKey={confettiKey} />
       <div {...stylex.props(styles.headerRow)}>
         <div>
           <div {...stylex.props(styles.greeting)}>{greeting(new Date())}</div>
           <div {...stylex.props(styles.title)}>Home</div>
         </div>
-        <button
-          type="button"
-          aria-label="Invite your partner"
-          onClick={() => navigate("/invite")}
-          {...stylex.props(styles.inviteBtn)}
-        >
-          <IconPlus />
-        </button>
+        <div {...stylex.props(styles.headerBtns)}>
+          <button
+            type="button"
+            aria-label="Settings"
+            onClick={() => navigate("/settings")}
+            {...stylex.props(styles.iconBtn, styles.settingsBtn)}
+          >
+            <IconSliders />
+          </button>
+          <button
+            type="button"
+            aria-label="Invite your partner"
+            onClick={() => navigate("/invite")}
+            {...stylex.props(styles.iconBtn)}
+          >
+            <IconPlus />
+          </button>
+        </div>
       </div>
+
+      {isBirthday && (
+        <Card xstyle={styles.birthdayCard}>
+          <SunnySprite size={64} expression="smitten" hop hopFast blink />
+          <div {...stylex.props(styles.birthdayText)}>
+            <div {...stylex.props(styles.birthdayTitle)}>
+              Happy birthday{firstName ? `, ${firstName}` : ""}!
+            </div>
+            <div {...stylex.props(styles.birthdaySub)}>Today is all yours. Sunny is so happy.</div>
+          </div>
+        </Card>
+      )}
+
+      {todayPlan && (
+        <Card xstyle={styles.reminder} onClick={openTodaysDate}>
+          <div {...stylex.props(styles.reminderText)}>
+            <div {...stylex.props(styles.reminderLabel)}>YOUR DATE IS TODAY</div>
+            <div {...stylex.props(styles.reminderTitle)}>{todayPlan.title}</div>
+          </div>
+          <div {...stylex.props(styles.reminderGo)}>Start &rsaquo;</div>
+        </Card>
+      )}
 
       <Card tone="shellPink" xstyle={styles.shrine}>
         <div {...stylex.props(styles.spriteRow)}>

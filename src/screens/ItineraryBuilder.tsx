@@ -741,14 +741,16 @@ export function ItineraryBuilder() {
           {completed && <div {...stylex.props(styles.completedPill)}>Completed</div>}
           {cancelled && <div {...stylex.props(styles.cancelledPill)}>Cancelled</div>}
         </div>
-        <button
-          type="button"
-          aria-label="Export this itinerary"
-          onClick={() => navigate(`/plan/${id}/export`)}
-          {...stylex.props(styles.exportBtn)}
-        >
-          <IconShare />
-        </button>
+        {!isDraft && (
+          <button
+            type="button"
+            aria-label="Export this itinerary"
+            onClick={() => navigate(`/plan/${id}/export`)}
+            {...stylex.props(styles.exportBtn)}
+          >
+            <IconShare />
+          </button>
+        )}
       </div>
 
       <div {...stylex.props(styles.trail, stops.length === 0 && styles.trailEmpty)}>
@@ -864,7 +866,7 @@ export function ItineraryBuilder() {
         </LcdValue>
       </LcdPanel>
 
-      {(myPhotos.length > 0 || !locked) && (
+      {!isDraft && (myPhotos.length > 0 || !locked) && (
         <>
           <div {...stylex.props(styles.photosTitle)}>Photos from this date</div>
           {photoGroups.map((group) => (

@@ -85,6 +85,24 @@ export type Photo = {
 
 export type PartnerId = "Y" | "P";
 
+/**
+ * The local user's identity. Mirrors what `space_members` stores server-side
+ * (a display initial and a color) so it slots straight into the synced profile
+ * in Milestone 4. `birthdayISO` drives the birthday special; `onboarded` gates
+ * the first-time setup wizard. Local-first for now: no auth reads this yet.
+ */
+export type Profile = {
+  displayName: string;
+  /** Single letter shown in the avatar chip; derived from the name at setup. */
+  initial: string;
+  /** Avatar color, a hex from `AVATAR_COLORS`, matching space_members.color. */
+  color: string;
+  /** Birthday as YYYY-MM-DD; only month and day matter for the celebration. */
+  birthdayISO?: string;
+  /** True once first-time setup is done, so the wizard never shows again. */
+  onboarded: boolean;
+};
+
 export type VenueNote = {
   author: PartnerId;
   text: string;

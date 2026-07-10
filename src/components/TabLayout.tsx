@@ -1,10 +1,13 @@
 import { Outlet } from "react-router-dom";
 import { StickerTabBar } from "./StickerTabBar";
+import { PullToRefresh } from "./PullToRefresh";
 
 export function TabLayout() {
   return (
     <>
-      <Outlet />
+      <PullToRefresh>
+        <Outlet />
+      </PullToRefresh>
       <StickerTabBar />
     </>
   );

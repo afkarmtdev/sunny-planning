@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Expense, Itinerary, Photo, SkinId, Stop, Venue, VenueNote, VenueRating } from "../lib/types";
+import type { Expense, Itinerary, Photo, Profile, SkinId, Stop, Venue, VenueNote, VenueRating } from "../lib/types";
 import { itineraryTotal } from "../lib/derive";
-import { addDaysISO, nowISO, todayISO } from "../lib/dates";
+import { addDaysISO, nowISO, parseISO, todayISO } from "../lib/dates";
+import { DEFAULT_AVATAR_COLOR } from "../lib/avatar";
+import { fireTodayNotification } from "../lib/notify";
 import { deleteReceipt } from "../lib/receipts";
 import { demoInviteCode, demoItineraries, demoPhotos, demoVenues } from "../data/demo";
 
@@ -34,7 +36,43 @@ type DayOf = {
 type Prefs = {
   soundOn: boolean;
   hapticsOn: boolean;
+  /** Opt-in (needs OS permission) reminder when a date is planned for today. */
+  notifyToday: boolean;
 };
+
+// A blank profile for a brand-new install; `onboarded: false` sends first
+// launch into the setup wizard. Existing persisted users are marked onboarded
+// in the migration so they never see it.
+const FRESH_PROFILE: Profile = {
+  displayName: "",
+  initial: "",
+  color: DEFAULT_AVATAR_COLOR,
+  onboarded: false,
+};
+
+// How many days before a birthday the suggested date auto-appears.
+const BIRTHDAY_SUGGEST_LEAD_DAYS = 7;
+
+/** Days from today until `iso` (negative once it has passed). */
+function daysUntil(iso: string): number {
+  const start = parseISO(todayISO()).getTime();
+  const end = parseISO(iso).getTime();
+  return Math.round((end - start) / (24 * 60 * 60 * 1000));
+}
+
+/**
+ * The next occurrence of a birthday on or after today, as an ISO date. Takes
+ * the month and day from `birthdayISO` and pins them to this year, rolling to
+ * next year once this year's has already passed.
+ */
+function upcomingBirthdayISO(birthdayISO: string): string {
+  const b = parseISO(birthdayISO);
+  const thisYear = parseISO(todayISO()).getFullYear();
+  const at = (year: number) =>
+    `${year}-${String(b.getMonth() + 1).padStart(2, "0")}-${String(b.getDate()).padStart(2, "0")}`;
+  const thisYears = at(thisYear);
+  return daysUntil(thisYears) >= 0 ? thisYears : at(thisYear + 1);
+}
 
 type AppState = {
   itineraries: Itinerary[];
@@ -44,6 +82,26 @@ type AppState = {
   dayOf: DayOf;
   prefs: Prefs;
   setPref: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
+
+  profile: Profile;
+  /** The birthday year (of `upcomingBirthdayISO`) already offered a suggested date. */
+  birthdaySuggestionYear?: number;
+  /** The birthday year whose Home takeover confetti has already played. */
+  birthdayCelebratedYear?: number;
+  /** Merge a patch into the profile; used by Settings and the setup wizard. */
+  setProfile: (patch: Partial<Profile>) => void;
+  /** Finish first-time setup: apply the profile and flip `onboarded` on. */
+  completeOnboarding: (profile: Omit<Profile, "onboarded">) => void;
+  /** Reset the whole app back to the seeded demo (logout / reset data). */
+  resetDemo: () => void;
+  /** Auto-create the pre-filled birthday date in the week before it; called on load. */
+  ensureBirthdaySuggestion: () => void;
+  /** Record that this year's birthday takeover has been celebrated (confetti fired). */
+  markBirthdayCelebrated: (year: number) => void;
+  /** The date whose "today" notification has already fired, so it fires at most once. */
+  lastTodayNotifyISO?: string;
+  /** Fire the OS reminder if a date is planned for today and one is due; called on wake. */
+  notifyTodayIfDue: () => void;
 
   createItinerary: () => string;
   /** Commit a freshly created date, clearing its draft flag. */
@@ -142,9 +200,84 @@ export const useApp = create<AppState>()(
       venues: demoVenues,
       inviteCode: demoInviteCode,
       dayOf: { itineraryId: null, stopIdx: 0, completed: false },
-      prefs: { soundOn: true, hapticsOn: true },
+      prefs: { soundOn: true, hapticsOn: true, notifyToday: false },
+      profile: FRESH_PROFILE,
 
       setPref: (key, value) => set((s) => ({ prefs: { ...s.prefs, [key]: value } })),
+
+      setProfile: (patch) => set((s) => ({ profile: { ...s.profile, ...patch } })),
+
+      completeOnboarding: (profile) => set(() => ({ profile: { ...profile, onboarded: true } })),
+
+      resetDemo: () => {
+        // Wipe every receipt blob the current data references before clearing,
+        // then drop the persisted key so a reload reseeds the demo cleanly.
+        for (const it of get().itineraries) {
+          for (const ex of it.expenses ?? []) {
+            if (ex.receiptId) void deleteReceipt(ex.receiptId);
+          }
+        }
+        try {
+          localStorage.removeItem("sunny-planning-v1");
+        } catch {
+          // Ignore storage errors; the reload below still re-seeds in memory.
+        }
+        set(() => ({
+          itineraries: demoItineraries,
+          photos: demoPhotos,
+          venues: demoVenues,
+          inviteCode: demoInviteCode,
+          dayOf: { itineraryId: null, stopIdx: 0, completed: false },
+          profile: FRESH_PROFILE,
+          birthdaySuggestionYear: undefined,
+          birthdayCelebratedYear: undefined,
+        }));
+      },
+
+      ensureBirthdaySuggestion: () => {
+        const { profile, itineraries, birthdaySuggestionYear } = get();
+        if (!profile.birthdayISO) return;
+        const dateISO = upcomingBirthdayISO(profile.birthdayISO);
+        const year = parseISO(dateISO).getFullYear();
+        // One suggestion per birthday, and only inside the lead-up window.
+        if (birthdaySuggestionYear === year) return;
+        const lead = daysUntil(dateISO);
+        if (lead < 0 || lead > BIRTHDAY_SUGGEST_LEAD_DAYS) return;
+        // Respect the one-itinerary-per-date rule; record the year either way so
+        // a taken date (or a user who deletes the suggestion) is not retried.
+        const taken = itineraries.some((it) => it.dateISO === dateISO && it.status !== "cancelled");
+        if (taken) {
+          set({ birthdaySuggestionYear: year });
+          return;
+        }
+        const name = profile.displayName.trim();
+        const fresh: Itinerary = {
+          id: `it-${uid()}`,
+          title: name ? `${name}'s birthday` : "Birthday date",
+          dateISO,
+          stops: [],
+          skin: "strawberry",
+          status: "planned",
+          ...createdAudit(),
+        };
+        set((s) => ({ itineraries: [fresh, ...s.itineraries], birthdaySuggestionYear: year }));
+      },
+
+      markBirthdayCelebrated: (year) => set({ birthdayCelebratedYear: year }),
+
+      notifyTodayIfDue: () => {
+        const { prefs, itineraries, lastTodayNotifyISO } = get();
+        if (!prefs.notifyToday) return;
+        const today = todayISO();
+        if (lastTodayNotifyISO === today) return;
+        const plan = itineraries.find(
+          (it) => !it.draft && it.status === "planned" && it.dateISO === today
+        );
+        if (!plan) return;
+        // Record before firing so a rapid second wake cannot double-notify.
+        set({ lastTodayNotifyISO: today });
+        void fireTodayNotification("You have a date today", `${plan.title} is on. Open Sunny to start Day-of.`);
+      },
 
       createItinerary: () => {
         const id = `it-${uid()}`;
@@ -478,12 +611,14 @@ export const useApp = create<AppState>()(
     }),
     {
       name: "sunny-planning-v1",
-      version: 5,
+      version: 6,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as {
           itineraries?: Itinerary[];
           venues?: Array<{ id?: string; rating?: number; ratings?: VenueRating[]; [key: string]: unknown }>;
           expenses?: Array<{ itineraryId?: string; amount?: number } | undefined>;
+          profile?: Profile;
+          prefs?: Partial<Prefs>;
           [key: string]: unknown;
         };
         const legacyExpenses = Array.isArray(state.expenses) ? state.expenses : [];
@@ -543,8 +678,16 @@ export const useApp = create<AppState>()(
           }
         }
 
+        // v6: profile slice. Anyone with persisted state is an existing user,
+        // so mark them onboarded (never surface the first-time wizard to them);
+        // a partial pre-v6 profile is merged over the blank default.
+        const profile: Profile = { ...FRESH_PROFILE, ...(state.profile ?? {}), onboarded: true };
+
+        // Ensure new preference keys have a default for pre-v6 users.
+        const prefs: Prefs = { soundOn: true, hapticsOn: true, notifyToday: false, ...(state.prefs ?? {}) };
+
         const { expenses: _expenses, ...rest } = state;
-        return { ...rest, itineraries, venues };
+        return { ...rest, itineraries, venues, profile, prefs };
       },
     }
   )

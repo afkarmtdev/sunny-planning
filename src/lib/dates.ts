@@ -82,6 +82,12 @@ export function clockLabel(d: Date): string {
   return `${h}:${String(d.getMinutes()).padStart(2, "0")} ${ampm}`;
 }
 
+/** True when `iso` falls on the same month and day as `ref` (year ignored). */
+export function isSameMonthDay(iso: string, ref: Date): boolean {
+  const d = parseISO(iso);
+  return d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+}
+
 export function greeting(d: Date): string {
   const h = d.getHours();
   if (h < 12) return "Good morning";

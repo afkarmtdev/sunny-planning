@@ -47,6 +47,16 @@ StyleX conventions in this repo:
 
 Never use native browser dialogs or inputs that render OS chrome: no `window.confirm`, `window.alert`, or `window.prompt`, and no `<input type="date">`. They break the themed look and feel. Use the in-app equivalents instead: `src/components/ConfirmDialog.tsx` for confirmations (pass `tone="danger"` for destructive actions) and `src/components/Calendar.tsx` for date picking.
 
+## Error and offline states (standard)
+
+Because the app is local-first, offline is a non-blocking notice, never a wall:
+`src/components/OfflineBanner.tsx` (driven by the `useOnline` hook) shows a slim
+pill and nothing is gated. Unexpected failures land on the reusable themed
+`src/components/ErrorScreen.tsx`, fed by the router's `errorElement` and a
+top-level class boundary (`src/components/ErrorBoundary.tsx`). Before adding a
+network-boundary action or any error fallback, follow the `error-offline-states`
+skill.
+
 ## Forms: save and discard (standard)
 
 Any screen that edits store data is transactional from the user's point of view,
