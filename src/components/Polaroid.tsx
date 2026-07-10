@@ -55,6 +55,33 @@ const styles = stylex.create({
     fontSize: 8.5,
     paddingInline: 6,
   },
+  author: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    boxShadow: "1px 1px 0 0 #332B33",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 10,
+    color: colors.ink,
+    pointerEvents: "none",
+  },
+  authorSmall: {
+    width: 17,
+    height: 17,
+    fontSize: 9,
+  },
+  authorY: { backgroundColor: colors.bubblegum },
+  authorP: { backgroundColor: colors.lavender },
   img: {
     width: "100%",
     height: "100%",
@@ -263,6 +290,18 @@ export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }:
           <ArtPlaceholder variant={photo.art ?? 0} />
         )}
         {label && <div {...stylex.props(styles.label, small && styles.labelSmall)}>{label}</div>}
+        {photo.author && (
+          <div
+            {...stylex.props(
+              styles.author,
+              small && styles.authorSmall,
+              photo.author === "Y" ? styles.authorY : styles.authorP
+            )}
+            title={`Added by ${photo.author}`}
+          >
+            {photo.author}
+          </div>
+        )}
       </div>
       {editing ? (
         <input

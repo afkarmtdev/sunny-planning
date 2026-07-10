@@ -53,6 +53,8 @@ export type Photo = {
   itineraryId?: string;
   /** Optional: the specific stop within that date this photo belongs to. */
   stopId?: string;
+  /** Which partner uploaded this photo; absent for legacy photos. */
+  author?: PartnerId;
   src?: string;
   art?: number;
   rot: number;

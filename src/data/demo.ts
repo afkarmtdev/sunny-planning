@@ -158,10 +158,10 @@ export const demoItineraries: Itinerary[] = [
 ];
 
 export const demoPhotos: Photo[] = [
-  { id: "ph-arcade", caption: "arcade high score!!", dateISO: "2026-07-03", itineraryId: "it-claw-duel", art: 0, rot: -3, tape: "lavender", dot: true },
-  { id: "ph-matcha", caption: "matcha runs", dateISO: "2026-07-05", itineraryId: "it-bookstore", art: 1, rot: 2, tape: null },
-  { id: "ph-sunset", caption: "sunset walk", dateISO: "2026-07-06", itineraryId: "it-lake-picnic", art: 2, rot: -2, tape: "pink" },
-  { id: "ph-ramen", caption: "ramen date, round 2", dateISO: "2026-06-24", itineraryId: "it-movie-night", art: 3, rot: 1.5, tape: null },
+  { id: "ph-arcade", caption: "arcade high score!!", dateISO: "2026-07-03", itineraryId: "it-claw-duel", author: "P", art: 0, rot: -3, tape: "lavender", dot: true },
+  { id: "ph-matcha", caption: "matcha runs", dateISO: "2026-07-05", itineraryId: "it-bookstore", author: "Y", art: 1, rot: 2, tape: null },
+  { id: "ph-sunset", caption: "sunset walk", dateISO: "2026-07-06", itineraryId: "it-lake-picnic", author: "Y", art: 2, rot: -2, tape: "pink" },
+  { id: "ph-ramen", caption: "ramen date, round 2", dateISO: "2026-06-24", itineraryId: "it-movie-night", author: "P", art: 3, rot: 1.5, tape: null },
 ];
 
 export const demoVenues: Venue[] = [

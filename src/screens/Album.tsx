@@ -11,7 +11,7 @@ import { useApp } from "../store/useApp";
 import { fileToDataUrl } from "../lib/images";
 import { todayISO, shortDate } from "../lib/dates";
 import { photoDecoration } from "../lib/photos";
-import type { Photo } from "../lib/types";
+import type { Photo, PartnerId } from "../lib/types";
 
 const PAGE_SIZE = 8;
 
@@ -99,6 +99,37 @@ const styles = stylex.create({
     opacity: 0.7,
     marginBottom: 4,
   },
+  uploaderLabel: {
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 13,
+    color: colors.ink,
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  uploaderRow: {
+    display: "flex",
+    gap: 8,
+    marginBottom: 6,
+  },
+  uploaderChip: {
+    flex: 1,
+    textAlign: "center",
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 13,
+    color: colors.ink,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    borderRadius: 999,
+    paddingBlock: 8,
+    cursor: "pointer",
+    opacity: 0.5,
+  },
+  uploaderChipOnY: { backgroundColor: colors.bubblegum, opacity: 1 },
+  uploaderChipOnP: { backgroundColor: colors.lavender, opacity: 1 },
   pickerList: {
     display: "flex",
     flexDirection: "column",
@@ -181,6 +212,7 @@ export function Album() {
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [lightboxId, setLightboxId] = useState<string | null>(null);
   const [pending, setPending] = useState<string[] | null>(null);
+  const [uploader, setUploader] = useState<PartnerId>("Y");
   // Date filter: null = all, "untagged" = no date, else an itinerary id.
   const [filter, setFilter] = useState<string | null>(null);
 
@@ -277,6 +309,7 @@ export function Album() {
         caption: "",
         dateISO: todayISO(),
         itineraryId,
+        author: uploader,
         src,
         ...photoDecoration(n),
       });
@@ -378,6 +411,22 @@ export function Album() {
         <div {...stylex.props(styles.pickerHint)}>
           Tag your {pending && pending.length > 1 ? `${pending.length} photos` : "photo"} to a date so
           they show up together.
+        </div>
+        <div {...stylex.props(styles.uploaderLabel)}>Who uploaded this?</div>
+        <div {...stylex.props(styles.uploaderRow)}>
+          {(["Y", "P"] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setUploader(p)}
+              {...stylex.props(
+                styles.uploaderChip,
+                uploader === p && (p === "Y" ? styles.uploaderChipOnY : styles.uploaderChipOnP)
+              )}
+            >
+              {p}
+            </button>
+          ))}
         </div>
         <div {...stylex.props(styles.pickerList)}>
           {pickable.map((it) => {

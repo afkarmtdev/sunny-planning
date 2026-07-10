@@ -142,7 +142,9 @@ export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onVie
         </div>
         {current.caption && <div {...stylex.props(styles.caption)}>{current.caption}</div>}
         <div {...stylex.props(styles.meta)}>
-          {[currentTitle, currentStop, shortDate(current.dateISO)].filter(Boolean).join(" · ")}
+          {[currentTitle, currentStop, shortDate(current.dateISO), current.author && `added by ${current.author}`]
+            .filter(Boolean)
+            .join(" · ")}
         </div>
         <div {...stylex.props(styles.actions)}>
           {onTagStop && (
