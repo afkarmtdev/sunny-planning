@@ -28,8 +28,10 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
-import { useApp } from "../store/useApp";
-import type { Expense, Itinerary, Photo, Profile, Stop, Venue, VenueNote, VenueRating } from "./types";
+import { setActingUser, useApp } from "../store/useApp";
+import { DEFAULT_AVATAR_COLOR } from "./avatar";
+import { signAvatar, signAvatars, uploadAvatar } from "./storage";
+import type { Expense, Itinerary, Member, Photo, Profile, Stop, Venue, VenueNote, VenueRating } from "./types";
 
 // The tables we flatten the store into, in FK-safe upsert order (parents first)
 // and reverse for deletes.
@@ -79,6 +81,8 @@ function flatten(
       actual_total: it.actualTotal ?? null,
       created_at: it.createdAt ?? null,
       updated_at: it.updatedAt ?? null,
+      created_by: it.createdBy ?? null,
+      updated_by: it.updatedBy ?? null,
     });
     it.stops.forEach((st, i) => {
       out.stops.push({
@@ -96,6 +100,8 @@ function flatten(
         venue_id: st.venueId ?? null,
         created_at: st.createdAt ?? null,
         updated_at: st.updatedAt ?? null,
+        created_by: st.createdBy ?? null,
+        updated_by: st.updatedBy ?? null,
       });
     });
     for (const ex of it.expenses ?? []) {
@@ -109,7 +115,10 @@ function flatten(
         spent_on: ex.createdISO,
         created_at: ex.createdAt ?? null,
         updated_at: ex.updatedAt ?? null,
+        created_by: ex.createdBy ?? null,
+        updated_by: ex.updatedBy ?? null,
         deleted_at: ex.deletedAt ?? null,
+        deleted_by: ex.deletedBy ?? null,
       });
     }
   }
@@ -123,6 +132,8 @@ function flatten(
       fave: v.fave,
       created_at: v.createdAt ?? null,
       updated_at: v.updatedAt ?? null,
+      created_by: v.createdBy ?? null,
+      updated_by: v.updatedBy ?? null,
     });
     for (const r of v.ratings) {
       out.venue_ratings.push({
@@ -134,6 +145,8 @@ function flatten(
         rated_on: r.dateISO ?? null,
         created_at: r.createdAt ?? null,
         updated_at: r.updatedAt ?? null,
+        created_by: r.createdBy ?? null,
+        updated_by: r.updatedBy ?? null,
       });
     }
     for (const n of v.notes) {
@@ -144,6 +157,8 @@ function flatten(
         body: n.text,
         created_at: n.createdAt ?? null,
         updated_at: n.updatedAt ?? null,
+        created_by: n.createdBy ?? null,
+        updated_by: n.updatedBy ?? null,
       });
     }
   }
@@ -162,6 +177,8 @@ function flatten(
       dot: Boolean(p.dot),
       created_at: p.createdAt ?? null,
       updated_at: p.updatedAt ?? null,
+      created_by: p.createdBy ?? null,
+      updated_by: p.updatedBy ?? null,
     });
   }
 
@@ -200,6 +217,8 @@ function assemble(rows: FetchedRows): {
           venueId: (s.venue_id as string) ?? undefined,
           createdAt: (s.created_at as string) ?? undefined,
           updatedAt: (s.updated_at as string) ?? undefined,
+          createdBy: (s.created_by as string) ?? undefined,
+          updatedBy: (s.updated_by as string) ?? undefined,
         })
       );
     const expenses: Expense[] = (expensesByItin.get(r.id) ?? []).map(
@@ -211,7 +230,10 @@ function assemble(rows: FetchedRows): {
         createdISO: (e.spent_on as string) ?? "",
         createdAt: (e.created_at as string) ?? undefined,
         updatedAt: (e.updated_at as string) ?? undefined,
+        createdBy: (e.created_by as string) ?? undefined,
+        updatedBy: (e.updated_by as string) ?? undefined,
         deletedAt: (e.deleted_at as string) ?? undefined,
+        deletedBy: (e.deleted_by as string) ?? undefined,
       })
     );
     return {
@@ -226,6 +248,8 @@ function assemble(rows: FetchedRows): {
       expenses,
       createdAt: (r.created_at as string) ?? undefined,
       updatedAt: (r.updated_at as string) ?? undefined,
+      createdBy: (r.created_by as string) ?? undefined,
+      updatedBy: (r.updated_by as string) ?? undefined,
     };
   });
 
@@ -239,17 +263,20 @@ function assemble(rows: FetchedRows): {
         dateISO: (rt.rated_on as string) ?? undefined,
         createdAt: (rt.created_at as string) ?? undefined,
         updatedAt: (rt.updated_at as string) ?? undefined,
+        createdBy: (rt.created_by as string) ?? undefined,
+        updatedBy: (rt.updated_by as string) ?? undefined,
       })
     );
     const notes: VenueNote[] = (notesByVenue.get(r.id) ?? []).map(
       (n): VenueNote => ({
         id: n.id,
-        // author (Y/P) is not stored server-side; graftLocalOnly restores the
-        // local value, and created_by will drive it once auth stamping lands.
-        author: "Y",
+        // The author chip derives from createdBy (the acting member). The legacy
+        // Y/P author has no column; graftLocalOnly restores it for demo notes.
         text: n.body as string,
         createdAt: (n.created_at as string) ?? undefined,
         updatedAt: (n.updated_at as string) ?? undefined,
+        createdBy: (n.created_by as string) ?? undefined,
+        updatedBy: (n.updated_by as string) ?? undefined,
       })
     );
     return {
@@ -261,6 +288,8 @@ function assemble(rows: FetchedRows): {
       notes,
       createdAt: (r.created_at as string) ?? undefined,
       updatedAt: (r.updated_at as string) ?? undefined,
+      createdBy: (r.created_by as string) ?? undefined,
+      updatedBy: (r.updated_by as string) ?? undefined,
     };
   });
 
@@ -277,6 +306,8 @@ function assemble(rows: FetchedRows): {
       dot: Boolean(r.dot),
       createdAt: (r.created_at as string) ?? undefined,
       updatedAt: (r.updated_at as string) ?? undefined,
+      createdBy: (r.created_by as string) ?? undefined,
+      updatedBy: (r.updated_by as string) ?? undefined,
     })
   );
 
@@ -548,7 +579,7 @@ function mapsToFetched(maps: Record<TableName, Map<string, Row>>): FetchedRows {
 
 /** Compare only the fields that map to columns, so unrelated state doesn't push. */
 function memberSig(p: Profile): string {
-  return JSON.stringify([p.displayName, p.initial, p.color, p.birthdayISO ?? null]);
+  return JSON.stringify([p.displayName, p.initial, p.color, p.birthdayISO ?? null, p.avatarUrl ?? null]);
 }
 
 /**
@@ -561,7 +592,7 @@ function memberSig(p: Profile): string {
 async function pullProfile(client: SupabaseClient, spaceId: string, userId: string): Promise<void> {
   const { data, error } = await client
     .from("space_members")
-    .select("display_name, display_initial, color, birthday")
+    .select("display_name, display_initial, color, birthday, avatar_path")
     .eq("space_id", spaceId)
     .eq("user_id", userId)
     .maybeSingle();
@@ -571,6 +602,9 @@ async function pullProfile(client: SupabaseClient, spaceId: string, userId: stri
   }
   const displayName = ((data?.display_name as string) ?? "").trim();
   if (displayName) {
+    // Resolve the stored object path to a signed URL for display.
+    const avatarPath = (data?.avatar_path as string) ?? null;
+    const avatarUrl = avatarPath ? (await signAvatar(avatarPath)) ?? undefined : undefined;
     // Server has a real profile: adopt it (last-write-wins on boot), mark the
     // user onboarded, and record its signature so an unchanged local edit does
     // not needlessly re-push.
@@ -583,6 +617,7 @@ async function pullProfile(client: SupabaseClient, spaceId: string, userId: stri
           initial: (data?.display_initial as string) || s.profile.initial,
           color: (data?.color as string) || s.profile.color,
           birthdayISO: (data?.birthday as string) ?? undefined,
+          avatarUrl,
           onboarded: true,
         },
       }));
@@ -598,25 +633,80 @@ async function pullProfile(client: SupabaseClient, spaceId: string, userId: stri
   }
 }
 
+/**
+ * Load the whole space roster into store.members so an author chip can resolve a
+ * member id (a record's created_by) to an initial and color. Unlike pullProfile,
+ * this reads every member, not just the caller's own row, and never touches
+ * store.profile. Applied under applyingRemote so it is not echoed back as a push.
+ */
+async function pullMembers(client: SupabaseClient, spaceId: string): Promise<void> {
+  const { data, error } = await client
+    .from("space_members")
+    .select("user_id, display_name, display_initial, color, avatar_path, last_seen")
+    .eq("space_id", spaceId);
+  if (error) {
+    console.error("sync members fetch failed", error.message);
+    return;
+  }
+  const rows = data ?? [];
+  // One batched signing call for every member that has an avatar object.
+  const signed = await signAvatars(
+    rows.map((r) => r.avatar_path as string | null).filter((p): p is string => Boolean(p))
+  );
+  const members: Member[] = rows.map((r) => {
+    const path = (r.avatar_path as string) ?? null;
+    return {
+      userId: r.user_id as string,
+      displayName: (r.display_name as string) ?? "",
+      initial: (r.display_initial as string) || "",
+      color: (r.color as string) || DEFAULT_AVATAR_COLOR,
+      avatarUrl: path ? signed.get(path) : undefined,
+      lastSeen: (r.last_seen as string) ?? undefined,
+    };
+  });
+  applyingRemote = true;
+  try {
+    useApp.setState({ members });
+  } finally {
+    applyingRemote = false;
+  }
+}
+
 /** Push the local profile to the caller's space_members row when it changed. */
 async function pushProfile(client: SupabaseClient, spaceId: string, userId: string): Promise<void> {
   const profile = useApp.getState().profile;
   const nextSig = memberSig(profile);
   if (nextSig === profileSig) return;
   profileSig = nextSig;
+
+  const update: Record<string, unknown> = {
+    display_name: profile.displayName,
+    display_initial: profile.initial,
+    color: profile.color,
+    birthday: profile.birthdayISO ?? null,
+  };
+
+  // Avatar: a freshly picked photo is a data: URL and is uploaded to the bucket,
+  // storing its path; a removed photo clears the path; a photo already synced
+  // (an https signed URL from a pull) leaves avatar_path untouched.
+  const avatar = profile.avatarUrl;
+  let uploadFailed = false;
+  if (!avatar) {
+    update.avatar_path = null;
+  } else if (avatar.startsWith("data:")) {
+    const path = await uploadAvatar(spaceId, userId, avatar);
+    if (path) update.avatar_path = path;
+    else uploadFailed = true;
+  }
+
   const { error } = await client
     .from("space_members")
-    .update({
-      display_name: profile.displayName,
-      display_initial: profile.initial,
-      color: profile.color,
-      birthday: profile.birthdayISO ?? null,
-    })
+    .update(update)
     .eq("space_id", spaceId)
     .eq("user_id", userId);
-  if (error) {
-    // Clear the signature so the next profile change retries the update.
-    console.error("sync profile update failed", error.message);
+  if (error || uploadFailed) {
+    // Clear the signature so the next profile change retries the update/upload.
+    if (error) console.error("sync profile update failed", error.message);
     profileSig = "";
   }
 }
@@ -634,16 +724,20 @@ export async function startSync(spaceId: string): Promise<void> {
   tombstones = emptyTombstones();
   profileSig = "";
 
-  // The caller's own id, needed to target their space_members row (their profile).
+  // The caller's own id, needed to target their space_members row (their profile)
+  // and to stamp created_by / updated_by on every local write while signed in.
   const { data: userData } = await client.auth.getUser();
   const userId = userData.user?.id;
   if (!userId) return;
+  setActingUser(userId);
 
   // Initial load replaces the store (logged-in spaces start empty; local demo
   // data is discarded in favour of server truth). The profile is the exception:
   // it merges the caller's member row over the local profile (see pullProfile).
   await pull(client, spaceId, "replace");
   await pullProfile(client, spaceId, userId);
+  // Load both members' identities so author chips can resolve a created_by id.
+  await pullMembers(client, spaceId);
   // Reconcile: if the server profile was unset, push the local one up so a
   // profile onboarded before sync existed catches the server up on boot.
   if (useApp.getState().profile.displayName.trim()) {
@@ -678,6 +772,17 @@ export async function startSync(spaceId: string): Promise<void> {
     }, 300);
   };
 
+  // A partner joining, renaming their profile, or recoloring their avatar
+  // refreshes the roster so author chips stay current. Debounced separately from
+  // the collection refetch: it reads only space_members.
+  let membersTimer: ReturnType<typeof setTimeout> | null = null;
+  const scheduleMembers = () => {
+    if (membersTimer) clearTimeout(membersTimer);
+    membersTimer = setTimeout(() => {
+      pullMembers(client, spaceId).catch((err) => console.error("members refetch failed", err));
+    }, 300);
+  };
+
   const channel = client
     .channel(`space:${spaceId}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "itineraries" }, schedulePull)
@@ -687,6 +792,7 @@ export async function startSync(spaceId: string): Promise<void> {
     .on("postgres_changes", { event: "*", schema: "public", table: "venues" }, schedulePull)
     .on("postgres_changes", { event: "*", schema: "public", table: "venue_ratings" }, schedulePull)
     .on("postgres_changes", { event: "*", schema: "public", table: "venue_notes" }, schedulePull)
+    .on("postgres_changes", { event: "*", schema: "public", table: "space_members" }, scheduleMembers)
     .subscribe();
 
   active = {
@@ -695,6 +801,7 @@ export async function startSync(spaceId: string): Promise<void> {
     stop: () => {
       unsub();
       if (pullTimer) clearTimeout(pullTimer);
+      if (membersTimer) clearTimeout(membersTimer);
       void client.removeChannel(channel);
     },
   };
@@ -707,6 +814,15 @@ export function stopSync(): void {
   snapshot = emptySnapshot();
   tombstones = emptyTombstones();
   profileSig = "";
+  setActingUser(undefined);
+  // Drop the roster so a later demo session shows no author chips. Guarded so it
+  // does not echo back as a push (members are not a pushed slice anyway).
+  applyingRemote = true;
+  try {
+    useApp.setState({ members: [] });
+  } finally {
+    applyingRemote = false;
+  }
 }
 
 type PullMode = "replace" | "merge";
@@ -960,9 +1076,14 @@ async function pushOnce(client: SupabaseClient, spaceId: string): Promise<void> 
       // Never send updated_at: the server owns that column (insert default +
       // set_updated_at trigger), keeping it on a single clock. Send created_at
       // only when the row carries one, so the column default can fill it.
+      // Likewise drop null created_by / updated_by so a pre-auth or partner-owned
+      // row never has its author overwritten with null; deleted_by is kept so a
+      // restore (deleted_at -> null) can clear it too.
       const payload = changed.map((row) => {
         const { updated_at: _updatedAt, ...rest } = row;
         if (rest.created_at == null) delete rest.created_at;
+        if (rest.created_by == null) delete rest.created_by;
+        if (rest.updated_by == null) delete rest.updated_by;
         return rest;
       });
       const { error } = await client.from(table).upsert(payload);

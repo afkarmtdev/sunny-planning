@@ -11,11 +11,12 @@ import { Sheet } from "../components/Sheet";
 import { Field, TextInput } from "../components/Field";
 import { VenueDetailSheet } from "../components/VenueDetailSheet";
 import { VenueEditSheet, type VenueEditTarget } from "../components/VenueEditSheet";
+import { AuthorChip } from "../components/AuthorChip";
 import { IconPencil } from "../components/icons";
 import { useApp } from "../store/useApp";
 import { latestRating, venueVisits } from "../lib/derive";
 import { shortDate } from "../lib/dates";
-import type { PartnerId, Venue } from "../lib/types";
+import type { Venue } from "../lib/types";
 
 const PAGE_SIZE = 8;
 
@@ -113,24 +114,6 @@ const styles = stylex.create({
     gap: 6,
     marginTop: 4,
   },
-  avatar: {
-    width: 18,
-    height: 18,
-    borderRadius: "50%",
-    borderWidth: 2,
-    borderStyle: "solid",
-    borderColor: colors.ink,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    fontFamily: fonts.display,
-    fontWeight: 700,
-    fontSize: 9,
-    color: colors.ink,
-  },
-  avatarY: { backgroundColor: colors.bubblegum },
-  avatarP: { backgroundColor: colors.lavender },
   noteText: {
     fontFamily: fonts.hand,
     fontSize: 14,
@@ -144,28 +127,6 @@ const styles = stylex.create({
     marginTop: 6,
     cursor: "pointer",
   },
-  authorRow: {
-    display: "flex",
-    gap: 8,
-  },
-  authorChip: {
-    flex: 1,
-    textAlign: "center",
-    fontFamily: fonts.display,
-    fontWeight: 700,
-    fontSize: 13,
-    color: colors.ink,
-    backgroundColor: colors.white,
-    borderWidth: 2,
-    borderStyle: "solid",
-    borderColor: colors.ink,
-    borderRadius: 999,
-    paddingBlock: 8,
-    cursor: "pointer",
-    opacity: 0.5,
-  },
-  authorChipOnY: { backgroundColor: colors.bubblegum, opacity: 1 },
-  authorChipOnP: { backgroundColor: colors.lavender, opacity: 1 },
   pawEditRow: {
     display: "flex",
     alignItems: "center",
@@ -263,7 +224,6 @@ export function Ratings() {
   const { toggleFave, addVenueNote } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const [noteFor, setNoteFor] = useState<string | null>(null);
-  const [author, setAuthor] = useState<PartnerId>("Y");
   const [text, setText] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [visible, setVisible] = useState(PAGE_SIZE);
@@ -300,7 +260,9 @@ export function Ratings() {
 
   const saveNote = () => {
     if (noteFor && text.trim()) {
-      addVenueNote(noteFor, { author, text: text.trim() });
+      // Author is derived from the acting member (createdBy) at write time; no
+      // manual Y/P pick.
+      addVenueNote(noteFor, { text: text.trim() });
     }
     setNoteFor(null);
     setText("");
@@ -425,9 +387,7 @@ export function Ratings() {
             </div>
             {venue.notes.map((note, i) => (
               <div key={i} {...stylex.props(styles.noteRow)}>
-                <div {...stylex.props(styles.avatar, note.author === "Y" ? styles.avatarY : styles.avatarP)}>
-                  {note.author}
-                </div>
+                <AuthorChip by={note.createdBy} size={18} />
                 <div {...stylex.props(styles.noteText)}>"{note.text}"</div>
               </div>
             ))}
@@ -456,23 +416,6 @@ export function Ratings() {
       )}
 
       <Sheet open={noteFor !== null} onClose={() => setNoteFor(null)} title="Add a note">
-        <Field label="Who is writing?">
-          <div {...stylex.props(styles.authorRow)}>
-            {(["Y", "P"] as const).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setAuthor(p)}
-                {...stylex.props(
-                  styles.authorChip,
-                  author === p && (p === "Y" ? styles.authorChipOnY : styles.authorChipOnP)
-                )}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </Field>
         <Field label="Note">
           <TextInput
             value={text}

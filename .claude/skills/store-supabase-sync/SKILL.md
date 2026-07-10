@@ -27,8 +27,30 @@ nothing syncs and that is expected.
    minted by the `ensure_solo_space` / `accept_invite` RPCs). Pushed by
    `pushProfile()`, pulled by `pullProfile()`. `onboarded` is a client-only flag
    with no column.
+3. **Read-only roster** (`members` -> every `space_members` row). Fetched by
+   `pullMembers()` (on boot and on the `space_members` Realtime event), never
+   pushed. Feeds the author chip: `AuthorChip` resolves a record's `createdBy` to
+   a member's initial/color/avatar. Guard its `setState` with `applyingRemote`.
 
 When you add a new synced thing, decide which shape it is first.
+
+## Author fields and avatars
+
+`created_by` / `updated_by` (and expense `deleted_by`) round-trip like any other
+column - emitted by `flatten`, read by `assemble` - but they are **audit-blind to
+change detection**: excluded from `CONTENT_COLS` (so they never mark a row dirty)
+and listed in `AUDIT_KEYS` (so `contentEqual` ignores them). They are stamped in
+the **store** (`actingUserId` in `useApp.ts`), not on push, because `reconcile`
+would otherwise drop a push-only `created_by` on its own echo. The push payload
+drops null `created_by` / `updated_by` so it never clobbers a partner-owned row.
+
+Member avatars are the exception to "one column maps straight across": the photo
+lives in the private `avatars` Storage bucket (`src/lib/storage.ts`;
+`space_members.avatar_path` holds the object path), and the store's `avatarUrl` is
+a **display URL** - a signed URL after a pull, or a `data:` URL just picked in
+ProfileSheet. `pushProfile` uploads a `data:` avatar and stores its path; pulls
+re-sign the path. The path carries a fresh uuid each upload so the row changes and
+the partner gets a Realtime event.
 
 ## How a write reaches the server
 

@@ -14,14 +14,20 @@ Every stored record carries an audit trail. Two mixin types in
 Both are intersected onto the record type (`... } & Audit` or `& Audit & SoftDelete`).
 All fields are optional so pre-audit demo and persisted rows still typecheck.
 
-## Timestamps now, actor later
+## Timestamps always, actor when signed in
 
 Timestamps (`createdAt` / `updatedAt` / `deletedAt`) are ISO datetimes from
-`nowISO()` in `src/lib/dates.ts` and are stamped on every write **now**. The
-`*By` fields (`createdBy` / `updatedBy` / `deletedBy`) are the acting member's
-id and stay **unset** until auth lands (Milestone 4) and there is a session to
-read the actor from. Do not invent an actor; leave `*By` undefined until the
-sync layer supplies `auth.uid()`. See [[photo-note-author-auth-followup]].
+`nowISO()` in `src/lib/dates.ts` and are stamped on every write. The `*By` fields
+(`createdBy` / `updatedBy` / `deletedBy`) are the acting member's id: `createdAudit`
+/ `touchedAudit` (and `removeExpense`) stamp them from a module-level
+`actingUserId` in `useApp.ts`, which the sync layer sets to `auth.uid()` on
+`startSync` and clears on `stopSync`. So they fill in whenever there is a session
+and stay unset in demo mode (no env vars) - never invent an actor. Stamping in the
+store (not only on push) is deliberate: it makes the author chip optimistic, and
+the pull's identity-preserving `reconcile` treats `*By` as non-content, so a
+push-only `created_by` would be dropped on its own echo. The author chip
+(`src/components/AuthorChip.tsx`) resolves `createdBy` to a member via the synced
+`members` roster; that replaced the old manual Y/P author pickers.
 
 ## How to stamp in the store
 

@@ -1,5 +1,5 @@
 import * as stylex from "@stylexjs/stylex";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { Sheet } from "./Sheet";
 import { Field, TextInput } from "./Field";
@@ -8,13 +8,48 @@ import { Calendar } from "./Calendar";
 import { Avatar } from "./Avatar";
 import { AVATAR_COLORS, initialFor } from "../lib/avatar";
 import { longDate } from "../lib/dates";
+import { fileToDataUrl } from "../lib/images";
 import { useApp } from "../store/useApp";
+
+// Avatars ride along in the space_members row (and localStorage), so keep them
+// small: a tightly downscaled square is plenty for a chip.
+const AVATAR_MAX_DIM = 256;
 
 const styles = stylex.create({
   preview: {
     display: "flex",
     alignItems: "center",
     gap: 12,
+  },
+  avatarBtn: {
+    position: "relative",
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    cursor: "pointer",
+    borderRadius: "50%",
+    flexShrink: 0,
+    transform: { default: "scale(1)", ":active": "scale(0.94)" },
+  },
+  avatarBadge: {
+    position: "absolute",
+    right: -2,
+    bottom: -2,
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    backgroundColor: colors.heartPop,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    color: colors.white,
+    fontFamily: fonts.display,
+    fontWeight: 800,
+    fontSize: 13,
+    lineHeight: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   previewName: {
     fontFamily: fonts.display,
@@ -27,6 +62,20 @@ const styles = stylex.create({
     fontSize: 12,
     color: colors.ink,
     opacity: 0.55,
+  },
+  removePhoto: {
+    marginTop: 4,
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    fontFamily: fonts.body,
+    fontWeight: 700,
+    fontSize: 12,
+    color: colors.heartPop,
+    cursor: "pointer",
+  },
+  hiddenInput: {
+    display: "none",
   },
   swatchRow: {
     display: "flex",
@@ -93,15 +142,27 @@ export function ProfileSheet({ open, onClose }: Props) {
   const [name, setName] = useState("");
   const [color, setColor] = useState<string>(AVATAR_COLORS[0].value);
   const [birthdayISO, setBirthdayISO] = useState<string | undefined>(undefined);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [pickingDate, setPickingDate] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setName(profile.displayName);
     setColor(profile.color);
     setBirthdayISO(profile.birthdayISO);
+    setAvatarUrl(profile.avatarUrl);
     setPickingDate(false);
   }, [open, profile]);
+
+  const pickPhoto = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      setAvatarUrl(await fileToDataUrl(file, AVATAR_MAX_DIM));
+    } catch {
+      // Unreadable image: leave the current photo untouched.
+    }
+  };
 
   const save = () => {
     setProfile({
@@ -109,6 +170,7 @@ export function ProfileSheet({ open, onClose }: Props) {
       initial: initialFor(name),
       color,
       birthdayISO,
+      avatarUrl,
     });
     onClose();
   };
@@ -116,10 +178,41 @@ export function ProfileSheet({ open, onClose }: Props) {
   return (
     <Sheet open={open} onClose={onClose} title="Your profile">
       <div {...stylex.props(styles.preview)}>
-        <Avatar initial={initialFor(name)} color={color} size={52} />
+        <button
+          type="button"
+          aria-label={avatarUrl ? "Change your photo" : "Add a photo"}
+          onClick={() => fileInput.current?.click()}
+          {...stylex.props(styles.avatarBtn)}
+        >
+          <Avatar initial={initialFor(name)} color={color} photoUrl={avatarUrl} size={52} />
+          <span {...stylex.props(styles.avatarBadge)} aria-hidden>
+            +
+          </span>
+        </button>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          {...stylex.props(styles.hiddenInput)}
+          onChange={(e) => {
+            void pickPhoto(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
         <div>
           <div {...stylex.props(styles.previewName)}>{name.trim() || "Your name"}</div>
-          <div {...stylex.props(styles.previewHint)}>This is how Sunny knows you</div>
+          <div {...stylex.props(styles.previewHint)}>
+            {avatarUrl ? "Tap your photo to change it" : "Tap to add a photo"}
+          </div>
+          {avatarUrl && (
+            <button
+              type="button"
+              onClick={() => setAvatarUrl(undefined)}
+              {...stylex.props(styles.removePhoto)}
+            >
+              Remove photo
+            </button>
+          )}
         </div>
       </div>
 

@@ -23,6 +23,12 @@ const styles = stylex.create({
     boxShadow: "2px 2px 0 0 #332B33",
   }),
   glyph: (size: number) => ({ fontSize: Math.round(size * 0.44) }),
+  img: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    borderRadius: "50%",
+  },
 });
 
 type Props = {
@@ -30,13 +36,17 @@ type Props = {
   initial: string;
   color: string;
   size?: number;
+  /** Uploaded profile photo (data URL). Shown instead of the initial when set. */
+  photoUrl?: string;
   xstyle?: StyleXStyles;
 };
 
-export function Avatar({ initial, color, size = 44, xstyle }: Props) {
+export function Avatar({ initial, color, size = 44, photoUrl, xstyle }: Props) {
   return (
     <div {...stylex.props(styles.chip(size, color), xstyle)} aria-hidden>
-      {initial ? (
+      {photoUrl ? (
+        <img src={photoUrl} alt="" {...stylex.props(styles.img)} />
+      ) : initial ? (
         <span {...stylex.props(styles.glyph(size))}>{initial}</span>
       ) : (
         <IconHeart size={Math.round(size * 0.4)} />

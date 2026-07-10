@@ -99,6 +99,8 @@ export type Profile = {
   color: string;
   /** Birthday as YYYY-MM-DD; only month and day matter for the celebration. */
   birthdayISO?: string;
+  /** Uploaded profile photo as a data URL; shown on the avatar chip when set. */
+  avatarUrl?: string;
   /** True once first-time setup is done, so the wizard never shows again. */
   onboarded: boolean;
 };
@@ -106,9 +108,32 @@ export type Profile = {
 export type VenueNote = {
   /** Stable id for sync; optional only for legacy notes written before ids. */
   id?: string;
-  author: PartnerId;
+  /**
+   * Legacy manual author (Y/P); superseded by the audit `createdBy` member id,
+   * which drives the author chip. Only demo and pre-auth notes still carry it.
+   */
+  author?: PartnerId;
   text: string;
 } & Audit;
+
+/**
+ * A member of the current space, mirrored from `space_members` for the author
+ * chip: the acting member's id resolves to their initial and color. Populated by
+ * sync only; empty in demo mode, so a chip attributed to no known member (or any
+ * pre-auth record) simply renders nothing.
+ */
+export type Member = {
+  userId: string;
+  displayName: string;
+  /** Single-letter avatar glyph, from `space_members.display_initial`. */
+  initial: string;
+  /** Avatar color hex, from `space_members.color`. */
+  color: string;
+  /** Uploaded profile photo (data URL), from `space_members.avatar_url`. */
+  avatarUrl?: string;
+  /** Last presence timestamp; backs partner online / last seen (feature 11). */
+  lastSeen?: string;
+};
 
 export type VenueRating = {
   id: string;

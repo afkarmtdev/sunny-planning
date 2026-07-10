@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Expense, Itinerary, Photo, Profile, SkinId, Stop, Venue, VenueNote, VenueRating } from "../lib/types";
+import type { Expense, Itinerary, Member, Photo, Profile, SkinId, Stop, Venue, VenueNote, VenueRating } from "../lib/types";
 import { itineraryTotal } from "../lib/derive";
 import { addDaysISO, nowISO, parseISO, todayISO } from "../lib/dates";
 import { DEFAULT_AVATAR_COLOR } from "../lib/avatar";
@@ -17,13 +17,27 @@ const uid = () => crypto.randomUUID();
 // purged for good on app load.
 const RECENTLY_DELETED_DAYS = 30;
 
-// Audit stamps. createdBy / updatedBy / deletedBy stay unset until auth
-// (Milestone 4) supplies the acting member; the timestamps are live now.
+// The signed-in member's id, supplied by the sync layer from the auth session
+// (auth.uid()) when Supabase is configured, and cleared on logout. In demo mode
+// it stays undefined, so the *By audit fields remain unset exactly as before.
+let actingUserId: string | undefined;
+
+/** Sync sets the acting member so store writes stamp created_by / updated_by. */
+export function setActingUser(id: string | undefined): void {
+  actingUserId = id;
+}
+
+// Audit stamps. The timestamps are always live; createdBy / updatedBy /
+// deletedBy fill in only when there is a session (actingUserId set), per the
+// audit-trail house standard.
 const createdAudit = () => {
   const at = nowISO();
-  return { createdAt: at, updatedAt: at };
+  return actingUserId
+    ? { createdAt: at, updatedAt: at, createdBy: actingUserId, updatedBy: actingUserId }
+    : { createdAt: at, updatedAt: at };
 };
-const touchedAudit = () => ({ updatedAt: nowISO() });
+const touchedAudit = () =>
+  actingUserId ? { updatedAt: nowISO(), updatedBy: actingUserId } : { updatedAt: nowISO() };
 
 type DayOf = {
   itineraryId: string | null;
@@ -81,6 +95,12 @@ type AppState = {
   itineraries: Itinerary[];
   photos: Photo[];
   venues: Venue[];
+  /**
+   * The space roster (both members), mirrored from `space_members` by sync so an
+   * author chip can resolve a member id to an initial and color. Empty in demo
+   * mode; written only by the sync layer, never persisted meaningfully.
+   */
+  members: Member[];
   inviteCode: string;
   dayOf: DayOf;
   prefs: Prefs;
@@ -201,6 +221,7 @@ export const useApp = create<AppState>()(
       itineraries: demoItineraries,
       photos: demoPhotos,
       venues: demoVenues,
+      members: [],
       inviteCode: demoInviteCode,
       dayOf: { itineraryId: null, stopIdx: 0, completed: false },
       prefs: { soundOn: true, hapticsOn: true, notifyToday: false },
@@ -456,7 +477,9 @@ export const useApp = create<AppState>()(
           itineraries: patchItinerary(s.itineraries, itineraryId, (x) => ({
             ...x,
             expenses: (x.expenses ?? []).map((ex) =>
-              ex.id === expenseId ? { ...ex, deletedAt: nowISO(), ...touchedAudit() } : ex
+              ex.id === expenseId
+                ? { ...ex, deletedAt: nowISO(), deletedBy: actingUserId, ...touchedAudit() }
+                : ex
             ),
           })),
         })),

@@ -286,16 +286,19 @@ mode, which it already is; feature 3 is mostly done once first-time setup hooks 
 
 ### Created by / updated by (7)
 
-**Status (2026-07-10): audit trail landed early (data model + schema); UI chip still
-pending sync.** Every stored record now carries an `Audit` mixin (`createdAt` / `createdBy`
-/ `updatedAt` / `updatedBy`) and expenses also carry `SoftDelete` (`deletedAt` /
-`deletedBy`), defined in `src/lib/types.ts`. Timestamps are stamped live in `useApp.ts`
-(`createdAudit` / `touchedAudit`, with `patchItinerary` auto-bumping `updatedAt`); all the
-`*By` fields stay unset until auth supplies the acting member. The persist store bumped to
-v5 with a best-effort backfill. `supabase/migrations/` mirrors the columns (the `*By`
-columns reference `auth.users`) with a `set_updated_at` trigger per table. Convention
-captured in the `audit-trail` skill. What remains for feature 7 proper: populate the `*By`
-fields from `auth.uid()` in the sync layer, and the author-chip UI.
+**Status (2026-07-10): DONE.** The audit trail landed earlier (data model + schema); this
+finishes the feature. Store writes now stamp `createdBy` / `updatedBy` / `deletedBy` from the
+signed-in member (`actingUserId` in `useApp.ts`, set by sync from the auth session; unset in
+demo mode), and `sync.ts` round-trips the `*By` columns through flatten/assemble/push and
+fetches the whole `space_members` roster into a new `members` store slice. A reusable
+`AuthorChip` resolves a record's `createdBy` to that member's avatar (via the `Avatar`
+component) and renders on itineraries (builder header), expenses (date-spend rows), photos
+(polaroids), and venue notes; it shows nothing in demo mode or for pre-auth records. The
+manual "Y / P" author pickers in Album and Ratings are gone, per the project memory (author
+derives from the session). Members can also upload a profile photo (ProfileSheet), stored in
+a new private `avatars` bucket (migration `0005_member_avatar`, `space_members.avatar_path`)
+and shown on the chip in place of the initial. Verified via typecheck and build; live
+two-member behavior needs Supabase env vars.
 
 Schema migration: `created_by uuid` and `updated_by uuid` columns plus a trigger to
 stamp them. UI: a tiny author chip (partner's initial in their color) on

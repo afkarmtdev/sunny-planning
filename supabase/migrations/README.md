@@ -55,6 +55,9 @@ If you use the Supabase CLI instead, `supabase db reset` applies everything in
 - `0004_grants` - base table/function GRANTs to the `authenticated` role. RLS
   (0001) gates which rows; without these grants every client query is denied with
   42501 before RLS even runs.
+- `0005_member_avatar` - adds `space_members.avatar_path` and a private
+  `avatars` storage bucket (member-scoped, like photos/receipts) for the optional
+  profile photo shown on the author chip.
 
 ## Adding a migration
 

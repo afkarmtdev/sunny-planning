@@ -18,6 +18,7 @@ import { UploadDropzone } from "../components/UploadDropzone";
 import { IconShare, IconPencil } from "../components/icons";
 import { PawRating } from "../components/PawRating";
 import { VenueEditSheet, type VenueEditTarget } from "../components/VenueEditSheet";
+import { AuthorChip } from "../components/AuthorChip";
 import { useApp } from "../store/useApp";
 import { dateSpend, itineraryTotal } from "../lib/derive";
 import { longDate, todayISO } from "../lib/dates";
@@ -59,6 +60,12 @@ const styles = stylex.create({
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  headerActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexShrink: 0,
   },
   headerText: {
     cursor: "pointer",
@@ -742,16 +749,19 @@ export function ItineraryBuilder() {
           {completed && <div {...stylex.props(styles.completedPill)}>Completed</div>}
           {cancelled && <div {...stylex.props(styles.cancelledPill)}>Cancelled</div>}
         </div>
-        {!isDraft && (
-          <button
-            type="button"
-            aria-label="Export this itinerary"
-            onClick={() => navigate(`/plan/${id}/export`)}
-            {...stylex.props(styles.exportBtn)}
-          >
-            <IconShare />
-          </button>
-        )}
+        <div {...stylex.props(styles.headerActions)}>
+          <AuthorChip by={itinerary.createdBy} size={28} />
+          {!isDraft && (
+            <button
+              type="button"
+              aria-label="Export this itinerary"
+              onClick={() => navigate(`/plan/${id}/export`)}
+              {...stylex.props(styles.exportBtn)}
+            >
+              <IconShare />
+            </button>
+          )}
+        </div>
       </div>
 
       <div {...stylex.props(styles.trail, stops.length === 0 && styles.trailEmpty)}>

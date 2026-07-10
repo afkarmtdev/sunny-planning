@@ -6,6 +6,7 @@ import { JellyButton } from "./JellyButton";
 import { LcdPanel, LcdValue } from "./Lcd";
 import { ExpenseSheet } from "./ExpenseSheet";
 import { ReceiptLightbox } from "./ReceiptLightbox";
+import { AuthorChip } from "./AuthorChip";
 import { useReceiptUrl } from "../lib/receipts";
 import { activeExpenses, dateSpend, itineraryTotal } from "../lib/derive";
 import { shortDate } from "../lib/dates";
@@ -90,6 +91,12 @@ const styles = stylex.create({
     color: colors.ink,
     opacity: 0.55,
   },
+  rowRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexShrink: 0,
+  },
   rowAmount: {
     fontFamily: fonts.lcd,
     fontSize: 13,
@@ -146,7 +153,10 @@ function ExpenseRow({
           {stopName && <div {...stylex.props(styles.rowStop)}>{stopName}</div>}
         </div>
       </div>
-      <div {...stylex.props(styles.rowAmount)}>{rm(expense.amount)}</div>
+      <div {...stylex.props(styles.rowRight)}>
+        <AuthorChip by={expense.createdBy} size={18} />
+        <div {...stylex.props(styles.rowAmount)}>{rm(expense.amount)}</div>
+      </div>
     </div>
   );
 }

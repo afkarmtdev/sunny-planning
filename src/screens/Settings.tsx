@@ -196,7 +196,7 @@ export function Settings() {
       <div {...stylex.props(styles.title)}>Settings</div>
 
       <Card xstyle={styles.profileCard} onClick={() => setEditing(true)}>
-        <Avatar initial={profile.initial} color={profile.color} size={56} />
+        <Avatar initial={profile.initial} color={profile.color} photoUrl={profile.avatarUrl} size={56} />
         <div>
           <div {...stylex.props(styles.profileName)}>{profile.displayName || "Add your name"}</div>
           <div {...stylex.props(styles.profileSub)}>Birthday: {birthday}</div>
