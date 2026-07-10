@@ -8,7 +8,10 @@ import { fireTodayNotification } from "../lib/notify";
 import { deleteReceipt } from "../lib/receipts";
 import { demoInviteCode, demoItineraries, demoPhotos, demoVenues } from "../data/demo";
 
-const uid = () => Math.random().toString(36).slice(2, 10);
+// Ids are uuids so local rows and Supabase rows share one shape (the id survives
+// unchanged when a row syncs). crypto.randomUUID needs a secure context, which
+// localhost and any https deployment both satisfy.
+const uid = () => crypto.randomUUID();
 
 // How long a soft-deleted expense lingers in Recently deleted before it is
 // purged for good on app load.
@@ -185,7 +188,7 @@ function linkStopsToVenues(stops: Stop[], venues: Venue[]): { stops: Stop[]; new
     }
     const existing = findVenueByName(stop.name, venues) ?? findVenueByName(stop.name, newVenues);
     if (existing) return { ...stop, venueId: existing.id };
-    const created: Venue = { id: `vn-${uid()}`, name: stop.name, category: "Spot", ratings: [], fave: false, notes: [], ...createdAudit() };
+    const created: Venue = { id: uid(), name: stop.name, category: "Spot", ratings: [], fave: false, notes: [], ...createdAudit() };
     newVenues.push(created);
     return { ...stop, venueId: created.id };
   });
@@ -252,7 +255,7 @@ export const useApp = create<AppState>()(
         }
         const name = profile.displayName.trim();
         const fresh: Itinerary = {
-          id: `it-${uid()}`,
+          id: uid(),
           title: name ? `${name}'s birthday` : "Birthday date",
           dateISO,
           stops: [],
@@ -280,7 +283,7 @@ export const useApp = create<AppState>()(
       },
 
       createItinerary: () => {
-        const id = `it-${uid()}`;
+        const id = uid();
         // Drop any abandoned draft so unsaved dates never pile up.
         const kept = get().itineraries.filter((it) => !it.draft);
         // One date, one itinerary: start today and walk forward to the first free day.
@@ -378,7 +381,7 @@ export const useApp = create<AppState>()(
           return {
             itineraries: patchItinerary(s.itineraries, itineraryId, (it) => ({
               ...it,
-              stops: [...it.stops, { ...stop, venueId, id: `st-${uid()}`, ...createdAudit() }],
+              stops: [...it.stops, { ...stop, venueId, id: uid(), ...createdAudit() }],
             })),
           };
         }),
@@ -431,7 +434,7 @@ export const useApp = create<AppState>()(
             ...it,
             expenses: [
               ...(it.expenses ?? []),
-              { ...expense, id: `ex-${uid()}`, createdISO: todayISO(), ...createdAudit() },
+              { ...expense, id: uid(), createdISO: todayISO(), ...createdAudit() },
             ],
           })),
         })),
@@ -536,7 +539,7 @@ export const useApp = create<AppState>()(
       },
 
       addPhoto: (photo) =>
-        set((s) => ({ photos: [{ ...photo, id: `ph-${uid()}`, ...createdAudit() }, ...s.photos] })),
+        set((s) => ({ photos: [{ ...photo, id: uid(), ...createdAudit() }, ...s.photos] })),
 
       updatePhotoCaption: (id, caption) =>
         set((s) => ({
@@ -566,7 +569,7 @@ export const useApp = create<AppState>()(
                 return { ...v, ratings, ...touchedAudit() };
               }
               const entry: VenueRating = {
-                id: `vr-${uid()}`,
+                id: uid(),
                 rating,
                 itineraryId: visit.itineraryId,
                 stopId: visit.stopId,
@@ -586,7 +589,7 @@ export const useApp = create<AppState>()(
             }
             return {
               ...v,
-              ratings: [...v.ratings, { id: `vr-${uid()}`, rating, dateISO: today, ...createdAudit() }],
+              ratings: [...v.ratings, { id: uid(), rating, dateISO: today, ...createdAudit() }],
               ...touchedAudit(),
             };
           }),
@@ -600,7 +603,9 @@ export const useApp = create<AppState>()(
       addVenueNote: (id, note) =>
         set((s) => ({
           venues: s.venues.map((v) =>
-            v.id === id ? { ...v, notes: [...v.notes, { ...note, ...createdAudit() }], ...touchedAudit() } : v
+            v.id === id
+              ? { ...v, notes: [...v.notes, { ...note, id: note.id ?? uid(), ...createdAudit() }], ...touchedAudit() }
+              : v
           ),
         })),
 
@@ -611,7 +616,7 @@ export const useApp = create<AppState>()(
     }),
     {
       name: "sunny-planning-v1",
-      version: 6,
+      version: 7,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as {
           itineraries?: Itinerary[];
@@ -672,6 +677,8 @@ export const useApp = create<AppState>()(
           backfill(v);
           for (const note of (Array.isArray(v?.notes) ? v.notes : []) as Array<Record<string, unknown>>) {
             backfill(note);
+            // v7: venue notes gained a stable id (for sync); mint one for legacy notes.
+            if (note.id == null) note.id = crypto.randomUUID();
           }
           for (const r of (Array.isArray(v?.ratings) ? v.ratings : []) as Array<Record<string, unknown>>) {
             backfill(r, typeof r?.dateISO === "string" ? r.dateISO : undefined);

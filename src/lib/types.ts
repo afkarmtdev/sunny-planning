@@ -104,6 +104,8 @@ export type Profile = {
 };
 
 export type VenueNote = {
+  /** Stable id for sync; optional only for legacy notes written before ids. */
+  id?: string;
   author: PartnerId;
   text: string;
 } & Audit;
