@@ -7,7 +7,7 @@ import { LcdPanel, LcdValue } from "./Lcd";
 import { ExpenseSheet } from "./ExpenseSheet";
 import { ReceiptLightbox } from "./ReceiptLightbox";
 import { useReceiptUrl } from "../lib/receipts";
-import { dateSpend, itineraryTotal } from "../lib/derive";
+import { activeExpenses, dateSpend, itineraryTotal } from "../lib/derive";
 import { shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
 import type { Expense, Itinerary } from "../lib/types";
@@ -176,7 +176,7 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
     onClose();
   };
 
-  const expenses = current?.expenses ?? [];
+  const expenses = current ? activeExpenses(current) : [];
   const estimate = current ? itineraryTotal(current) : 0;
   const actual = current ? dateSpend(current) : 0;
   const showEstimateDiff = current != null && actual !== estimate;

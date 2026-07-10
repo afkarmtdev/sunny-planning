@@ -25,6 +25,10 @@ create table invites (
   created_at timestamptz not null default now()
 );
 
+-- Audit columns (created_at already present per table). created_by / updated_by
+-- / deleted_by reference the acting member; the sync layer stamps them, and the
+-- set_updated_at trigger below keeps updated_at fresh. deleted_at / deleted_by
+-- back soft-deletion (used for expenses today, available to every table).
 create table itineraries (
   id uuid primary key default gen_random_uuid(),
   space_id uuid not null references spaces (id) on delete cascade,
@@ -33,7 +37,12 @@ create table itineraries (
   status text not null default 'planned' check (status in ('planned', 'completed')),
   skin text not null default 'strawberry'
     check (skin in ('strawberry', 'retro', 'scrapbook', 'loveletter')),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users (id),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id),
+  deleted_at timestamptz,
+  deleted_by uuid references auth.users (id)
 );
 
 create table stops (
@@ -47,7 +56,13 @@ create table stops (
   lat double precision,
   lng double precision,
   travel_minutes_to_next int,
-  travel_mode_to_next text check (travel_mode_to_next in ('drive', 'walk'))
+  travel_mode_to_next text check (travel_mode_to_next in ('drive', 'walk')),
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users (id),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id),
+  deleted_at timestamptz,
+  deleted_by uuid references auth.users (id)
 );
 
 create table expenses (
@@ -58,7 +73,12 @@ create table expenses (
   spent_on date not null,
   amount numeric(10, 2) not null,
   receipt_path text,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users (id),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id),
+  deleted_at timestamptz,
+  deleted_by uuid references auth.users (id)
 );
 
 create table photos (
@@ -68,7 +88,12 @@ create table photos (
   storage_path text not null,
   caption text not null default '',
   taken_on date not null default current_date,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users (id),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id),
+  deleted_at timestamptz,
+  deleted_by uuid references auth.users (id)
 );
 
 create table venues (
@@ -80,7 +105,12 @@ create table venues (
   fave boolean not null default false,
   lat double precision,
   lng double precision,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users (id),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id),
+  deleted_at timestamptz,
+  deleted_by uuid references auth.users (id)
 );
 
 create table venue_notes (
@@ -88,8 +118,35 @@ create table venue_notes (
   venue_id uuid not null references venues (id) on delete cascade,
   author uuid not null references auth.users (id),
   text text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users (id),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id),
+  deleted_at timestamptz,
+  deleted_by uuid references auth.users (id)
 );
+
+-- Keep updated_at current on every row update.
+create or replace function set_updated_at () returns trigger
+language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create trigger itineraries_set_updated_at before update on itineraries
+  for each row execute function set_updated_at ();
+create trigger stops_set_updated_at before update on stops
+  for each row execute function set_updated_at ();
+create trigger expenses_set_updated_at before update on expenses
+  for each row execute function set_updated_at ();
+create trigger photos_set_updated_at before update on photos
+  for each row execute function set_updated_at ();
+create trigger venues_set_updated_at before update on venues
+  for each row execute function set_updated_at ();
+create trigger venue_notes_set_updated_at before update on venue_notes
+  for each row execute function set_updated_at ();
 
 -- Row level security: members of a space see only their space's rows.
 create or replace function is_space_member (target uuid) returns boolean

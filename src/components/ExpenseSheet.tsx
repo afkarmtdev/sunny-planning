@@ -220,7 +220,7 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
       <ConfirmDialog
         open={confirmDelete}
         title="Delete this expense?"
-        message="This cannot be undone."
+        message="You can restore it from Recently deleted for 30 days."
         confirmLabel="Delete"
         cancelLabel="Keep"
         tone="danger"

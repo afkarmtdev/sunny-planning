@@ -2,11 +2,23 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Expense, Itinerary, Photo, SkinId, Stop, Venue, VenueNote, VenueRating } from "../lib/types";
 import { itineraryTotal } from "../lib/derive";
-import { addDaysISO, todayISO } from "../lib/dates";
+import { addDaysISO, nowISO, todayISO } from "../lib/dates";
 import { deleteReceipt } from "../lib/receipts";
 import { demoInviteCode, demoItineraries, demoPhotos, demoVenues } from "../data/demo";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
+
+// How long a soft-deleted expense lingers in Recently deleted before it is
+// purged for good on app load.
+const RECENTLY_DELETED_DAYS = 30;
+
+// Audit stamps. createdBy / updatedBy / deletedBy stay unset until auth
+// (Milestone 4) supplies the acting member; the timestamps are live now.
+const createdAudit = () => {
+  const at = nowISO();
+  return { createdAt: at, updatedAt: at };
+};
+const touchedAudit = () => ({ updatedAt: nowISO() });
 
 type DayOf = {
   itineraryId: string | null;
@@ -52,7 +64,12 @@ type AppState = {
 
   addExpense: (itineraryId: string, expense: Omit<Expense, "id" | "createdISO">) => void;
   updateExpense: (itineraryId: string, expenseId: string, patch: Partial<Omit<Expense, "id">>) => void;
+  /** Soft-delete: marks the expense deleted (recoverable) instead of removing it. */
   removeExpense: (itineraryId: string, expenseId: string) => void;
+  /** Undo a soft-delete, bringing the expense back into every total. */
+  restoreExpense: (itineraryId: string, expenseId: string) => void;
+  /** Hard-remove expenses soft-deleted over 30 days ago; called on app load. */
+  purgeDeletedExpenses: () => void;
 
   syncDayOf: (itineraryId: string | null) => void;
   advanceDay: () => void;
@@ -86,7 +103,9 @@ function patchItinerary(
   id: string,
   fn: (it: Itinerary) => Itinerary
 ): Itinerary[] {
-  return itineraries.map((it) => (it.id === id ? fn(it) : it));
+  // Any patch to an itinerary (its own fields, a stop, or an expense) counts
+  // as touching it, so bump updatedAt centrally here.
+  return itineraries.map((it) => (it.id === id ? { ...fn(it), ...touchedAudit() } : it));
 }
 
 /** Find a venue by case-insensitive name match. */
@@ -108,7 +127,7 @@ function linkStopsToVenues(stops: Stop[], venues: Venue[]): { stops: Stop[]; new
     }
     const existing = findVenueByName(stop.name, venues) ?? findVenueByName(stop.name, newVenues);
     if (existing) return { ...stop, venueId: existing.id };
-    const created: Venue = { id: `vn-${uid()}`, name: stop.name, category: "Spot", ratings: [], fave: false, notes: [] };
+    const created: Venue = { id: `vn-${uid()}`, name: stop.name, category: "Spot", ratings: [], fave: false, notes: [], ...createdAudit() };
     newVenues.push(created);
     return { ...stop, venueId: created.id };
   });
@@ -143,6 +162,7 @@ export const useApp = create<AppState>()(
           skin: "strawberry",
           status: "planned",
           draft: true,
+          ...createdAudit(),
         };
         set(() => ({ itineraries: [fresh, ...kept] }));
         return id;
@@ -225,7 +245,7 @@ export const useApp = create<AppState>()(
           return {
             itineraries: patchItinerary(s.itineraries, itineraryId, (it) => ({
               ...it,
-              stops: [...it.stops, { ...stop, venueId, id: `st-${uid()}` }],
+              stops: [...it.stops, { ...stop, venueId, id: `st-${uid()}`, ...createdAudit() }],
             })),
           };
         }),
@@ -236,7 +256,7 @@ export const useApp = create<AppState>()(
             ...it,
             stops: it.stops.map((st) => {
               if (st.id !== stopId) return st;
-              const merged = { ...st, ...patch };
+              const merged = { ...st, ...patch, ...touchedAudit() };
               // The patch did not carry an explicit venue link: fall back to a
               // case-insensitive name match so a manually typed exact name
               // still ties back to its venue.
@@ -276,7 +296,10 @@ export const useApp = create<AppState>()(
         set((s) => ({
           itineraries: patchItinerary(s.itineraries, itineraryId, (it) => ({
             ...it,
-            expenses: [...(it.expenses ?? []), { ...expense, id: `ex-${uid()}`, createdISO: todayISO() }],
+            expenses: [
+              ...(it.expenses ?? []),
+              { ...expense, id: `ex-${uid()}`, createdISO: todayISO(), ...createdAudit() },
+            ],
           })),
         })),
 
@@ -284,20 +307,55 @@ export const useApp = create<AppState>()(
         set((s) => ({
           itineraries: patchItinerary(s.itineraries, itineraryId, (it) => ({
             ...it,
-            expenses: (it.expenses ?? []).map((ex) => (ex.id === expenseId ? { ...ex, ...patch } : ex)),
+            expenses: (it.expenses ?? []).map((ex) =>
+              ex.id === expenseId ? { ...ex, ...patch, ...touchedAudit() } : ex
+            ),
           })),
         })),
 
-      removeExpense: (itineraryId, expenseId) => {
-        const it = get().itineraries.find((x) => x.id === itineraryId);
-        const expense = it?.expenses?.find((ex) => ex.id === expenseId);
-        if (expense?.receiptId) void deleteReceipt(expense.receiptId);
+      // Soft-delete: the row stays (recoverable from Recently deleted), so its
+      // receipt is kept too; the blob is only dropped when purge hard-removes it.
+      removeExpense: (itineraryId, expenseId) =>
         set((s) => ({
           itineraries: patchItinerary(s.itineraries, itineraryId, (x) => ({
             ...x,
-            expenses: (x.expenses ?? []).filter((ex) => ex.id !== expenseId),
+            expenses: (x.expenses ?? []).map((ex) =>
+              ex.id === expenseId ? { ...ex, deletedAt: nowISO(), ...touchedAudit() } : ex
+            ),
           })),
+        })),
+
+      restoreExpense: (itineraryId, expenseId) =>
+        set((s) => ({
+          itineraries: patchItinerary(s.itineraries, itineraryId, (x) => ({
+            ...x,
+            expenses: (x.expenses ?? []).map((ex) =>
+              ex.id === expenseId
+                ? { ...ex, deletedAt: undefined, deletedBy: undefined, ...touchedAudit() }
+                : ex
+            ),
+          })),
+        })),
+
+      purgeDeletedExpenses: () => {
+        const cutoffMs = Date.now() - RECENTLY_DELETED_DAYS * 24 * 60 * 60 * 1000;
+        const orphanedReceipts: string[] = [];
+        set((s) => ({
+          itineraries: s.itineraries.map((it) => {
+            const expenses = it.expenses;
+            if (!expenses?.some((ex) => ex.deletedAt)) return it;
+            const kept = expenses.filter((ex) => {
+              if (ex.deletedAt && new Date(ex.deletedAt).getTime() < cutoffMs) {
+                if (ex.receiptId) orphanedReceipts.push(ex.receiptId);
+                return false;
+              }
+              return true;
+            });
+            // A system cleanup, not a user edit, so do not bump updatedAt.
+            return kept.length === expenses.length ? it : { ...it, expenses: kept };
+          }),
         }));
+        for (const receiptId of orphanedReceipts) void deleteReceipt(receiptId);
       },
 
       syncDayOf: (itineraryId) => {
@@ -344,13 +402,18 @@ export const useApp = create<AppState>()(
         }));
       },
 
-      addPhoto: (photo) => set((s) => ({ photos: [{ ...photo, id: `ph-${uid()}` }, ...s.photos] })),
+      addPhoto: (photo) =>
+        set((s) => ({ photos: [{ ...photo, id: `ph-${uid()}`, ...createdAudit() }, ...s.photos] })),
 
       updatePhotoCaption: (id, caption) =>
-        set((s) => ({ photos: s.photos.map((p) => (p.id === id ? { ...p, caption } : p)) })),
+        set((s) => ({
+          photos: s.photos.map((p) => (p.id === id ? { ...p, caption, ...touchedAudit() } : p)),
+        })),
 
       updatePhotoStop: (id, stopId) =>
-        set((s) => ({ photos: s.photos.map((p) => (p.id === id ? { ...p, stopId } : p)) })),
+        set((s) => ({
+          photos: s.photos.map((p) => (p.id === id ? { ...p, stopId, ...touchedAudit() } : p)),
+        })),
 
       rateVenue: (venueId, rating, visit) =>
         set((s) => ({
@@ -360,8 +423,14 @@ export const useApp = create<AppState>()(
               const idx = v.ratings.findIndex((r) => r.itineraryId === visit.itineraryId);
               if (idx >= 0) {
                 const ratings = [...v.ratings];
-                ratings[idx] = { ...ratings[idx], rating, stopId: visit.stopId, dateISO: visit.dateISO };
-                return { ...v, ratings };
+                ratings[idx] = {
+                  ...ratings[idx],
+                  rating,
+                  stopId: visit.stopId,
+                  dateISO: visit.dateISO,
+                  ...touchedAudit(),
+                };
+                return { ...v, ratings, ...touchedAudit() };
               }
               const entry: VenueRating = {
                 id: `vr-${uid()}`,
@@ -369,8 +438,9 @@ export const useApp = create<AppState>()(
                 itineraryId: visit.itineraryId,
                 stopId: visit.stopId,
                 dateISO: visit.dateISO,
+                ...createdAudit(),
               };
-              return { ...v, ratings: [...v.ratings, entry] };
+              return { ...v, ratings: [...v.ratings, entry], ...touchedAudit() };
             }
             // No visit context: a manual rating from the card, dated today.
             // Re-rating later the same day updates that entry in place.
@@ -378,29 +448,37 @@ export const useApp = create<AppState>()(
             const idx = v.ratings.findIndex((r) => !r.itineraryId && r.dateISO === today);
             if (idx >= 0) {
               const ratings = [...v.ratings];
-              ratings[idx] = { ...ratings[idx], rating };
-              return { ...v, ratings };
+              ratings[idx] = { ...ratings[idx], rating, ...touchedAudit() };
+              return { ...v, ratings, ...touchedAudit() };
             }
-            return { ...v, ratings: [...v.ratings, { id: `vr-${uid()}`, rating, dateISO: today }] };
+            return {
+              ...v,
+              ratings: [...v.ratings, { id: `vr-${uid()}`, rating, dateISO: today, ...createdAudit() }],
+              ...touchedAudit(),
+            };
           }),
         })),
 
       toggleFave: (id) =>
-        set((s) => ({ venues: s.venues.map((v) => (v.id === id ? { ...v, fave: !v.fave } : v)) })),
+        set((s) => ({
+          venues: s.venues.map((v) => (v.id === id ? { ...v, fave: !v.fave, ...touchedAudit() } : v)),
+        })),
 
       addVenueNote: (id, note) =>
         set((s) => ({
-          venues: s.venues.map((v) => (v.id === id ? { ...v, notes: [...v.notes, note] } : v)),
+          venues: s.venues.map((v) =>
+            v.id === id ? { ...v, notes: [...v.notes, { ...note, ...createdAudit() }], ...touchedAudit() } : v
+          ),
         })),
 
       setVenueCategory: (id, category) =>
         set((s) => ({
-          venues: s.venues.map((v) => (v.id === id ? { ...v, category } : v)),
+          venues: s.venues.map((v) => (v.id === id ? { ...v, category, ...touchedAudit() } : v)),
         })),
     }),
     {
       name: "sunny-planning-v1",
-      version: 4,
+      version: 5,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as {
           itineraries?: Itinerary[];
@@ -434,6 +512,35 @@ export const useApp = create<AppState>()(
           const legacyRating = typeof v.rating === "number" ? v.rating : 0;
           v.ratings = legacyRating > 0 ? [{ id: `vr-legacy-${v.id}`, rating: legacyRating }] : [];
           delete v.rating;
+        }
+
+        // v5: audit trail. Backfill created/updated timestamps on pre-audit
+        // records, best-effort from the date the record already carried, so the
+        // history is not blank. createdBy / updatedBy stay unset until auth.
+        const backfill = (rec: Record<string, unknown> | undefined, seedISO?: string) => {
+          if (!rec) return;
+          const seed = seedISO ? `${seedISO}T00:00:00.000Z` : undefined;
+          if (rec.createdAt == null && seed) rec.createdAt = seed;
+          if (rec.updatedAt == null) rec.updatedAt = (rec.createdAt as string) ?? seed;
+        };
+        for (const it of itineraries as Array<Record<string, unknown>>) {
+          const dateISO = typeof it?.dateISO === "string" ? it.dateISO : undefined;
+          backfill(it, dateISO);
+          for (const st of (Array.isArray(it?.stops) ? it.stops : []) as Array<Record<string, unknown>>) {
+            backfill(st, dateISO);
+          }
+          for (const ex of (Array.isArray(it?.expenses) ? it.expenses : []) as Array<Record<string, unknown>>) {
+            backfill(ex, typeof ex?.createdISO === "string" ? ex.createdISO : dateISO);
+          }
+        }
+        for (const v of venues as Array<Record<string, unknown>>) {
+          backfill(v);
+          for (const note of (Array.isArray(v?.notes) ? v.notes : []) as Array<Record<string, unknown>>) {
+            backfill(note);
+          }
+          for (const r of (Array.isArray(v?.ratings) ? v.ratings : []) as Array<Record<string, unknown>>) {
+            backfill(r, typeof r?.dateISO === "string" ? r.dateISO : undefined);
+          }
         }
 
         const { expenses: _expenses, ...rest } = state;

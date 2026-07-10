@@ -11,6 +11,11 @@ export function todayISO(): string {
   return toISODate(new Date());
 }
 
+/** Full ISO datetime for audit timestamps (createdAt / updatedAt / deletedAt). */
+export function nowISO(): string {
+  return new Date().toISOString();
+}
+
 export function parseISO(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, m - 1, d);

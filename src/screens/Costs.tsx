@@ -4,8 +4,9 @@ import { colors, fonts } from "../theme/tokens.stylex";
 import { Screen } from "../components/Screen";
 import { StatTile } from "../components/StatTile";
 import { DateSpendSheet } from "../components/DateSpendSheet";
+import { JellyButton } from "../components/JellyButton";
 import { useApp } from "../store/useApp";
-import { completedDates, monthStats } from "../lib/derive";
+import { completedDates, deletedExpenses, monthStats } from "../lib/derive";
 import { addMonths, isSameMonth, monthLabel, shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
 
@@ -208,10 +209,46 @@ const styles = stylex.create({
     fontSize: 14,
     color: colors.ink,
   },
+  deletedRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    backgroundColor: colors.white,
+    borderWidth: 3,
+    borderStyle: "dashed",
+    borderColor: colors.ink,
+    borderRadius: 14,
+    paddingBlock: 10,
+    paddingInline: 14,
+    opacity: 0.85,
+  },
+  deletedLabel: {
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 13,
+    color: colors.ink,
+    textDecorationLine: "line-through",
+    textDecorationColor: "rgba(51,43,51,0.5)",
+  },
+  deletedMeta: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    color: colors.ink,
+    opacity: 0.55,
+  },
+  restoreBtn: {
+    fontSize: 11,
+    paddingBlock: 6,
+    paddingInline: 12,
+    flexShrink: 0,
+  },
 });
 
 export function Costs() {
   const itineraries = useApp((s) => s.itineraries);
+  const restoreExpense = useApp((s) => s.restoreExpense);
+  const deleted = deletedExpenses(itineraries);
   const [monthOffset, setMonthOffset] = useState(0);
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -315,6 +352,33 @@ export function Costs() {
         >
           Show more
         </button>
+      )}
+
+      {deleted.length > 0 && (
+        <>
+          <div {...stylex.props(styles.sectionTitle)}>Recently deleted</div>
+          <div {...stylex.props(styles.list)}>
+            {deleted.map((d) => (
+              <div key={d.expense.id} {...stylex.props(styles.deletedRow)}>
+                <div>
+                  <div {...stylex.props(styles.deletedLabel)}>
+                    {d.expense.label} · {rm(d.expense.amount)}
+                  </div>
+                  <div {...stylex.props(styles.deletedMeta)}>
+                    {d.itineraryTitle} · {shortDate(d.dateISO)}
+                  </div>
+                </div>
+                <JellyButton
+                  variant="white"
+                  xstyle={styles.restoreBtn}
+                  onClick={() => restoreExpense(d.itineraryId, d.expense.id)}
+                >
+                  Restore
+                </JellyButton>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <DateSpendSheet itinerary={selectedItinerary} onClose={() => setSelectedId(null)} />

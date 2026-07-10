@@ -1,4 +1,4 @@
-import type { Itinerary, Photo, Venue } from "./types";
+import type { Expense, Itinerary, Photo, Venue } from "./types";
 import { daysAgo, isSameMonth, parseISO, todayISO, weekStart } from "./dates";
 
 /** Planned estimate: sum of stop costs. */
@@ -6,14 +6,39 @@ export function itineraryTotal(it: Itinerary): number {
   return it.stops.reduce((sum, s) => sum + (s.cost || 0), 0);
 }
 
-/** Sum of logged expense line items. */
-export function expensesTotal(it: Itinerary): number {
-  return (it.expenses ?? []).reduce((sum, ex) => sum + (ex.amount || 0), 0);
+/** Live (not soft-deleted) expenses for a date. */
+export function activeExpenses(it: Itinerary): Expense[] {
+  return (it.expenses ?? []).filter((ex) => !ex.deletedAt);
 }
 
-/** True once any real spend has been logged for this date. */
+/** Sum of logged expense line items, ignoring soft-deleted ones. */
+export function expensesTotal(it: Itinerary): number {
+  return activeExpenses(it).reduce((sum, ex) => sum + (ex.amount || 0), 0);
+}
+
+/** True once any real (non-deleted) spend has been logged for this date. */
 export function hasActuals(it: Itinerary): boolean {
-  return (it.expenses ?? []).length > 0;
+  return activeExpenses(it).length > 0;
+}
+
+export type DeletedExpense = {
+  expense: Expense;
+  itineraryId: string;
+  itineraryTitle: string;
+  dateISO: string;
+};
+
+/** Every soft-deleted expense across all dates, most recently deleted first. */
+export function deletedExpenses(itineraries: Itinerary[]): DeletedExpense[] {
+  const rows: DeletedExpense[] = [];
+  for (const it of itineraries) {
+    for (const ex of it.expenses ?? []) {
+      if (ex.deletedAt) {
+        rows.push({ expense: ex, itineraryId: it.id, itineraryTitle: it.title, dateISO: it.dateISO });
+      }
+    }
+  }
+  return rows.sort((a, b) => (b.expense.deletedAt ?? "").localeCompare(a.expense.deletedAt ?? ""));
 }
 
 /**

@@ -1,5 +1,26 @@
 export type TravelMode = "drive" | "walk";
 
+/**
+ * Audit trail carried by every stored record. Timestamps are ISO datetimes,
+ * stamped on every write now. createdBy / updatedBy are the acting member's id
+ * and stay unset until auth lands (Milestone 4) and there is a session to read
+ * the actor from; the fields exist now so sync carries them without a later
+ * migration. All optional so pre-audit demo and persisted rows still typecheck;
+ * new writes always set the timestamps.
+ */
+export type Audit = {
+  createdAt?: string;
+  createdBy?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+};
+
+/** Soft-deletion marker; deletedBy fills in with auth, like Audit's *By. */
+export type SoftDelete = {
+  deletedAt?: string;
+  deletedBy?: string;
+};
+
 export type Stop = {
   id: string;
   name: string;
@@ -12,7 +33,7 @@ export type Stop = {
   travelMinutesToNext?: number;
   travelModeToNext?: TravelMode;
   venueId?: string;
-};
+} & Audit;
 
 export type SkinId = "strawberry" | "retro" | "scrapbook" | "loveletter";
 
@@ -25,7 +46,7 @@ export type Expense = {
   /** Receipt image in the IndexedDB receipt store. */
   receiptId?: string;
   createdISO: string;
-};
+} & Audit & SoftDelete;
 
 export type Itinerary = {
   id: string;
@@ -43,7 +64,7 @@ export type Itinerary = {
    * expenses existed. Superseded by `expenses` when any are logged.
    */
   actualTotal?: number;
-};
+} & Audit;
 
 export type Photo = {
   id: string;
@@ -60,14 +81,14 @@ export type Photo = {
   rot: number;
   tape?: "lavender" | "pink" | null;
   dot?: boolean;
-};
+} & Audit;
 
 export type PartnerId = "Y" | "P";
 
 export type VenueNote = {
   author: PartnerId;
   text: string;
-};
+} & Audit;
 
 export type VenueRating = {
   id: string;
@@ -77,7 +98,7 @@ export type VenueRating = {
   stopId?: string;
   /** Day the rating applies to; absent only for legacy migrated ratings. */
   dateISO?: string;
-};
+} & Audit;
 
 export type Venue = {
   id: string;
@@ -86,7 +107,7 @@ export type Venue = {
   ratings: VenueRating[];
   fave: boolean;
   notes: VenueNote[];
-};
+} & Audit;
 
 export const SKIN_NAMES: Record<SkinId, string> = {
   strawberry: "Strawberry Milk",
