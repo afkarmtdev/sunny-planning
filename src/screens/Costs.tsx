@@ -1,16 +1,31 @@
 import * as stylex from "@stylexjs/stylex";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { Screen } from "../components/Screen";
 import { StatTile } from "../components/StatTile";
-import { SunnySprite } from "../components/SunnySprite";
+import { DateSpendSheet } from "../components/DateSpendSheet";
 import { useApp } from "../store/useApp";
-import { monthStats } from "../lib/derive";
-import { shortDate } from "../lib/dates";
+import { completedDates, monthStats } from "../lib/derive";
+import { addMonths, isSameMonth, monthLabel, shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
-import { fileToDataUrl } from "../lib/images";
+
+const PAGE_SIZE = 8;
 
 const styles = stylex.create({
+  // Pinned above the scrolling date list; owns the page background so rows
+  // slide underneath instead of showing through.
+  stickyHead: {
+    position: "sticky",
+    top: 0,
+    zIndex: 5,
+    backgroundColor: colors.cream,
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    paddingTop: 12,
+    marginTop: -12,
+    paddingBottom: 2,
+  },
   title: {
     fontFamily: fonts.display,
     fontWeight: 800,
@@ -33,6 +48,12 @@ const styles = stylex.create({
   },
   hudRow: {
     position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  hudMain: {
     display: "flex",
     alignItems: "center",
     gap: 12,
@@ -79,6 +100,36 @@ const styles = stylex.create({
     color: colors.cream,
     letterSpacing: 1,
   },
+  monthNav: {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    flexShrink: 0,
+  },
+  monthBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: "50%",
+    backgroundColor: colors.cream,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 14,
+    color: colors.ink,
+    lineHeight: 1,
+    transform: { default: "translateY(0)", ":active": "translateY(2px)" },
+  },
+  monthBtnDisabled: {
+    opacity: 0.35,
+    cursor: "default",
+    transform: "translateY(0)",
+  },
   statRow: {
     display: "flex",
     gap: 8,
@@ -107,6 +158,9 @@ const styles = stylex.create({
     borderRadius: 14,
     paddingBlock: 10,
     paddingInline: 14,
+    width: "100%",
+    textAlign: "left",
+    cursor: "pointer",
   },
   rowLabel: {
     fontFamily: fonts.display,
@@ -126,130 +180,144 @@ const styles = stylex.create({
     color: colors.marmalade,
     flexShrink: 0,
   },
-  dropZone: {
+  showMore: {
     borderWidth: 3,
     borderStyle: "dashed",
-    borderColor: "rgba(51,43,51,0.4)",
+    borderColor: colors.ink,
+    opacity: 0.45,
     borderRadius: 16,
-    backgroundColor: colors.cream,
-    minHeight: 140,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
     padding: 14,
-    cursor: "pointer",
-    width: "100%",
-  },
-  dropTitle: {
+    textAlign: "center",
     fontFamily: fonts.display,
     fontWeight: 700,
     fontSize: 13,
-    color: "rgba(51,43,51,0.8)",
+    color: colors.ink,
+    width: "100%",
+    cursor: "pointer",
   },
-  dropSub: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    color: "rgba(51,43,51,0.5)",
-    marginTop: 2,
-  },
-  dropSaved: {
-    fontFamily: fonts.hand,
-    fontSize: 13,
-    color: colors.heartPop,
-    marginTop: 2,
-  },
-  hiddenInput: {
-    display: "none",
+  emptyMonth: {
+    borderWidth: 3,
+    borderStyle: "dashed",
+    borderColor: colors.ink,
+    opacity: 0.6,
+    borderRadius: 16,
+    padding: 16,
+    textAlign: "center",
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 14,
+    color: colors.ink,
   },
 });
 
 export function Costs() {
-  const expenses = useApp((s) => s.expenses);
-  const attachReceipt = useApp((s) => s.attachReceipt);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [savedTo, setSavedTo] = useState<string | null>(null);
+  const itineraries = useApp((s) => s.itineraries);
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedItinerary = itineraries.find((it) => it.id === selectedId) ?? null;
 
-  const { total, count, avg } = monthStats(expenses);
-  const recent = [...expenses].sort((a, b) => b.dateISO.localeCompare(a.dateISO)).slice(0, 8);
+  const refDate = addMonths(new Date(), monthOffset);
+  const { total, count, avg } = monthStats(itineraries, refDate);
+  const dates = completedDates(itineraries).filter((d) => isSameMonth(d.dateISO, refDate));
+  const shown = dates.slice(0, visible);
+  const hasMore = dates.length > shown.length;
 
-  const handleFile = async (file: File | undefined) => {
-    if (!file) return;
-    try {
-      const dataUrl = await fileToDataUrl(file, 1100);
-      const expense = attachReceipt(dataUrl);
-      setSavedTo(expense ? expense.label : null);
-      setTimeout(() => setSavedTo(null), 2600);
-    } catch {
-      setSavedTo(null);
-    }
+  const changeMonth = (delta: number) => {
+    if (delta > 0 && monthOffset >= 0) return;
+    setMonthOffset((m) => m + delta);
+    setVisible(PAGE_SIZE);
   };
+
+  const isCurrentMonth = monthOffset === 0;
 
   return (
     <Screen gap={14}>
-      <div {...stylex.props(styles.title)}>Cost Tracker</div>
+      <div {...stylex.props(styles.stickyHead)}>
+        <div {...stylex.props(styles.title)}>Cost Tracker</div>
 
-      <div {...stylex.props(styles.hud)}>
+        <div {...stylex.props(styles.hud)}>
         <div {...stylex.props(styles.hudScanlines)} />
         <div {...stylex.props(styles.hudRow)}>
-          <div {...stylex.props(styles.coin)} aria-hidden>
-            <div {...stylex.props(styles.coinRing)} />
-            <div {...stylex.props(styles.coinHeart)} />
+          <div {...stylex.props(styles.hudMain)}>
+            <div {...stylex.props(styles.coin)} aria-hidden>
+              <div {...stylex.props(styles.coinRing)} />
+              <div {...stylex.props(styles.coinHeart)} />
+            </div>
+            <div>
+              <div {...stylex.props(styles.hudLabel)}>
+                {isCurrentMonth ? "THIS MONTH" : monthLabel(refDate).toUpperCase()}
+              </div>
+              <div {...stylex.props(styles.hudValue)}>{rm(total)}</div>
+            </div>
           </div>
-          <div>
-            <div {...stylex.props(styles.hudLabel)}>THIS MONTH</div>
-            <div {...stylex.props(styles.hudValue)}>{rm(total)}</div>
+          <div {...stylex.props(styles.monthNav)}>
+            <button
+              type="button"
+              aria-label="Previous month"
+              onClick={() => changeMonth(-1)}
+              {...stylex.props(styles.monthBtn)}
+            >
+              &lt;
+            </button>
+            <button
+              type="button"
+              aria-label="Next month"
+              disabled={isCurrentMonth}
+              onClick={() => changeMonth(1)}
+              {...stylex.props(styles.monthBtn, isCurrentMonth && styles.monthBtnDisabled)}
+            >
+              &gt;
+            </button>
           </div>
         </div>
       </div>
 
-      <div {...stylex.props(styles.statRow)}>
-        <StatTile value={rm(avg)} label="avg per date" />
-        <StatTile value={String(count)} label="dates this month" />
+        <div {...stylex.props(styles.statRow)}>
+          <StatTile value={rm(avg)} label="avg per date" />
+          <StatTile value={String(count)} label="dates this month" />
+        </div>
+
+        <div {...stylex.props(styles.sectionTitle)}>
+          {isCurrentMonth ? "Dates this month" : `Dates in ${monthLabel(refDate)}`}
+        </div>
       </div>
 
-      <div {...stylex.props(styles.sectionTitle)}>Recent dates</div>
+      {dates.length === 0 ? (
+        <div {...stylex.props(styles.emptyMonth)}>No dates logged this month.</div>
+      ) : (
+        <div {...stylex.props(styles.list)}>
+          {shown.map((d) => (
+            <button
+              key={d.id}
+              type="button"
+              {...stylex.props(styles.row)}
+              onClick={() => setSelectedId(d.id)}
+            >
+              <div>
+                <div {...stylex.props(styles.rowLabel)}>{d.label}</div>
+                <div {...stylex.props(styles.rowDate)}>{shortDate(d.dateISO)}</div>
+              </div>
+              <div {...stylex.props(styles.rowAmount)}>
+                {d.isEstimate ? "~" : ""}
+                {rm(d.amount)}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div {...stylex.props(styles.list)}>
-        {recent.map((e) => (
-          <div key={e.id} {...stylex.props(styles.row)}>
-            <div>
-              <div {...stylex.props(styles.rowLabel)}>{e.label}</div>
-              <div {...stylex.props(styles.rowDate)}>{shortDate(e.dateISO)}</div>
-            </div>
-            <div {...stylex.props(styles.rowAmount)}>{rm(e.amount)}</div>
-          </div>
-        ))}
-      </div>
+      {hasMore && (
+        <button
+          type="button"
+          {...stylex.props(styles.showMore)}
+          onClick={() => setVisible((v) => v + PAGE_SIZE)}
+        >
+          Show more
+        </button>
+      )}
 
-      <button
-        type="button"
-        {...stylex.props(styles.dropZone)}
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          void handleFile(e.dataTransfer.files[0]);
-        }}
-      >
-        <SunnySprite size={70} dim />
-        <div {...stylex.props(styles.dropTitle)}>Upload a receipt</div>
-        {savedTo ? (
-          <div {...stylex.props(styles.dropSaved)}>saved to "{savedTo}"</div>
-        ) : (
-          <div {...stylex.props(styles.dropSub)}>Drag it here or tap to browse</div>
-        )}
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        {...stylex.props(styles.hiddenInput)}
-        onChange={(e) => {
-          void handleFile(e.target.files?.[0]);
-          e.target.value = "";
-        }}
-      />
+      <DateSpendSheet itinerary={selectedItinerary} onClose={() => setSelectedId(null)} />
     </Screen>
   );
 }
