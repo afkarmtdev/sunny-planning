@@ -23,8 +23,38 @@ const styles = stylex.create({
     position: "relative",
     overflow: "hidden",
   },
+  photoBoxClickable: {
+    cursor: "zoom-in",
+  },
   photoLarge: { height: 150 },
   photoSmall: { height: 104 },
+  label: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    maxWidth: "calc(100% - 12px)",
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 10,
+    lineHeight: 1.2,
+    color: colors.ink,
+    backgroundColor: colors.cream,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    borderRadius: 999,
+    paddingBlock: 2,
+    paddingInline: 8,
+    boxShadow: "1px 1px 0 0 #332B33",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    pointerEvents: "none",
+  },
+  labelSmall: {
+    fontSize: 8.5,
+    paddingInline: 6,
+  },
   img: {
     width: "100%",
     height: "100%",
@@ -196,9 +226,13 @@ type Props = {
   photo: Photo;
   size?: "large" | "small";
   onCaption?: (caption: string) => void;
+  /** Itinerary title shown as a chip on the photo, tying it to its date. */
+  label?: string;
+  /** When set, the photo becomes clickable to open the enlarged view. */
+  onEnlarge?: () => void;
 };
 
-export function Polaroid({ photo, size = "large", onCaption }: Props) {
+export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(photo.caption);
 
@@ -207,18 +241,28 @@ export function Polaroid({ photo, size = "large", onCaption }: Props) {
     if (onCaption && draft !== photo.caption) onCaption(draft);
   };
 
+  const small = size === "small";
+
   return (
-    <div {...stylex.props(styles.frame(photo.rot), size === "large" ? styles.large : styles.small)}>
+    <div {...stylex.props(styles.frame(photo.rot), small ? styles.small : styles.large)}>
       {photo.tape === "lavender" && <WashiTape w={56} h={20} rot={-6} color="lavender" xstyle={tapePos.large} />}
       {photo.tape === "pink" && <WashiTape w={50} h={16} rot={4} color="pink" xstyle={tapePos.small} />}
       <div
-        {...stylex.props(styles.photoBox, size === "large" ? styles.photoLarge : styles.photoSmall)}
+        {...stylex.props(
+          styles.photoBox,
+          small ? styles.photoSmall : styles.photoLarge,
+          onEnlarge && styles.photoBoxClickable
+        )}
+        onClick={onEnlarge}
+        role={onEnlarge ? "button" : undefined}
+        aria-label={onEnlarge ? `Enlarge ${photo.caption || "photo"}` : undefined}
       >
         {photo.src ? (
           <img src={photo.src} alt={photo.caption || "date photo"} {...stylex.props(styles.img)} />
         ) : (
           <ArtPlaceholder variant={photo.art ?? 0} />
         )}
+        {label && <div {...stylex.props(styles.label, small && styles.labelSmall)}>{label}</div>}
       </div>
       {editing ? (
         <input
