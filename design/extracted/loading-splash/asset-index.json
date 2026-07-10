@@ -1,0 +1,1562 @@
+[
+  {
+    "uuid": "39270210-72ee-40bb-8b72-94d64d7a658a",
+    "mime": "image/png",
+    "bytes": 2823,
+    "file": "assets/39270210-72ee-40bb-8b72-94d64d7a658a.png",
+    "externalUrl": null,
+    "refsInTemplate": 3
+  },
+  {
+    "uuid": "044974ef-61ee-4893-90d5-b80d788a022e",
+    "mime": "text/javascript",
+    "bytes": 62106,
+    "file": "assets/044974ef-61ee-4893-90d5-b80d788a022e.js",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "727ffc95-7f55-4baf-b5ab-5bf542a50d8b",
+    "mime": "text/jsx",
+    "bytes": 16174,
+    "file": "assets/727ffc95-7f55-4baf-b5ab-5bf542a50d8b.bin",
+    "externalUrl": null,
+    "refsInTemplate": 3
+  },
+  {
+    "uuid": "bb1d6d97-dd88-4731-aa5e-65911c7c08c7",
+    "mime": "text/javascript",
+    "bytes": 10751,
+    "file": "assets/bb1d6d97-dd88-4731-aa5e-65911c7c08c7.js",
+    "externalUrl": "https://unpkg.com/react@18.3.1/umd/react.production.min.js",
+    "refsInTemplate": 0
+  },
+  {
+    "uuid": "35d1952b-10df-4f33-8e6c-b22f284637f6",
+    "mime": "text/javascript",
+    "bytes": 131835,
+    "file": "assets/35d1952b-10df-4f33-8e6c-b22f284637f6.js",
+    "externalUrl": "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js",
+    "refsInTemplate": 0
+  },
+  {
+    "uuid": "e75a48d5-946f-4c8a-977b-d985b7d3fd47",
+    "mime": "text/javascript",
+    "bytes": 3137752,
+    "file": "assets/e75a48d5-946f-4c8a-977b-d985b7d3fd47.js",
+    "externalUrl": "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js",
+    "refsInTemplate": 0
+  },
+  {
+    "uuid": "349cfb76-183e-462c-a52d-d315b9b280fb",
+    "mime": "font/woff2",
+    "bytes": 115148,
+    "file": "assets/349cfb76-183e-462c-a52d-d315b9b280fb.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "ae007eef-4514-4a78-af81-1c29ab0e2116",
+    "mime": "font/woff2",
+    "bytes": 9888,
+    "file": "assets/ae007eef-4514-4a78-af81-1c29ab0e2116.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "95cfe167-2fdb-42b4-9bb5-3fdf5a882bdb",
+    "mime": "font/woff2",
+    "bytes": 27384,
+    "file": "assets/95cfe167-2fdb-42b4-9bb5-3fdf5a882bdb.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "8cf0966d-ce57-4d62-82db-e65cc2c48660",
+    "mime": "font/woff2",
+    "bytes": 33188,
+    "file": "assets/8cf0966d-ce57-4d62-82db-e65cc2c48660.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "f4c6816c-601f-4e3d-801d-747015cee80c",
+    "mime": "font/woff2",
+    "bytes": 16400,
+    "file": "assets/f4c6816c-601f-4e3d-801d-747015cee80c.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "1b440363-5a19-4803-b27b-d86c774c9545",
+    "mime": "font/woff2",
+    "bytes": 7560,
+    "file": "assets/1b440363-5a19-4803-b27b-d86c774c9545.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "4ea433aa-5c01-4654-9d2b-304d26b47479",
+    "mime": "font/woff2",
+    "bytes": 9228,
+    "file": "assets/4ea433aa-5c01-4654-9d2b-304d26b47479.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "82400b50-fb41-4257-985a-0b6ac1d6e43e",
+    "mime": "font/woff2",
+    "bytes": 7676,
+    "file": "assets/82400b50-fb41-4257-985a-0b6ac1d6e43e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "3215e6e4-5934-44c3-ab1f-a70b5eed967a",
+    "mime": "font/woff2",
+    "bytes": 4864,
+    "file": "assets/3215e6e4-5934-44c3-ab1f-a70b5eed967a.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "44a40e08-3ad9-4c36-893b-e2f0404eca59",
+    "mime": "font/woff2",
+    "bytes": 7964,
+    "file": "assets/44a40e08-3ad9-4c36-893b-e2f0404eca59.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "97639f5c-ca5f-4ad9-a02d-b62f4ac126d6",
+    "mime": "font/woff2",
+    "bytes": 6644,
+    "file": "assets/97639f5c-ca5f-4ad9-a02d-b62f4ac126d6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f4812b94-dbfb-4776-9496-e8d481180bc8",
+    "mime": "font/woff2",
+    "bytes": 6372,
+    "file": "assets/f4812b94-dbfb-4776-9496-e8d481180bc8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "c8e7550e-a63e-4f4e-a18a-e8962e9ed8a8",
+    "mime": "font/woff2",
+    "bytes": 9092,
+    "file": "assets/c8e7550e-a63e-4f4e-a18a-e8962e9ed8a8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "56f3ecf1-8b1b-46bc-b4be-c8a06b5e56d6",
+    "mime": "font/woff2",
+    "bytes": 6296,
+    "file": "assets/56f3ecf1-8b1b-46bc-b4be-c8a06b5e56d6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "61327f96-a974-4ffa-ae07-2e7a2b497518",
+    "mime": "font/woff2",
+    "bytes": 6068,
+    "file": "assets/61327f96-a974-4ffa-ae07-2e7a2b497518.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "36d64e3e-13aa-4717-9fba-971535cc1cc6",
+    "mime": "font/woff2",
+    "bytes": 5412,
+    "file": "assets/36d64e3e-13aa-4717-9fba-971535cc1cc6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b9de7b3b-d4e3-4946-9154-2510568b40ea",
+    "mime": "font/woff2",
+    "bytes": 6344,
+    "file": "assets/b9de7b3b-d4e3-4946-9154-2510568b40ea.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "da47dfcb-3707-4b3e-906b-acb4482d2daa",
+    "mime": "font/woff2",
+    "bytes": 7176,
+    "file": "assets/da47dfcb-3707-4b3e-906b-acb4482d2daa.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "399b0d33-b508-454d-b54d-d690ac00b6ad",
+    "mime": "font/woff2",
+    "bytes": 5336,
+    "file": "assets/399b0d33-b508-454d-b54d-d690ac00b6ad.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "6002e1c8-0b58-4423-8a59-b58b3d40dbd5",
+    "mime": "font/woff2",
+    "bytes": 6680,
+    "file": "assets/6002e1c8-0b58-4423-8a59-b58b3d40dbd5.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "73cb8dee-03b1-42b2-aa27-91748ea01731",
+    "mime": "font/woff2",
+    "bytes": 5996,
+    "file": "assets/73cb8dee-03b1-42b2-aa27-91748ea01731.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "317a26f6-de4c-44d3-be8d-e19c6a598f46",
+    "mime": "font/woff2",
+    "bytes": 6092,
+    "file": "assets/317a26f6-de4c-44d3-be8d-e19c6a598f46.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "4654b171-5b84-41c8-9f8d-6e449d7a2837",
+    "mime": "font/woff2",
+    "bytes": 4492,
+    "file": "assets/4654b171-5b84-41c8-9f8d-6e449d7a2837.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5c588892-0a68-4620-a2e4-2a9a20491ee2",
+    "mime": "font/woff2",
+    "bytes": 7304,
+    "file": "assets/5c588892-0a68-4620-a2e4-2a9a20491ee2.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "fb4a4d52-1b1e-4d2c-8143-bb06a89fffa6",
+    "mime": "font/woff2",
+    "bytes": 5360,
+    "file": "assets/fb4a4d52-1b1e-4d2c-8143-bb06a89fffa6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5acb8936-1871-4d1a-a1e5-733be2d32db0",
+    "mime": "font/woff2",
+    "bytes": 6180,
+    "file": "assets/5acb8936-1871-4d1a-a1e5-733be2d32db0.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "8ae1b424-a403-40a0-ad3f-d25f5b49b6e7",
+    "mime": "font/woff2",
+    "bytes": 5796,
+    "file": "assets/8ae1b424-a403-40a0-ad3f-d25f5b49b6e7.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ae068716-ac1f-474d-904d-32b018363f45",
+    "mime": "font/woff2",
+    "bytes": 8108,
+    "file": "assets/ae068716-ac1f-474d-904d-32b018363f45.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "8de5ea52-3d5a-4272-8cca-ed8139149818",
+    "mime": "font/woff2",
+    "bytes": 7836,
+    "file": "assets/8de5ea52-3d5a-4272-8cca-ed8139149818.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "34cdece1-7945-4e7c-bac8-8a0f9f1fdbf3",
+    "mime": "font/woff2",
+    "bytes": 9100,
+    "file": "assets/34cdece1-7945-4e7c-bac8-8a0f9f1fdbf3.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "8e930dce-60c0-4941-9143-37c741e5e83c",
+    "mime": "font/woff2",
+    "bytes": 10244,
+    "file": "assets/8e930dce-60c0-4941-9143-37c741e5e83c.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "8bd3a23e-2c1f-4d45-9dce-7751515081ea",
+    "mime": "font/woff2",
+    "bytes": 7040,
+    "file": "assets/8bd3a23e-2c1f-4d45-9dce-7751515081ea.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "66abfbd5-bc99-44a9-8f58-5bec5580d748",
+    "mime": "font/woff2",
+    "bytes": 6412,
+    "file": "assets/66abfbd5-bc99-44a9-8f58-5bec5580d748.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5f40f93d-18e2-4c05-a4a5-ed4918cc39b5",
+    "mime": "font/woff2",
+    "bytes": 6796,
+    "file": "assets/5f40f93d-18e2-4c05-a4a5-ed4918cc39b5.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f1bebd4c-84dc-478d-b427-18894d9c09a7",
+    "mime": "font/woff2",
+    "bytes": 3960,
+    "file": "assets/f1bebd4c-84dc-478d-b427-18894d9c09a7.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "190c691d-aef4-4548-8319-cbbbb513c010",
+    "mime": "font/woff2",
+    "bytes": 6512,
+    "file": "assets/190c691d-aef4-4548-8319-cbbbb513c010.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "23375b7e-4e81-4151-ac4a-3ccb46653fa7",
+    "mime": "font/woff2",
+    "bytes": 7212,
+    "file": "assets/23375b7e-4e81-4151-ac4a-3ccb46653fa7.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "0839c981-6aab-4af8-906f-68bfc9111b47",
+    "mime": "font/woff2",
+    "bytes": 8360,
+    "file": "assets/0839c981-6aab-4af8-906f-68bfc9111b47.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7e0edb37-9029-407f-a019-b6f97a2de29e",
+    "mime": "font/woff2",
+    "bytes": 7764,
+    "file": "assets/7e0edb37-9029-407f-a019-b6f97a2de29e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "109cf70f-6408-464f-9986-33f491f6807f",
+    "mime": "font/woff2",
+    "bytes": 3424,
+    "file": "assets/109cf70f-6408-464f-9986-33f491f6807f.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "289c50a4-4e0c-4873-a80f-80fe71d5fbab",
+    "mime": "font/woff2",
+    "bytes": 6452,
+    "file": "assets/289c50a4-4e0c-4873-a80f-80fe71d5fbab.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "dae5a6b1-2767-478d-a18b-f8f972274650",
+    "mime": "font/woff2",
+    "bytes": 8492,
+    "file": "assets/dae5a6b1-2767-478d-a18b-f8f972274650.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a26e278a-5741-4e7e-9c06-75142f910dc5",
+    "mime": "font/woff2",
+    "bytes": 8184,
+    "file": "assets/a26e278a-5741-4e7e-9c06-75142f910dc5.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ef928630-7a79-4f18-8abc-607ab0be9459",
+    "mime": "font/woff2",
+    "bytes": 8344,
+    "file": "assets/ef928630-7a79-4f18-8abc-607ab0be9459.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ebdb00cc-efc3-49be-8cf9-06632b0a6517",
+    "mime": "font/woff2",
+    "bytes": 6880,
+    "file": "assets/ebdb00cc-efc3-49be-8cf9-06632b0a6517.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "bb77e4fb-b2d8-43c3-86e2-8aa64b68eedd",
+    "mime": "font/woff2",
+    "bytes": 8552,
+    "file": "assets/bb77e4fb-b2d8-43c3-86e2-8aa64b68eedd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "96d6c9d3-6512-4f72-9d8c-928e21cc3d01",
+    "mime": "font/woff2",
+    "bytes": 8940,
+    "file": "assets/96d6c9d3-6512-4f72-9d8c-928e21cc3d01.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "cb17e969-7fb0-4d5e-abe7-496fe77fba8a",
+    "mime": "font/woff2",
+    "bytes": 7792,
+    "file": "assets/cb17e969-7fb0-4d5e-abe7-496fe77fba8a.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "845d5c10-803e-4e79-a996-86e9464546ec",
+    "mime": "font/woff2",
+    "bytes": 5792,
+    "file": "assets/845d5c10-803e-4e79-a996-86e9464546ec.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7aebfbf3-de7f-45f3-a849-94c1c3903e61",
+    "mime": "font/woff2",
+    "bytes": 6808,
+    "file": "assets/7aebfbf3-de7f-45f3-a849-94c1c3903e61.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e3ba94e9-057f-4954-b740-38040c03af80",
+    "mime": "font/woff2",
+    "bytes": 5696,
+    "file": "assets/e3ba94e9-057f-4954-b740-38040c03af80.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "46aa113a-cbd4-42a1-9c2c-7870c5723164",
+    "mime": "font/woff2",
+    "bytes": 6124,
+    "file": "assets/46aa113a-cbd4-42a1-9c2c-7870c5723164.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "51c21851-d0a3-40a6-8abe-db1ea462cbb1",
+    "mime": "font/woff2",
+    "bytes": 6692,
+    "file": "assets/51c21851-d0a3-40a6-8abe-db1ea462cbb1.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "4f2d1ac5-94e0-4e4d-8e8b-b0fd7eb2b8d8",
+    "mime": "font/woff2",
+    "bytes": 4824,
+    "file": "assets/4f2d1ac5-94e0-4e4d-8e8b-b0fd7eb2b8d8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b3154de6-3585-4c06-87c5-cd77606f292d",
+    "mime": "font/woff2",
+    "bytes": 8156,
+    "file": "assets/b3154de6-3585-4c06-87c5-cd77606f292d.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "db0a3b80-d7f4-4347-8b72-2ce2788c1924",
+    "mime": "font/woff2",
+    "bytes": 8556,
+    "file": "assets/db0a3b80-d7f4-4347-8b72-2ce2788c1924.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "626e5b3e-255f-4a9e-854d-2661eac24c19",
+    "mime": "font/woff2",
+    "bytes": 4104,
+    "file": "assets/626e5b3e-255f-4a9e-854d-2661eac24c19.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "9fea2f10-357c-4c51-9dca-d55b6eda8fe7",
+    "mime": "font/woff2",
+    "bytes": 8248,
+    "file": "assets/9fea2f10-357c-4c51-9dca-d55b6eda8fe7.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "48c89b2d-3c44-4e72-b530-0b4a90ded0b4",
+    "mime": "font/woff2",
+    "bytes": 7324,
+    "file": "assets/48c89b2d-3c44-4e72-b530-0b4a90ded0b4.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "d6179901-cc36-4400-9351-d9b369b63324",
+    "mime": "font/woff2",
+    "bytes": 7128,
+    "file": "assets/d6179901-cc36-4400-9351-d9b369b63324.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "16f36579-3f41-4e9b-8f3e-61a2c1be9254",
+    "mime": "font/woff2",
+    "bytes": 5964,
+    "file": "assets/16f36579-3f41-4e9b-8f3e-61a2c1be9254.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "52c140df-048e-4309-9030-cd065c4666d5",
+    "mime": "font/woff2",
+    "bytes": 6156,
+    "file": "assets/52c140df-048e-4309-9030-cd065c4666d5.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ce83a852-5462-4d91-a3b1-5efc61455512",
+    "mime": "font/woff2",
+    "bytes": 7112,
+    "file": "assets/ce83a852-5462-4d91-a3b1-5efc61455512.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "920864a0-4d8a-4a6f-9370-16c37b3c7d1e",
+    "mime": "font/woff2",
+    "bytes": 7136,
+    "file": "assets/920864a0-4d8a-4a6f-9370-16c37b3c7d1e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "181ca7c5-3cb7-4e40-8671-849904d2b6f8",
+    "mime": "font/woff2",
+    "bytes": 7008,
+    "file": "assets/181ca7c5-3cb7-4e40-8671-849904d2b6f8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ae70d191-2628-4768-b11f-6919f8893907",
+    "mime": "font/woff2",
+    "bytes": 5860,
+    "file": "assets/ae70d191-2628-4768-b11f-6919f8893907.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "86218aa2-320c-4b56-aa46-6abad114667e",
+    "mime": "font/woff2",
+    "bytes": 9568,
+    "file": "assets/86218aa2-320c-4b56-aa46-6abad114667e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f2274edb-e400-417a-8b62-bb6ea6ba3947",
+    "mime": "font/woff2",
+    "bytes": 7904,
+    "file": "assets/f2274edb-e400-417a-8b62-bb6ea6ba3947.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7e7cd84d-0d9e-478f-bd0a-988efbfab0a9",
+    "mime": "font/woff2",
+    "bytes": 3416,
+    "file": "assets/7e7cd84d-0d9e-478f-bd0a-988efbfab0a9.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ff2ed49b-0a89-4417-9ba4-e6db72ed14a2",
+    "mime": "font/woff2",
+    "bytes": 9068,
+    "file": "assets/ff2ed49b-0a89-4417-9ba4-e6db72ed14a2.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "37d42367-e44d-43ea-88f4-f63a56e87b52",
+    "mime": "font/woff2",
+    "bytes": 2360,
+    "file": "assets/37d42367-e44d-43ea-88f4-f63a56e87b52.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f3c41d9d-6077-4f71-bf31-5935dc68404e",
+    "mime": "font/woff2",
+    "bytes": 1964,
+    "file": "assets/f3c41d9d-6077-4f71-bf31-5935dc68404e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ee6d83fd-2755-493e-b2eb-b10542b47d2c",
+    "mime": "font/woff2",
+    "bytes": 16608,
+    "file": "assets/ee6d83fd-2755-493e-b2eb-b10542b47d2c.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "6c51e628-8a3a-4082-ad92-4300dbeffdae",
+    "mime": "font/woff2",
+    "bytes": 15268,
+    "file": "assets/6c51e628-8a3a-4082-ad92-4300dbeffdae.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ca05af69-31f5-4f20-a2ab-455ccfeec5bf",
+    "mime": "font/woff2",
+    "bytes": 18168,
+    "file": "assets/ca05af69-31f5-4f20-a2ab-455ccfeec5bf.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "68c5b54e-b93d-457d-b619-6205767abc30",
+    "mime": "font/woff2",
+    "bytes": 18392,
+    "file": "assets/68c5b54e-b93d-457d-b619-6205767abc30.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "167c9a04-184e-4942-b8b3-1cda98b4d0d9",
+    "mime": "font/woff2",
+    "bytes": 17516,
+    "file": "assets/167c9a04-184e-4942-b8b3-1cda98b4d0d9.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "611879a5-0475-4f26-b234-5f9bbe847468",
+    "mime": "font/woff2",
+    "bytes": 19668,
+    "file": "assets/611879a5-0475-4f26-b234-5f9bbe847468.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e8e823e8-3f52-4c28-9d10-70b0b83c3199",
+    "mime": "font/woff2",
+    "bytes": 20920,
+    "file": "assets/e8e823e8-3f52-4c28-9d10-70b0b83c3199.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5ae72e3f-cf6f-47f4-945b-7f8d1a2236b1",
+    "mime": "font/woff2",
+    "bytes": 25380,
+    "file": "assets/5ae72e3f-cf6f-47f4-945b-7f8d1a2236b1.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "d3f62edb-8218-48c4-8685-4b5d47f91aa4",
+    "mime": "font/woff2",
+    "bytes": 26360,
+    "file": "assets/d3f62edb-8218-48c4-8685-4b5d47f91aa4.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "fdce5b25-4a05-40a5-8d9f-088d46d7ec4b",
+    "mime": "font/woff2",
+    "bytes": 25904,
+    "file": "assets/fdce5b25-4a05-40a5-8d9f-088d46d7ec4b.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ea369077-fff9-44c0-ad73-508dfa5ec0e2",
+    "mime": "font/woff2",
+    "bytes": 27960,
+    "file": "assets/ea369077-fff9-44c0-ad73-508dfa5ec0e2.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a0e614d7-f544-40fe-b5e0-dfaa8aacfdce",
+    "mime": "font/woff2",
+    "bytes": 25456,
+    "file": "assets/a0e614d7-f544-40fe-b5e0-dfaa8aacfdce.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "276340c1-2c8f-4252-ba9b-995ceecc6a1d",
+    "mime": "font/woff2",
+    "bytes": 25356,
+    "file": "assets/276340c1-2c8f-4252-ba9b-995ceecc6a1d.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "92514661-9a4c-4ea5-b3a0-f6e7466c2c18",
+    "mime": "font/woff2",
+    "bytes": 27172,
+    "file": "assets/92514661-9a4c-4ea5-b3a0-f6e7466c2c18.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "6d9b431b-34e0-4838-bc12-7743e65fb339",
+    "mime": "font/woff2",
+    "bytes": 25332,
+    "file": "assets/6d9b431b-34e0-4838-bc12-7743e65fb339.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "4479f749-9434-4146-9b9d-9b7a9065ed89",
+    "mime": "font/woff2",
+    "bytes": 25204,
+    "file": "assets/4479f749-9434-4146-9b9d-9b7a9065ed89.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "117857ac-9f8a-49c8-8c57-53d87a9e8dc1",
+    "mime": "font/woff2",
+    "bytes": 24264,
+    "file": "assets/117857ac-9f8a-49c8-8c57-53d87a9e8dc1.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "21ed0972-9bb1-41f3-9efd-f584bdbe1c0e",
+    "mime": "font/woff2",
+    "bytes": 23216,
+    "file": "assets/21ed0972-9bb1-41f3-9efd-f584bdbe1c0e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a913f402-21e9-47c9-b19a-37b0e1c460b5",
+    "mime": "font/woff2",
+    "bytes": 21188,
+    "file": "assets/a913f402-21e9-47c9-b19a-37b0e1c460b5.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "9d3127ec-bc6a-4203-83d6-ee5825dfa034",
+    "mime": "font/woff2",
+    "bytes": 17012,
+    "file": "assets/9d3127ec-bc6a-4203-83d6-ee5825dfa034.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7b14e049-b382-4a4e-837d-65f4991c4aaf",
+    "mime": "font/woff2",
+    "bytes": 17288,
+    "file": "assets/7b14e049-b382-4a4e-837d-65f4991c4aaf.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "9f372020-f0b9-4891-8233-123845b26647",
+    "mime": "font/woff2",
+    "bytes": 15872,
+    "file": "assets/9f372020-f0b9-4891-8233-123845b26647.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "97c03598-7114-4aa2-81c9-0a86ddd21e12",
+    "mime": "font/woff2",
+    "bytes": 8532,
+    "file": "assets/97c03598-7114-4aa2-81c9-0a86ddd21e12.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "980319d9-31be-437c-94de-6d50d7764289",
+    "mime": "font/woff2",
+    "bytes": 11108,
+    "file": "assets/980319d9-31be-437c-94de-6d50d7764289.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ac7910c3-c0e3-4a83-8931-a5539f288245",
+    "mime": "font/woff2",
+    "bytes": 8436,
+    "file": "assets/ac7910c3-c0e3-4a83-8931-a5539f288245.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "9ec2799f-4e13-4793-bbc3-cb2c6c2b4426",
+    "mime": "font/woff2",
+    "bytes": 4928,
+    "file": "assets/9ec2799f-4e13-4793-bbc3-cb2c6c2b4426.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7eebf9bc-d7e7-477c-8216-8b4212c633c5",
+    "mime": "font/woff2",
+    "bytes": 10124,
+    "file": "assets/7eebf9bc-d7e7-477c-8216-8b4212c633c5.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ba570246-ca7d-4f63-97f8-a1a758159622",
+    "mime": "font/woff2",
+    "bytes": 7956,
+    "file": "assets/ba570246-ca7d-4f63-97f8-a1a758159622.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7d50816d-b2e5-4cd0-9cb3-872b104a0949",
+    "mime": "font/woff2",
+    "bytes": 6696,
+    "file": "assets/7d50816d-b2e5-4cd0-9cb3-872b104a0949.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "0e054dfc-8f34-4650-8e55-c444bd5f65be",
+    "mime": "font/woff2",
+    "bytes": 10628,
+    "file": "assets/0e054dfc-8f34-4650-8e55-c444bd5f65be.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "38ec0171-dcbb-4749-be6c-9452acbc5039",
+    "mime": "font/woff2",
+    "bytes": 6680,
+    "file": "assets/38ec0171-dcbb-4749-be6c-9452acbc5039.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "21488c52-431c-4e1d-aeca-d7b693e4eada",
+    "mime": "font/woff2",
+    "bytes": 7056,
+    "file": "assets/21488c52-431c-4e1d-aeca-d7b693e4eada.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "03fb277c-6cc2-4912-adf0-cd88a2387672",
+    "mime": "font/woff2",
+    "bytes": 5692,
+    "file": "assets/03fb277c-6cc2-4912-adf0-cd88a2387672.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5ceb13cc-102b-4833-926e-76964e2a0732",
+    "mime": "font/woff2",
+    "bytes": 7364,
+    "file": "assets/5ceb13cc-102b-4833-926e-76964e2a0732.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "c92b2b4c-24b5-4bbb-b2aa-ef87c3544b6e",
+    "mime": "font/woff2",
+    "bytes": 8324,
+    "file": "assets/c92b2b4c-24b5-4bbb-b2aa-ef87c3544b6e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b00177a7-3ec1-4aba-9662-e42dbc749be3",
+    "mime": "font/woff2",
+    "bytes": 5928,
+    "file": "assets/b00177a7-3ec1-4aba-9662-e42dbc749be3.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5dde2fc7-7a7b-4fbd-b1b2-0411de105bfa",
+    "mime": "font/woff2",
+    "bytes": 8572,
+    "file": "assets/5dde2fc7-7a7b-4fbd-b1b2-0411de105bfa.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "3ff58e83-ae65-4cf4-8d08-18166bae0105",
+    "mime": "font/woff2",
+    "bytes": 8324,
+    "file": "assets/3ff58e83-ae65-4cf4-8d08-18166bae0105.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "72776dfb-2fd4-4439-a8e0-7191878e2ba9",
+    "mime": "font/woff2",
+    "bytes": 8016,
+    "file": "assets/72776dfb-2fd4-4439-a8e0-7191878e2ba9.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f4c02ca9-c4e9-4ddc-93da-c0d04aae3662",
+    "mime": "font/woff2",
+    "bytes": 5016,
+    "file": "assets/f4c02ca9-c4e9-4ddc-93da-c0d04aae3662.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "6d4f3318-60f9-4ef7-b6dc-c02b6b8b9afd",
+    "mime": "font/woff2",
+    "bytes": 8708,
+    "file": "assets/6d4f3318-60f9-4ef7-b6dc-c02b6b8b9afd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "d099ea6a-158e-4b42-a15a-3291fd9a8958",
+    "mime": "font/woff2",
+    "bytes": 6720,
+    "file": "assets/d099ea6a-158e-4b42-a15a-3291fd9a8958.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ed21a2e3-5d93-4c3e-ae84-ce259d6679ce",
+    "mime": "font/woff2",
+    "bytes": 7964,
+    "file": "assets/ed21a2e3-5d93-4c3e-ae84-ce259d6679ce.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ec69e5c7-7f3c-491f-aaeb-3bdf8eaa7438",
+    "mime": "font/woff2",
+    "bytes": 6776,
+    "file": "assets/ec69e5c7-7f3c-491f-aaeb-3bdf8eaa7438.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5c7b38ad-4a9a-483c-8a6e-02ca873cfad7",
+    "mime": "font/woff2",
+    "bytes": 11080,
+    "file": "assets/5c7b38ad-4a9a-483c-8a6e-02ca873cfad7.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "6f407444-7593-46e1-8115-43beb159df7c",
+    "mime": "font/woff2",
+    "bytes": 9944,
+    "file": "assets/6f407444-7593-46e1-8115-43beb159df7c.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "4fa6ba76-8afa-4331-ad1e-fac2e01bdae6",
+    "mime": "font/woff2",
+    "bytes": 11864,
+    "file": "assets/4fa6ba76-8afa-4331-ad1e-fac2e01bdae6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "115304fe-6b15-4471-a8a0-e259d2de83e4",
+    "mime": "font/woff2",
+    "bytes": 13184,
+    "file": "assets/115304fe-6b15-4471-a8a0-e259d2de83e4.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f4064597-beab-45a5-9d5d-ac389326c0d4",
+    "mime": "font/woff2",
+    "bytes": 7816,
+    "file": "assets/f4064597-beab-45a5-9d5d-ac389326c0d4.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "0bb8ad4a-f6f6-4c47-ae54-a7e5f783d140",
+    "mime": "font/woff2",
+    "bytes": 7676,
+    "file": "assets/0bb8ad4a-f6f6-4c47-ae54-a7e5f783d140.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ec15687c-a61c-4b87-b05a-0290eb9684f6",
+    "mime": "font/woff2",
+    "bytes": 8236,
+    "file": "assets/ec15687c-a61c-4b87-b05a-0290eb9684f6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "0ad6b0b3-d14f-4bc8-9943-c363931952d8",
+    "mime": "font/woff2",
+    "bytes": 4300,
+    "file": "assets/0ad6b0b3-d14f-4bc8-9943-c363931952d8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "48fbf423-a430-425d-9566-626e6a192dd7",
+    "mime": "font/woff2",
+    "bytes": 7884,
+    "file": "assets/48fbf423-a430-425d-9566-626e6a192dd7.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ca2bbe26-0706-4c2a-a094-b33e312afc7c",
+    "mime": "font/woff2",
+    "bytes": 10092,
+    "file": "assets/ca2bbe26-0706-4c2a-a094-b33e312afc7c.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "07e31012-3836-4a3a-905c-cd066940d5cb",
+    "mime": "font/woff2",
+    "bytes": 11660,
+    "file": "assets/07e31012-3836-4a3a-905c-cd066940d5cb.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b08b560b-e24e-4c7f-80b0-2cec9d0182b8",
+    "mime": "font/woff2",
+    "bytes": 8728,
+    "file": "assets/b08b560b-e24e-4c7f-80b0-2cec9d0182b8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b3683043-a554-4958-abb1-83af8ed69152",
+    "mime": "font/woff2",
+    "bytes": 3392,
+    "file": "assets/b3683043-a554-4958-abb1-83af8ed69152.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7a715802-ce06-4833-8022-d6bec4726302",
+    "mime": "font/woff2",
+    "bytes": 6624,
+    "file": "assets/7a715802-ce06-4833-8022-d6bec4726302.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "af0086af-1fe9-42af-8701-dbdb670fb468",
+    "mime": "font/woff2",
+    "bytes": 9156,
+    "file": "assets/af0086af-1fe9-42af-8701-dbdb670fb468.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e8ff6f03-ffd6-4738-ba82-93e6b896f125",
+    "mime": "font/woff2",
+    "bytes": 9244,
+    "file": "assets/e8ff6f03-ffd6-4738-ba82-93e6b896f125.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ee288f92-a9c4-47b5-931b-4b0785a5909e",
+    "mime": "font/woff2",
+    "bytes": 9380,
+    "file": "assets/ee288f92-a9c4-47b5-931b-4b0785a5909e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "46acadbe-fcfe-451b-a284-605377a8ee56",
+    "mime": "font/woff2",
+    "bytes": 8488,
+    "file": "assets/46acadbe-fcfe-451b-a284-605377a8ee56.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b05784ad-6002-4fb4-9b57-cee9d03c32b0",
+    "mime": "font/woff2",
+    "bytes": 9220,
+    "file": "assets/b05784ad-6002-4fb4-9b57-cee9d03c32b0.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a9087012-2518-4e58-a24d-2d0a4f3607c1",
+    "mime": "font/woff2",
+    "bytes": 10020,
+    "file": "assets/a9087012-2518-4e58-a24d-2d0a4f3607c1.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "51a6bc06-e2d1-4569-aae3-cd228c888ecb",
+    "mime": "font/woff2",
+    "bytes": 9596,
+    "file": "assets/51a6bc06-e2d1-4569-aae3-cd228c888ecb.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "50defbd4-eb63-4bea-b116-33c748b64abd",
+    "mime": "font/woff2",
+    "bytes": 6224,
+    "file": "assets/50defbd4-eb63-4bea-b116-33c748b64abd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "8586be04-338e-4d4a-b00b-a9992c1c2d87",
+    "mime": "font/woff2",
+    "bytes": 8580,
+    "file": "assets/8586be04-338e-4d4a-b00b-a9992c1c2d87.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "299fb62e-11ed-4a45-bd4e-f196e8bb4a39",
+    "mime": "font/woff2",
+    "bytes": 6676,
+    "file": "assets/299fb62e-11ed-4a45-bd4e-f196e8bb4a39.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7acc1941-2961-4873-afd0-ca82a07163ac",
+    "mime": "font/woff2",
+    "bytes": 6952,
+    "file": "assets/7acc1941-2961-4873-afd0-ca82a07163ac.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "313305fb-12aa-4c85-bb4a-39757c59afa4",
+    "mime": "font/woff2",
+    "bytes": 7056,
+    "file": "assets/313305fb-12aa-4c85-bb4a-39757c59afa4.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "4a76d397-4205-4e22-8913-fb971c40e99d",
+    "mime": "font/woff2",
+    "bytes": 5280,
+    "file": "assets/4a76d397-4205-4e22-8913-fb971c40e99d.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "fe390ebb-dd68-4d98-854c-ee209eb4b0c6",
+    "mime": "font/woff2",
+    "bytes": 9640,
+    "file": "assets/fe390ebb-dd68-4d98-854c-ee209eb4b0c6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ddc8b1c1-aaeb-4c8f-ad7b-9626fb4530b3",
+    "mime": "font/woff2",
+    "bytes": 9888,
+    "file": "assets/ddc8b1c1-aaeb-4c8f-ad7b-9626fb4530b3.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "af2583fc-aa75-42df-abd1-60e4c4f8dc94",
+    "mime": "font/woff2",
+    "bytes": 4208,
+    "file": "assets/af2583fc-aa75-42df-abd1-60e4c4f8dc94.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e9fa4b72-f865-4b85-a6e1-07225c689ccd",
+    "mime": "font/woff2",
+    "bytes": 10736,
+    "file": "assets/e9fa4b72-f865-4b85-a6e1-07225c689ccd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "266b2393-9c0a-4a1e-9caf-4b1682b7923c",
+    "mime": "font/woff2",
+    "bytes": 8400,
+    "file": "assets/266b2393-9c0a-4a1e-9caf-4b1682b7923c.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "63466b8a-89e1-46d9-b77a-4aae7f7969cb",
+    "mime": "font/woff2",
+    "bytes": 8432,
+    "file": "assets/63466b8a-89e1-46d9-b77a-4aae7f7969cb.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "18a23e6a-d387-4ecf-b6d2-35c96d87ef7a",
+    "mime": "font/woff2",
+    "bytes": 7288,
+    "file": "assets/18a23e6a-d387-4ecf-b6d2-35c96d87ef7a.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b8d04614-e978-40c7-b07c-56723da9d7b6",
+    "mime": "font/woff2",
+    "bytes": 7396,
+    "file": "assets/b8d04614-e978-40c7-b07c-56723da9d7b6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "01608f2f-083d-4a0e-9d48-7de3ed2b34d8",
+    "mime": "font/woff2",
+    "bytes": 8916,
+    "file": "assets/01608f2f-083d-4a0e-9d48-7de3ed2b34d8.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "5b992bd6-0c77-4549-b15d-687bb49ba734",
+    "mime": "font/woff2",
+    "bytes": 9312,
+    "file": "assets/5b992bd6-0c77-4549-b15d-687bb49ba734.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7a883379-00ce-450b-ba04-da12dd933736",
+    "mime": "font/woff2",
+    "bytes": 9024,
+    "file": "assets/7a883379-00ce-450b-ba04-da12dd933736.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e0f8f227-320a-4583-9972-3d62eb3bf32d",
+    "mime": "font/woff2",
+    "bytes": 7012,
+    "file": "assets/e0f8f227-320a-4583-9972-3d62eb3bf32d.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "3bf1d159-71b5-4808-bb27-3719e272b15a",
+    "mime": "font/woff2",
+    "bytes": 12344,
+    "file": "assets/3bf1d159-71b5-4808-bb27-3719e272b15a.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a6feff8e-a782-4680-be62-d38b96ba30cd",
+    "mime": "font/woff2",
+    "bytes": 9648,
+    "file": "assets/a6feff8e-a782-4680-be62-d38b96ba30cd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "0cd20c9c-1021-4d09-ae89-2b78a4593876",
+    "mime": "font/woff2",
+    "bytes": 3700,
+    "file": "assets/0cd20c9c-1021-4d09-ae89-2b78a4593876.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "b1bb69b6-d88b-4a34-9ed9-1fe599c162ed",
+    "mime": "font/woff2",
+    "bytes": 9760,
+    "file": "assets/b1bb69b6-d88b-4a34-9ed9-1fe599c162ed.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7adf1d63-47b1-4aa2-b513-1ac28eac2fe6",
+    "mime": "font/woff2",
+    "bytes": 2300,
+    "file": "assets/7adf1d63-47b1-4aa2-b513-1ac28eac2fe6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "920ab490-1b95-4ff9-9ee6-1a1b8f324144",
+    "mime": "font/woff2",
+    "bytes": 1916,
+    "file": "assets/920ab490-1b95-4ff9-9ee6-1a1b8f324144.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "1ced9129-a917-483e-ab07-787b6b03eca4",
+    "mime": "font/woff2",
+    "bytes": 19400,
+    "file": "assets/1ced9129-a917-483e-ab07-787b6b03eca4.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "7f2eb99b-5cd9-4a37-8d95-9ca428788930",
+    "mime": "font/woff2",
+    "bytes": 18240,
+    "file": "assets/7f2eb99b-5cd9-4a37-8d95-9ca428788930.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "64cc58f2-7c3c-4c95-9328-de2ec6ac2311",
+    "mime": "font/woff2",
+    "bytes": 21208,
+    "file": "assets/64cc58f2-7c3c-4c95-9328-de2ec6ac2311.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "519aaa2f-edd8-4c64-bfbc-36776a9bd03f",
+    "mime": "font/woff2",
+    "bytes": 21904,
+    "file": "assets/519aaa2f-edd8-4c64-bfbc-36776a9bd03f.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "59831b9a-9b54-469b-851b-d0a64d38569a",
+    "mime": "font/woff2",
+    "bytes": 21668,
+    "file": "assets/59831b9a-9b54-469b-851b-d0a64d38569a.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "3517ad25-1987-496b-9155-49e12c2b3c56",
+    "mime": "font/woff2",
+    "bytes": 24776,
+    "file": "assets/3517ad25-1987-496b-9155-49e12c2b3c56.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "472b9a35-9ae4-485f-8bc4-ce465e1e6b32",
+    "mime": "font/woff2",
+    "bytes": 27284,
+    "file": "assets/472b9a35-9ae4-485f-8bc4-ce465e1e6b32.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "788365ac-f25c-49b3-be67-d672ff287e1e",
+    "mime": "font/woff2",
+    "bytes": 34268,
+    "file": "assets/788365ac-f25c-49b3-be67-d672ff287e1e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a1560e57-aea8-4076-9127-4766c7c19dba",
+    "mime": "font/woff2",
+    "bytes": 33304,
+    "file": "assets/a1560e57-aea8-4076-9127-4766c7c19dba.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e5518c52-f495-4896-ae1f-b9f6ff7887cc",
+    "mime": "font/woff2",
+    "bytes": 33676,
+    "file": "assets/e5518c52-f495-4896-ae1f-b9f6ff7887cc.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "41166568-317d-407c-8d5a-4016fd574878",
+    "mime": "font/woff2",
+    "bytes": 36560,
+    "file": "assets/41166568-317d-407c-8d5a-4016fd574878.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "3be149bb-c1ef-4ac7-8ef8-5e7c237bc554",
+    "mime": "font/woff2",
+    "bytes": 35324,
+    "file": "assets/3be149bb-c1ef-4ac7-8ef8-5e7c237bc554.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "ea252bbd-8681-4420-a1cd-3c8abc45be92",
+    "mime": "font/woff2",
+    "bytes": 35172,
+    "file": "assets/ea252bbd-8681-4420-a1cd-3c8abc45be92.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "a43cd574-d7fc-440d-8bc5-b577ca5afb45",
+    "mime": "font/woff2",
+    "bytes": 36544,
+    "file": "assets/a43cd574-d7fc-440d-8bc5-b577ca5afb45.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "77f7b89a-6709-417b-a57a-2fe0070e00bf",
+    "mime": "font/woff2",
+    "bytes": 34256,
+    "file": "assets/77f7b89a-6709-417b-a57a-2fe0070e00bf.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "da003289-5b81-4e67-9a7d-9d34259ef6ff",
+    "mime": "font/woff2",
+    "bytes": 33908,
+    "file": "assets/da003289-5b81-4e67-9a7d-9d34259ef6ff.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "58a65745-b3a8-46ee-a293-09b1b2b53bdd",
+    "mime": "font/woff2",
+    "bytes": 33972,
+    "file": "assets/58a65745-b3a8-46ee-a293-09b1b2b53bdd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "e0256c9a-9a92-4ed5-921c-67f9b23569cd",
+    "mime": "font/woff2",
+    "bytes": 32368,
+    "file": "assets/e0256c9a-9a92-4ed5-921c-67f9b23569cd.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "9adcf380-a439-4bb4-b248-4b3e7d57eb66",
+    "mime": "font/woff2",
+    "bytes": 28704,
+    "file": "assets/9adcf380-a439-4bb4-b248-4b3e7d57eb66.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "075021ef-196a-44ef-b15b-72d8f628e338",
+    "mime": "font/woff2",
+    "bytes": 16844,
+    "file": "assets/075021ef-196a-44ef-b15b-72d8f628e338.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "06a47b7f-18b6-4813-914b-8c6a6ee8e787",
+    "mime": "font/woff2",
+    "bytes": 16748,
+    "file": "assets/06a47b7f-18b6-4813-914b-8c6a6ee8e787.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "f0301eed-fdb5-47de-a1f5-681278c5c598",
+    "mime": "font/woff2",
+    "bytes": 28928,
+    "file": "assets/f0301eed-fdb5-47de-a1f5-681278c5c598.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "01a00a64-28f0-4a5a-a1d4-c330db1bd6ec",
+    "mime": "font/woff2",
+    "bytes": 20776,
+    "file": "assets/01a00a64-28f0-4a5a-a1d4-c330db1bd6ec.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "d5641834-d84a-4b19-96e4-7dc1c6ee0b6e",
+    "mime": "font/woff2",
+    "bytes": 13096,
+    "file": "assets/d5641834-d84a-4b19-96e4-7dc1c6ee0b6e.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "c7ff8d82-1dc4-497d-bee9-418e9c1199da",
+    "mime": "font/woff2",
+    "bytes": 35588,
+    "file": "assets/c7ff8d82-1dc4-497d-bee9-418e9c1199da.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "8e2785cd-3cfb-42aa-b911-2084085b4fd6",
+    "mime": "font/woff2",
+    "bytes": 39128,
+    "file": "assets/8e2785cd-3cfb-42aa-b911-2084085b4fd6.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 4
+  },
+  {
+    "uuid": "bd55c8a9-298a-4120-9e02-039c286c3147",
+    "mime": "font/woff2",
+    "bytes": 3436,
+    "file": "assets/bd55c8a9-298a-4120-9e02-039c286c3147.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  },
+  {
+    "uuid": "2174a3ab-4008-4bca-8d59-2a126df92fac",
+    "mime": "font/woff2",
+    "bytes": 8404,
+    "file": "assets/2174a3ab-4008-4bca-8d59-2a126df92fac.woff2",
+    "externalUrl": null,
+    "refsInTemplate": 1
+  }
+]
