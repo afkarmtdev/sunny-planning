@@ -1,0 +1,8 @@
+/* Establish cascade-layer order BEFORE StyleX declares its own layers.
+   StyleX emits every component style inside `@layer priority1..priority5`, and
+   unlayered CSS always beats layered CSS in the cascade. Naming `reset` first
+   here places it below StyleX's priorities, so component styles (JellyButton's
+   gradient/border/padding, the upload dropzone's dashed border) win, while the
+   reset still applies to any native button StyleX does not style. This file must
+   be imported before `stylex.css`. */
+@layer reset, priority1, priority2, priority3, priority4, priority5;

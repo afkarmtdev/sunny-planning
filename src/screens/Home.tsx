@@ -10,7 +10,7 @@ import { SunnySprite } from "../components/SunnySprite";
 import { WashiTape } from "../components/WashiTape";
 import { IconPlus } from "../components/icons";
 import { useApp } from "../store/useApp";
-import { datesLogged, happiness, itineraryTotal, monthStats, moodFor, nextPlanned, streakWeeks } from "../lib/derive";
+import { dateSpend, datesLogged, happiness, isEstimateSpend, monthStats, moodFor, nextPlanned, streakWeeks } from "../lib/derive";
 import { greeting, stampDate } from "../lib/dates";
 import { rm, rmCompact } from "../lib/format";
 
@@ -156,13 +156,12 @@ const styles = stylex.create({
 export function Home() {
   const navigate = useNavigate();
   const itineraries = useApp((s) => s.itineraries);
-  const expenses = useApp((s) => s.expenses);
   const createItinerary = useApp((s) => s.createItinerary);
 
   const next = nextPlanned(itineraries);
   const pct = happiness(itineraries);
   const logged = datesLogged(itineraries);
-  const { total: monthTotal } = monthStats(expenses);
+  const { total: monthTotal } = monthStats(itineraries);
   const streak = streakWeeks(itineraries);
 
   return (
@@ -208,7 +207,10 @@ export function Home() {
             ))}
           </div>
           <div {...stylex.props(styles.nextFooter)}>
-            <div {...stylex.props(styles.estCost)}>~{rm(itineraryTotal(next))}</div>
+            <div {...stylex.props(styles.estCost)}>
+              {isEstimateSpend(next) ? "~" : ""}
+              {rm(dateSpend(next))}
+            </div>
             <JellyButton variant="soft" xstyle={styles.viewBtn} onClick={() => navigate(`/plan/${next.id}`)}>
               View itinerary
             </JellyButton>

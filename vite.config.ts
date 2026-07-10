@@ -42,6 +42,9 @@ function stylexBabel(mode: string): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
+  server: {
+    port: 5180,
+  },
   plugins: [
     stylexBabel(mode),
     react(),

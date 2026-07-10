@@ -13,28 +13,29 @@ import { SKIN_NAMES, type SkinId } from "../lib/types";
 
 const styles = stylex.create({
   page: {
+    // On screen: a phone-width column like the rest of the app. When printing:
+    // full width so the document fills the A4 page.
+    position: "relative",
     minHeight: "100dvh",
-    backgroundColor: { default: "#FFE9F4", "@media print": "#FFFFFF" },
-    paddingBlock: { default: 24, "@media print": 0 },
+    maxWidth: { default: 430, "@media print": "none" },
+    marginInline: "auto",
+    backgroundColor: { default: colors.cream, "@media print": "#FFFFFF" },
+    boxShadow: { default: "0 0 0 1px rgba(51,43,51,0.08)", "@media print": "none" },
+    paddingBlock: { default: 28, "@media print": 0 },
     paddingInline: { default: 18, "@media print": 0 },
   },
   toolbar: {
-    maxWidth: 720,
-    marginInline: "auto",
-    marginBottom: 16,
+    marginBottom: 40,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
   },
-  printBtn: {
-    fontSize: 13,
-    paddingBlock: 10,
-    paddingInline: 16,
+  actions: {
+    marginTop: 40,
+    marginBottom: 12,
   },
   doc: {
-    maxWidth: 720,
-    marginInline: "auto",
     backgroundColor: colors.white,
     borderWidth: { default: 3, "@media print": 0 },
     borderStyle: "solid",
@@ -266,13 +267,15 @@ export function PrintView() {
   const retro = skin === "retro";
   const scrapbook = skin === "scrapbook";
 
+  // stylex.props must be merged with the .no-print utility, not overwritten:
+  // a bare className="no-print" after the spread would drop every StyleX class.
+  const toolbarProps = stylex.props(styles.toolbar);
+  const actionsProps = stylex.props(styles.actions);
+
   return (
     <div {...stylex.props(styles.page)}>
-      <div {...stylex.props(styles.toolbar)} className="no-print">
+      <div {...toolbarProps} className={`${toolbarProps.className ?? ""} no-print`}>
         <BackButton label="Back to export" to={`/plan/${id}/export`} />
-        <JellyButton variant="primary" xstyle={styles.printBtn} onClick={() => window.print()}>
-          Print or save as PDF
-        </JellyButton>
       </div>
 
       <div {...stylex.props(styles.doc)}>
@@ -308,7 +311,7 @@ export function PrintView() {
                       </div>
                     )}
                   </div>
-                  <div {...stylex.props(styles.stopCost)}>{rm(stop.cost)}</div>
+                  <div {...stylex.props(styles.stopCost)}>{stop.cost > 0 ? `~${rm(stop.cost)}` : ""}</div>
                 </div>
                 {travel && (
                   <div {...stylex.props(styles.travelRow)}>
@@ -321,12 +324,18 @@ export function PrintView() {
           })}
 
           <div {...stylex.props(styles.totalRow)}>
-            <div {...stylex.props(styles.totalLabel)}>ESTIMATED TOTAL</div>
+            <div {...stylex.props(styles.totalLabel)}>Est. total</div>
             <div {...stylex.props(styles.totalValue)}>{rm(itineraryTotal(itinerary))}</div>
           </div>
 
           <div {...stylex.props(styles.footer)}>made with Sunny Planning, just for the two of us</div>
         </div>
+      </div>
+
+      <div {...actionsProps} className={`${actionsProps.className ?? ""} no-print`}>
+        <JellyButton variant="primary" fullWidth onClick={() => window.print()}>
+          Print or save as PDF
+        </JellyButton>
       </div>
     </div>
   );

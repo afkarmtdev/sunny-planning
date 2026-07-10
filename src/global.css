@@ -13,28 +13,34 @@ body {
   background: #ffe9f4;
   color: #332b33;
   -webkit-font-smoothing: antialiased;
+  /* Suppress the translucent blue box the mobile browser paints on tap. */
+  -webkit-tap-highlight-color: transparent;
 }
 
-button {
-  font: inherit;
-  color: inherit;
-  border: none;
-  background: none;
-  padding: 0;
-  text-align: inherit;
-  cursor: pointer;
-}
+/* Element resets live in the `reset` layer (ordered below StyleX's priority
+   layers in layers.css) so per-component StyleX styles always win. */
+@layer reset {
+  button {
+    font: inherit;
+    color: inherit;
+    border: none;
+    background: none;
+    padding: 0;
+    text-align: inherit;
+    cursor: pointer;
+  }
 
-input,
-textarea,
-select {
-  font: inherit;
-  color: inherit;
-}
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
 
-img {
-  max-width: 100%;
-  display: block;
+  img {
+    max-width: 100%;
+    display: block;
+  }
 }
 
 @page {
