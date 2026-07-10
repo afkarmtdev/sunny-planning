@@ -82,6 +82,16 @@ the user must reopen to edit. The mechanism is a baseline snapshot plus referenc
 `src/screens/ItineraryBuilder.tsx` is the reference implementation. Before building
 or changing a form, follow the `form-save-discard` skill.
 
+## Multi-language (standard)
+
+The app ships three locales (en, zh, zh-pinyin). Every user-facing string routes
+through `t()` from `useT()` (`src/lib/i18n`), keyed into one co-located message
+catalogue where each key carries all three locales at once (`src/lib/i18n/messages/`).
+The locale lives in the `prefs` slice; CJK fonts are woven into the token family
+chains as fallbacks. Currency, dates, and proper nouns stay verbatim. Before adding
+any user-facing copy, a new screen, or touching the catalogue, locale pref, or CJK
+fonts, follow the `i18n` skill (it carries the glossary and pinyin rules).
+
 ## Capture reusable work as skills
 
 After any session, create or update a skill under `.claude/skills/<name>/SKILL.md`

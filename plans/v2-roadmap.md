@@ -178,9 +178,17 @@ disproportionate delight.
 
 ### Multi-language: en / zh / zh with pinyin tone numbers (10.3)
 
-**Status (2026-07-10): DEFERRED to its own session** (user decision). The single largest chunk
-in the milestone (every screen's strings plus a CJK-capable font woven into the tokens); pulled
-out so the rest of M2/M3 could ship. The Settings language picker lands with it.
+**Status (2026-07-11): DONE.** A homegrown i18n layer (`src/lib/i18n`): a `t()`/`useT()` over
+one co-located message catalogue (379 keys, each carrying en / zh / zh-pinyin at once, so the
+locales cannot drift). The locale lives in the `prefs` slice (persist v8, defaults en, backfills
+existing users) and a themed segmented picker in Settings writes it; `useT()` reads it so a
+switch re-renders the whole app live. Every user-facing string across all screens and shared
+components now routes through `t()`; currency, dates, and proper nouns (Sunny, Waze, skin names)
+stay verbatim. The CJK half: ZCOOL KuaiLe / Noto Sans SC / Ma Shan Zheng are appended as
+fallbacks to the token font chains (Latin renders in the pixel-cute faces, Chinese falls through)
+and excluded from the PWA precache (runtime-cached instead) so the SW install stays light. See
+the `i18n` skill for the glossary and pinyin rules. Verified via typecheck, build, and a
+catalogue integrity pass (no empty locale field, matching placeholders across all three).
 
 Mechanical but wide. A tiny homegrown i18n module (a `t()` over three locale
 dictionaries, stored preference, no library needed) plus extracting every string
