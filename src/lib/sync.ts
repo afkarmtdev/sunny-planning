@@ -23,14 +23,26 @@
 // imports a live client. The store shape is nested (itineraries hold stops and
 // expenses; venues hold ratings and notes) while the server is flat, so the
 // mappers below flatten on push and re-nest on pull. Store-only fields with no
-// column yet (photo src/author, expense receiptId, note author) are grafted
-// back onto re-assembled rows so a pull never wipes them.
+// column (photo display `src`, expense `receiptId`, note `author`) are grafted
+// back onto re-assembled rows so a pull never wipes them. Image
+// bytes live in Storage buckets: the row carries only the object path
+// (storage_path / receipt_path), uploaded on push and signed on pull.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { setActingUser, useApp } from "../store/useApp";
 import { DEFAULT_AVATAR_COLOR } from "./avatar";
-import { signAvatar, signAvatars, uploadAvatar } from "./storage";
+import {
+  clearStorageUrlCache,
+  newObjectPath,
+  removePath,
+  signAvatar,
+  signAvatars,
+  uploadAvatar,
+  uploadBlob,
+  uploadDataUrl,
+} from "./storage";
+import { getReceiptBlob } from "./receipts";
 import type { Expense, Itinerary, Member, Photo, Profile, Stop, Venue, VenueNote, VenueRating } from "./types";
 
 // The tables we flatten the store into, in FK-safe upsert order (parents first)
@@ -113,6 +125,7 @@ function flatten(
         label: ex.label,
         amount: ex.amount,
         spent_on: ex.createdISO,
+        receipt_path: ex.receiptPath ?? null,
         created_at: ex.createdAt ?? null,
         updated_at: ex.updatedAt ?? null,
         created_by: ex.createdBy ?? null,
@@ -171,6 +184,7 @@ function flatten(
       stop_id: p.stopId ?? null,
       caption: p.caption,
       taken_on: p.dateISO,
+      storage_path: p.storagePath ?? null,
       art: p.art ?? null,
       rot: p.rot ?? null,
       tape: p.tape ?? null,
@@ -227,6 +241,7 @@ function assemble(rows: FetchedRows): {
         label: e.label as string,
         amount: Number(e.amount ?? 0),
         stopId: (e.stop_id as string) ?? undefined,
+        receiptPath: (e.receipt_path as string) ?? undefined,
         createdISO: (e.spent_on as string) ?? "",
         createdAt: (e.created_at as string) ?? undefined,
         updatedAt: (e.updated_at as string) ?? undefined,
@@ -300,6 +315,7 @@ function assemble(rows: FetchedRows): {
       dateISO: r.taken_on as string,
       itineraryId: (r.itinerary_id as string) ?? undefined,
       stopId: (r.stop_id as string) ?? undefined,
+      storagePath: (r.storage_path as string) ?? undefined,
       art: (r.art as number) ?? undefined,
       rot: Number(r.rot ?? 0),
       tape: (r.tape as Photo["tape"]) ?? null,
@@ -339,7 +355,10 @@ function graftLocalOnly(
   for (const it of next.itineraries) {
     for (const ex of it.expenses ?? []) {
       const old = prevExpenses.get(ex.id);
-      if (old && ex.receiptId === undefined) ex.receiptId = old.receiptId;
+      if (!old) continue;
+      // receiptId (the local IndexedDB blob) has no column; carry it so a pull
+      // does not blank a receipt this device holds locally.
+      if (ex.receiptId === undefined) ex.receiptId = old.receiptId;
     }
   }
 
@@ -456,8 +475,8 @@ const CONTENT_COLS: Record<TableName, readonly string[]> = {
     "travel_mode_to_next",
     "venue_id",
   ],
-  expenses: ["space_id", "itinerary_id", "stop_id", "label", "amount", "spent_on", "deleted_at"],
-  photos: ["space_id", "itinerary_id", "stop_id", "caption", "taken_on", "art", "rot", "tape", "dot"],
+  expenses: ["space_id", "itinerary_id", "stop_id", "label", "amount", "spent_on", "receipt_path", "deleted_at"],
+  photos: ["space_id", "itinerary_id", "stop_id", "caption", "taken_on", "storage_path", "art", "rot", "tape", "dot"],
   venue_ratings: ["venue_id", "rating", "itinerary_id", "stop_id", "rated_on"],
   venue_notes: ["venue_id", "body"],
 };
@@ -492,10 +511,26 @@ let applyingRemote = false;
 let profileSig = "";
 
 // Per-table snapshot of what the server last acknowledged holding, keyed by id:
-// the row's content signature plus the write sequence at which we acknowledged
-// it. A local row is DIRTY exactly while its content diverges from `content`.
-type SnapshotEntry = { content: string; seq: number };
+// the row's content signature, the write sequence at which we acknowledged it,
+// and (for tables backed by a Storage object) the object path last acknowledged,
+// so a changed or deleted row can retire the now-orphaned file. A local row is
+// DIRTY exactly while its content diverges from `content`.
+type SnapshotEntry = { content: string; seq: number; objectPath?: string };
 let snapshot: Record<TableName, Map<string, SnapshotEntry>> = emptySnapshot();
+
+// Tables whose rows own a private Storage object (a photo image, a receipt scan).
+// When such a row's path changes or the row is deleted, the old object is
+// retired best-effort so the bucket does not accumulate orphans.
+const OBJECT_TABLE: Partial<Record<TableName, { bucket: "photos" | "receipts"; col: string }>> = {
+  photos: { bucket: "photos", col: "storage_path" },
+  expenses: { bucket: "receipts", col: "receipt_path" },
+};
+
+/** The Storage object path a row points at, if its table is object-backed. */
+function objectPathOf(table: TableName, row: Row): string | undefined {
+  const spec = OBJECT_TABLE[table];
+  return spec ? ((row[spec.col] as string) ?? undefined) : undefined;
+}
 
 // Ids we deleted server-side, tagged with the write sequence of the delete's
 // acknowledgement, so a stale fetch cannot resurrect them (see pull()).
@@ -688,15 +723,33 @@ async function pushProfile(client: SupabaseClient, spaceId: string, userId: stri
 
   // Avatar: a freshly picked photo is a data: URL and is uploaded to the bucket,
   // storing its path; a removed photo clears the path; a photo already synced
-  // (an https signed URL from a pull) leaves avatar_path untouched.
+  // (an https signed URL from a pull) leaves avatar_path untouched. `newPath`
+  // stays undefined in that last case (leave the column as-is), is null on
+  // removal, or the freshly uploaded object path on replace.
   const avatar = profile.avatarUrl;
   let uploadFailed = false;
+  let newPath: string | null | undefined;
   if (!avatar) {
-    update.avatar_path = null;
+    newPath = null;
   } else if (avatar.startsWith("data:")) {
     const path = await uploadAvatar(spaceId, userId, avatar);
-    if (path) update.avatar_path = path;
+    if (path) newPath = path;
     else uploadFailed = true;
+  }
+
+  // When the path changes (removed or replaced), read the object it currently
+  // points at so the now-orphaned file can be deleted from the bucket after the
+  // row update lands. Each upload mints a fresh uuid, so old and new never match.
+  let oldPath: string | null = null;
+  if (newPath !== undefined) {
+    update.avatar_path = newPath;
+    const { data } = await client
+      .from("space_members")
+      .select("avatar_path")
+      .eq("space_id", spaceId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    oldPath = (data?.avatar_path as string) ?? null;
   }
 
   const { error } = await client
@@ -708,6 +761,13 @@ async function pushProfile(client: SupabaseClient, spaceId: string, userId: stri
     // Clear the signature so the next profile change retries the update/upload.
     if (error) console.error("sync profile update failed", error.message);
     profileSig = "";
+    return;
+  }
+
+  // Row now points at the new object (or none): retire the previous file so the
+  // bucket does not accumulate orphans on every avatar change.
+  if (oldPath && oldPath !== newPath) {
+    await removePath("avatars", oldPath);
   }
 }
 
@@ -814,6 +874,7 @@ export function stopSync(): void {
   snapshot = emptySnapshot();
   tombstones = emptyTombstones();
   profileSig = "";
+  clearStorageUrlCache();
   setActingUser(undefined);
   // Drop the roster so a later demo session shows no author chips. Guarded so it
   // does not echo back as a push (members are not a pushed slice anyway).
@@ -892,7 +953,11 @@ async function pull(client: SupabaseClient, spaceId: string, mode: PullMode): Pr
     tombstones = emptyTombstones();
     for (const table of TABLES) {
       for (const [id, row] of server[table]) {
-        snapshot[table].set(id, { content: contentSig(table, row), seq: startSeq });
+        snapshot[table].set(id, {
+          content: contentSig(table, row),
+          seq: startSeq,
+          objectPath: objectPathOf(table, row),
+        });
       }
     }
     return;
@@ -931,7 +996,11 @@ async function pull(client: SupabaseClient, spaceId: string, mode: PullMode): Pr
           }
           // Partner-created row: adopt it.
           merged[table].set(id, row);
-          snapshot[table].set(id, { content: contentSig(table, row), seq: startSeq });
+          snapshot[table].set(id, {
+            content: contentSig(table, row),
+            seq: startSeq,
+            objectPath: objectPathOf(table, row),
+          });
           continue;
         }
 
@@ -950,7 +1019,11 @@ async function pull(client: SupabaseClient, spaceId: string, mode: PullMode): Pr
         } else {
           // Clean: adopt server truth, so partner edits land.
           merged[table].set(id, row);
-          snapshot[table].set(id, { content: contentSig(table, row), seq: startSeq });
+          snapshot[table].set(id, {
+            content: contentSig(table, row),
+            seq: startSeq,
+            objectPath: objectPathOf(table, row),
+          });
         }
       }
 
@@ -1034,8 +1107,79 @@ async function push(client: SupabaseClient, spaceId: string): Promise<void> {
   }
 }
 
+// ---- Image blobs: local (data URL / IndexedDB) -> Storage buckets ----------
+//
+// Screens still write images locally (a photo `src` data URL, a receipt blob in
+// IndexedDB) for instant, offline display. Sync lifts those to the private
+// buckets on push and records the object path in the row; a device without the
+// local blob resolves the path to a signed URL on read via the useStorageUrl
+// hook. Paths are user content (in CONTENT_COLS), so setting one marks the row
+// dirty and it upserts on the same push.
+
+function setPhotoStoragePath(id: string, storagePath: string): void {
+  applyingRemote = true;
+  try {
+    useApp.setState((s) => ({
+      photos: s.photos.map((p) => (p.id === id ? { ...p, storagePath } : p)),
+    }));
+  } finally {
+    applyingRemote = false;
+  }
+}
+
+function setExpenseReceiptPath(itineraryId: string, expenseId: string, receiptPath: string): void {
+  applyingRemote = true;
+  try {
+    useApp.setState((s) => ({
+      itineraries: s.itineraries.map((it) =>
+        it.id === itineraryId
+          ? {
+              ...it,
+              expenses: (it.expenses ?? []).map((ex) =>
+                ex.id === expenseId ? { ...ex, receiptPath } : ex
+              ),
+            }
+          : it
+      ),
+    }));
+  } finally {
+    applyingRemote = false;
+  }
+}
+
+/**
+ * Upload any image still held only locally to its bucket, recording the object
+ * path on the row. A photo with a `data:` src and no storagePath is uploaded to
+ * `photos`; an expense with a local receiptId (IndexedDB) and no receiptPath has
+ * its blob lifted to `receipts`. Idempotent: rows already carrying a path are
+ * skipped, so this is a cheap scan on every push.
+ */
+async function uploadPendingBlobs(spaceId: string): Promise<void> {
+  const state = useApp.getState();
+
+  for (const p of state.photos) {
+    if (p.storagePath || !p.src || !p.src.startsWith("data:")) continue;
+    const path = await uploadDataUrl("photos", newObjectPath(spaceId, p.id), p.src);
+    if (path) setPhotoStoragePath(p.id, path);
+  }
+
+  for (const it of state.itineraries) {
+    for (const ex of it.expenses ?? []) {
+      if (ex.receiptPath || !ex.receiptId) continue;
+      const blob = await getReceiptBlob(ex.receiptId);
+      if (!blob) continue;
+      const path = await uploadBlob("receipts", newObjectPath(spaceId, ex.id), blob);
+      if (path) setExpenseReceiptPath(it.id, ex.id, path);
+    }
+  }
+}
+
 async function pushOnce(client: SupabaseClient, spaceId: string): Promise<void> {
   await withLock(async () => {
+    // Lift any local-only image to its bucket first, so the freshly-set paths
+    // are part of this push's flatten and upsert together with the row.
+    await uploadPendingBlobs(spaceId);
+
     const { itineraries, venues, photos } = useApp.getState();
     const flat = flatten(spaceId, itineraries, venues, photos);
 
@@ -1055,9 +1199,13 @@ async function pushOnce(client: SupabaseClient, spaceId: string): Promise<void> 
         return;
       }
       // Acknowledge: bump the sequence and tombstone each id so a stale fetch
-      // (SELECT executed before this delete committed) cannot resurrect it.
+      // (SELECT executed before this delete committed) cannot resurrect it. A
+      // deleted object-backed row also retires its Storage file best-effort.
       writeSeq += 1;
+      const bucket = OBJECT_TABLE[table]?.bucket;
       for (const id of gone) {
+        const orphan = bucket ? snapshot[table].get(id)?.objectPath : undefined;
+        if (bucket && orphan) void removePath(bucket, orphan);
         snapshot[table].delete(id);
         tombstones[table].set(id, writeSeq);
       }
@@ -1095,10 +1243,17 @@ async function pushOnce(client: SupabaseClient, spaceId: string): Promise<void> 
       }
       // Acknowledge in the same synchronous step: from here on, any pull whose
       // fetch started earlier reads these rows as stale-for-fetch and keeps the
-      // local copies (see pull()).
+      // local copies (see pull()). When an object-backed row's path changed
+      // (a replaced or removed receipt/photo), retire the previous file.
       writeSeq += 1;
+      const bucket = OBJECT_TABLE[table]?.bucket;
       for (const row of changed) {
-        snapshot[table].set(row.id, { content: contentSig(table, row), seq: writeSeq });
+        const newPath = objectPathOf(table, row);
+        if (bucket) {
+          const oldPath = snapshot[table].get(row.id)?.objectPath;
+          if (oldPath && oldPath !== newPath) void removePath(bucket, oldPath);
+        }
+        snapshot[table].set(row.id, { content: contentSig(table, row), seq: writeSeq, objectPath: newPath });
         tombstones[table].delete(row.id);
       }
     }

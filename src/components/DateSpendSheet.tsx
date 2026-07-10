@@ -8,6 +8,7 @@ import { ExpenseSheet } from "./ExpenseSheet";
 import { ReceiptLightbox } from "./ReceiptLightbox";
 import { AuthorChip } from "./AuthorChip";
 import { useReceiptUrl } from "../lib/receipts";
+import { useStorageUrl } from "../lib/storage";
 import { activeExpenses, dateSpend, itineraryTotal } from "../lib/derive";
 import { shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
@@ -131,9 +132,13 @@ function ExpenseRow({
   expense: Expense;
   stopName?: string;
   onEdit: () => void;
-  onOpenReceipt: () => void;
+  onOpenReceipt: (url: string) => void;
 }) {
-  const url = useReceiptUrl(expense.receiptId);
+  // Prefer the local IndexedDB blob (fast, offline); fall back to the signed
+  // Storage URL on a device without the local copy.
+  const localUrl = useReceiptUrl(expense.receiptId);
+  const remoteUrl = useStorageUrl("receipts", expense.receiptPath);
+  const url = localUrl ?? remoteUrl;
   return (
     <div {...stylex.props(styles.row)} onClick={onEdit}>
       <div {...stylex.props(styles.rowLeft)}>
@@ -144,7 +149,7 @@ function ExpenseRow({
             {...stylex.props(styles.rowThumb)}
             onClick={(e) => {
               e.stopPropagation();
-              onOpenReceipt();
+              onOpenReceipt(url);
             }}
           />
         )}
@@ -173,7 +178,7 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
   const [current, setCurrent] = useState<Itinerary | null>(itinerary);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [addingExpense, setAddingExpense] = useState(false);
-  const [receiptId, setReceiptId] = useState<string | null>(null);
+  const [receiptView, setReceiptView] = useState<string | null>(null);
 
   useEffect(() => {
     if (itinerary) setCurrent(itinerary);
@@ -182,7 +187,7 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
   const handleClose = () => {
     setEditingExpense(null);
     setAddingExpense(false);
-    setReceiptId(null);
+    setReceiptView(null);
     onClose();
   };
 
@@ -218,7 +223,7 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
                     expense={ex}
                     stopName={current.stops.find((s) => s.id === ex.stopId)?.name}
                     onEdit={() => setEditingExpense(ex)}
-                    onOpenReceipt={() => ex.receiptId && setReceiptId(ex.receiptId)}
+                    onOpenReceipt={(url) => setReceiptView(url)}
                   />
                 ))}
               </div>
@@ -248,7 +253,7 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
         />
       )}
 
-      <ReceiptLightbox receiptId={receiptId} onClose={() => setReceiptId(null)} />
+      <ReceiptLightbox url={receiptView} onClose={() => setReceiptView(null)} />
     </>
   );
 }

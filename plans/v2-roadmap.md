@@ -257,7 +257,20 @@ Everything here is one project: making the existing Supabase schema real.
 
 ### Coop session / live sync (2)
 
-The centerpiece and the most expensive item on the list. Work:
+**Status (2026-07-10): DONE.** The sync engine (`src/lib/sync.ts`) does the initial
+fetch on login, optimistic pushes, and Realtime pulls with content-based, clock-free
+conflict handling (items 1-2, 5). Item 4 (upload local demo data) was dropped by
+decision: logged-in spaces start empty. Item 3 (images to Storage) is done: photos and
+receipts still write locally for instant, offline display (a photo `data:` src, a
+receipt IndexedDB blob), and sync lifts the bytes to the private `photos` / `receipts`
+buckets on push, recording `storage_path` / `receipt_path` on the row. A device without
+the local copy resolves the path to a signed URL on read via the `useStorageUrl` hook
+(`src/lib/storage.ts`). Storage cleanup is centralized in sync: a row whose object path
+changes (a replaced/removed receipt) or is deleted retires the orphaned file
+best-effort, the same way `pushProfile` retires an old avatar. Demo mode keeps the
+IndexedDB / data-URL path unchanged.
+
+Original work list:
 
 1. A sync layer between the Zustand store and Supabase: initial fetch into the store
    on login, optimistic local writes pushed to Postgres, Supabase Realtime
@@ -267,6 +280,7 @@ The centerpiece and the most expensive item on the list. Work:
 3. Photos and receipts move from IndexedDB blobs to Supabase Storage buckets
    (schema already has `storage_path` / `receipt_path` columns waiting).
 4. Migration path: option to upload existing local demo data into a fresh space.
+   Dropped: logged-in spaces start empty.
 5. Demo mode (no env vars) must keep working exactly as today; the sync layer is
    a no-op behind `isSupabaseConfigured`.
 

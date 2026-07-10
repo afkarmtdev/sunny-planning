@@ -2,7 +2,6 @@ import * as stylex from "@stylexjs/stylex";
 import { useEffect, useState } from "react";
 import { colors } from "../theme/tokens.stylex";
 import { JellyButton } from "./JellyButton";
-import { useReceiptUrl } from "../lib/receipts";
 
 const EXIT_MS = 220;
 
@@ -53,22 +52,21 @@ const styles = stylex.create({
 });
 
 type Props = {
-  /** The receipt id to view; null (or absent) closes the lightbox. */
-  receiptId: string | null;
+  /** The receipt image URL to view; null (or absent) closes the lightbox. */
+  url: string | null;
   onClose: () => void;
 };
 
 /** Minimal full-size viewer for a single receipt image, separate from PhotoLightbox. */
-export function ReceiptLightbox({ receiptId, onClose }: Props) {
-  const [mounted, setMounted] = useState(Boolean(receiptId));
+export function ReceiptLightbox({ url, onClose }: Props) {
+  const [mounted, setMounted] = useState(Boolean(url));
   const [shown, setShown] = useState(false);
-  // Keep the last id while sliding out so the image does not blank mid-exit.
-  const [current, setCurrent] = useState(receiptId);
-  const url = useReceiptUrl(current ?? undefined);
+  // Keep the last url while sliding out so the image does not blank mid-exit.
+  const [current, setCurrent] = useState(url);
 
   useEffect(() => {
-    if (receiptId) {
-      setCurrent(receiptId);
+    if (url) {
+      setCurrent(url);
       setMounted(true);
       const raf = requestAnimationFrame(() => setShown(true));
       return () => cancelAnimationFrame(raf);
@@ -76,7 +74,7 @@ export function ReceiptLightbox({ receiptId, onClose }: Props) {
     setShown(false);
     const timer = setTimeout(() => setMounted(false), EXIT_MS);
     return () => clearTimeout(timer);
-  }, [receiptId]);
+  }, [url]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -98,7 +96,7 @@ export function ReceiptLightbox({ receiptId, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div {...stylex.props(styles.photoBox)}>
-          {url && <img src={url} alt="Receipt" {...stylex.props(styles.img)} />}
+          {current && <img src={current} alt="Receipt" {...stylex.props(styles.img)} />}
         </div>
         <div {...stylex.props(styles.actions)}>
           <JellyButton variant="white" fullWidth onClick={onClose}>

@@ -178,6 +178,7 @@ export function Album() {
   const itineraries = useApp((s) => s.itineraries);
   const addPhoto = useApp((s) => s.addPhoto);
   const updatePhotoCaption = useApp((s) => s.updatePhotoCaption);
+  const removePhoto = useApp((s) => s.removePhoto);
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [lightboxId, setLightboxId] = useState<string | null>(null);
   const [pending, setPending] = useState<string[] | null>(null);
@@ -372,6 +373,7 @@ export function Album() {
         }
         onClose={() => setLightboxId(null)}
         onView={(id) => navigate(`/plan/${id}`)}
+        onDelete={lightboxId ? () => removePhoto(lightboxId) : undefined}
       />
 
       <Sheet open={pending !== null} onClose={() => setPending(null)} title="Which date is this from?">

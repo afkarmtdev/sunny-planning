@@ -43,8 +43,11 @@ export type Expense = {
   amount: number;
   /** Stop this spend belongs to, when it maps to one. */
   stopId?: string;
-  /** Receipt image in the IndexedDB receipt store. */
+  /** Receipt image in the local IndexedDB receipt store (demo / origin device). */
   receiptId?: string;
+  /** Receipt object path in the private `receipts` bucket, once synced. A device
+   * without the local blob resolves it to a signed URL via `useStorageUrl`. */
+  receiptPath?: string;
   createdISO: string;
 } & Audit & SoftDelete;
 
@@ -76,7 +79,10 @@ export type Photo = {
   stopId?: string;
   /** Which partner uploaded this photo; absent for legacy photos. */
   author?: PartnerId;
+  /** Display image URL: a local `data:` URL (origin device) or a signed URL. */
   src?: string;
+  /** Object path in the private `photos` bucket, once synced. */
+  storagePath?: string;
   art?: number;
   rot: number;
   tape?: "lavender" | "pink" | null;

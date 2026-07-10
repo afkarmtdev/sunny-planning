@@ -8,6 +8,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { UploadDropzone } from "./UploadDropzone";
 import { useApp } from "../store/useApp";
 import { deleteReceipt, saveReceipt, useReceiptUrl } from "../lib/receipts";
+import { useStorageUrl } from "../lib/storage";
 import type { Expense, Itinerary } from "../lib/types";
 
 const styles = stylex.create({
@@ -89,11 +90,19 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
   const [amount, setAmount] = useState("");
   const [stopId, setStopId] = useState<string | undefined>(undefined);
   const [receiptId, setReceiptId] = useState<string | undefined>(undefined);
+  // The synced Storage path staged alongside the local blob: kept while the
+  // existing receipt is untouched, cleared when it is removed or replaced.
+  const [receiptPath, setReceiptPath] = useState<string | undefined>(undefined);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const receiptUrl = useReceiptUrl(receiptId);
+  // Prefer the local blob (fast, offline); else the signed Storage URL for the
+  // staged path (re-signs itself when the path is cleared/replaced).
+  const localReceiptUrl = useReceiptUrl(receiptId);
+  const remoteReceiptUrl = useStorageUrl("receipts", receiptPath);
+  const receiptUrl = localReceiptUrl ?? remoteReceiptUrl;
 
-  // The receipt already saved on this expense, if any: kept around so we know
-  // whether a swapped-in receipt should retire the old blob.
+  // The local blob already saved on this expense, if any: kept around so we know
+  // whether a swapped-in receipt should retire the old IndexedDB blob. The synced
+  // Storage object is retired by the sync layer when the path changes.
   const savedReceiptId = expense?.receiptId;
 
   useEffect(() => {
@@ -104,6 +113,7 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
     setAmount(expense ? String(expense.amount) : "");
     setStopId(initialStopId);
     setReceiptId(expense?.receiptId);
+    setReceiptPath(expense?.receiptPath);
     setConfirmDelete(false);
     // Only re-seed when the sheet opens for a (possibly new) expense/stop; the
     // itinerary's stop list is not expected to change while the sheet is open.
@@ -128,11 +138,15 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
     if (receiptId && receiptId !== savedReceiptId) void deleteReceipt(receiptId);
     const id = await saveReceipt(file);
     setReceiptId(id);
+    // A fresh local blob supersedes any synced object; clear the path so sync
+    // re-uploads it (the old object is retired on Save).
+    setReceiptPath(undefined);
   };
 
   const removeReceipt = () => {
     if (receiptId) void deleteReceipt(receiptId);
     setReceiptId(undefined);
+    setReceiptPath(undefined);
   };
 
   const handleClose = () => {
@@ -148,9 +162,9 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
     const finalAmount = Number(amount) || 0;
     if (savedReceiptId && receiptId !== savedReceiptId) void deleteReceipt(savedReceiptId);
     if (expense) {
-      updateExpense(itinerary.id, expense.id, { label: finalLabel, amount: finalAmount, stopId, receiptId });
+      updateExpense(itinerary.id, expense.id, { label: finalLabel, amount: finalAmount, stopId, receiptId, receiptPath });
     } else {
-      addExpense(itinerary.id, { label: finalLabel, amount: finalAmount, stopId, receiptId });
+      addExpense(itinerary.id, { label: finalLabel, amount: finalAmount, stopId, receiptId, receiptPath });
     }
     onClose();
   };

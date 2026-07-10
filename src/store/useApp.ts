@@ -160,6 +160,8 @@ type AppState = {
   updatePhotoCaption: (id: string, caption: string) => void;
   /** Tie a photo to a stop within its date, or clear it (undefined) back to the date. */
   updatePhotoStop: (id: string, stopId: string | undefined) => void;
+  /** Remove a photo for good; sync retires its Storage object on push. */
+  removePhoto: (id: string) => void;
 
   /**
    * Record a paw rating. With `visit`, the rating is tied to that itinerary
@@ -573,6 +575,8 @@ export const useApp = create<AppState>()(
         set((s) => ({
           photos: s.photos.map((p) => (p.id === id ? { ...p, stopId, ...touchedAudit() } : p)),
         })),
+
+      removePhoto: (id) => set((s) => ({ photos: s.photos.filter((p) => p.id !== id) })),
 
       rateVenue: (venueId, rating, visit) =>
         set((s) => ({

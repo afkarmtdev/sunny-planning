@@ -52,6 +52,28 @@ ProfileSheet. `pushProfile` uploads a `data:` avatar and stores its path; pulls
 re-sign the path. The path carries a fresh uuid each upload so the row changes and
 the partner gets a Realtime event.
 
+## Images in Storage (photos, receipts)
+
+Photo and receipt bytes follow the same shape as avatars, generalized. Screens
+still write the image **locally** for instant, offline display - a photo `data:`
+`src` in the store, a receipt blob in IndexedDB (`receiptId`). Sync owns the
+Storage side:
+
+- **Write:** `uploadPendingBlobs` (top of `pushOnce`) lifts any local-only image
+  to its bucket (`photos` / `receipts`) and records `storage_path` /
+  `receipt_path` on the row via a guarded `setState`. Those paths ARE in
+  `CONTENT_COLS`, so the freshly-set path makes the row dirty and it upserts in
+  the same push.
+- **Read:** components resolve a path to a signed URL with the `useStorageUrl`
+  hook (module-cached), preferring the local blob when present (`photo.src ??`
+  hook; `useReceiptUrl(receiptId) ??` hook). No signed URL is stored in the
+  store, so a replaced image never shows a stale cached URL.
+- **Cleanup:** centralized in sync via `snapshot[table].objectPath`
+  (`OBJECT_TABLE` maps a table to its bucket/column). On upsert, a changed path
+  retires the old object; on delete, the row's object is retired. Both
+  best-effort. Never retire on a *remote* delete - the deleting client cleans up.
+  This is why `deletePhoto` / receipt removal need no Storage call in the screen.
+
 ## How a write reaches the server
 
 `startSync` registers `useApp.subscribe((state, prev) => ...)`. On every store

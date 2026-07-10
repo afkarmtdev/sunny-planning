@@ -4,6 +4,7 @@ import { colors, fonts } from "../theme/tokens.stylex";
 import type { Photo } from "../lib/types";
 import { WashiTape } from "./WashiTape";
 import { AuthorChip } from "./AuthorChip";
+import { useStorageUrl } from "../lib/storage";
 
 const styles = stylex.create({
   frame: (deg: number) => ({
@@ -242,6 +243,9 @@ type Props = {
 export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }: Props) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(photo.caption);
+  // Local data URL if this device uploaded it, else the signed Storage URL.
+  const remoteSrc = useStorageUrl("photos", photo.storagePath);
+  const src = photo.src ?? remoteSrc;
 
   const commit = () => {
     setEditing(false);
@@ -264,8 +268,8 @@ export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }:
         role={onEnlarge ? "button" : undefined}
         aria-label={onEnlarge ? `Enlarge ${photo.caption || "photo"}` : undefined}
       >
-        {photo.src ? (
-          <img src={photo.src} alt={photo.caption || "date photo"} {...stylex.props(styles.img)} />
+        {src ? (
+          <img src={src} alt={photo.caption || "date photo"} {...stylex.props(styles.img)} />
         ) : (
           <ArtPlaceholder variant={photo.art ?? 0} />
         )}

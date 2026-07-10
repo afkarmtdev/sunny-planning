@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import type { Photo } from "../lib/types";
 import { JellyButton } from "./JellyButton";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { shortDate } from "../lib/dates";
+import { useStorageUrl } from "../lib/storage";
 
 const EXIT_MS = 220;
 
@@ -75,6 +77,16 @@ const styles = stylex.create({
     gap: 8,
     marginTop: 14,
   },
+  deleteBtn: {
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 13,
+    color: colors.heartPop,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    paddingBlock: 6,
+    cursor: "pointer",
+  },
 });
 
 const ART_STYLES = [styles.art0, styles.art1, styles.art2, styles.art3];
@@ -90,11 +102,14 @@ type Props = {
   onView?: (itineraryId: string) => void;
   /** When set, shows an action to tie this photo to a stop within its date. */
   onTagStop?: () => void;
+  /** When set, shows a Delete action (behind a themed confirm). */
+  onDelete?: () => void;
 };
 
-export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onView, onTagStop }: Props) {
+export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onView, onTagStop, onDelete }: Props) {
   const [mounted, setMounted] = useState(Boolean(photo));
   const [shown, setShown] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   // Keep the last photo while sliding out so content does not blank mid-exit.
   const [current, setCurrent] = useState(photo);
   const [currentTitle, setCurrentTitle] = useState(itineraryTitle);
@@ -120,9 +135,14 @@ export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onVie
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Local data URL if this device has it, else the signed Storage URL.
+  const remoteSrc = useStorageUrl("photos", current?.storagePath);
+  const src = current?.src ?? remoteSrc;
+
   if (!mounted || !current) return null;
 
   return (
+    <>
     <div
       {...stylex.props(styles.overlay, shown ? styles.overlayShown : styles.overlayHidden)}
       onClick={onClose}
@@ -134,8 +154,8 @@ export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onVie
         onClick={(e) => e.stopPropagation()}
       >
         <div {...stylex.props(styles.photoBox)}>
-          {current.src ? (
-            <img src={current.src} alt={current.caption || "date photo"} {...stylex.props(styles.img)} />
+          {src ? (
+            <img src={src} alt={current.caption || "date photo"} {...stylex.props(styles.img)} />
           ) : (
             <div {...stylex.props(styles.fill, ART_STYLES[((current.art ?? 0) % 4 + 4) % 4])} />
           )}
@@ -160,8 +180,29 @@ export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onVie
           <JellyButton variant="white" fullWidth onClick={onClose}>
             Close
           </JellyButton>
+          {onDelete && (
+            <button type="button" {...stylex.props(styles.deleteBtn)} onClick={() => setConfirmDelete(true)}>
+              Delete photo
+            </button>
+          )}
         </div>
       </div>
     </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete this photo?"
+        message="This removes it from your album for good."
+        confirmLabel="Delete"
+        cancelLabel="Keep"
+        tone="danger"
+        onConfirm={() => {
+          setConfirmDelete(false);
+          onDelete?.();
+          onClose();
+        }}
+        onClose={() => setConfirmDelete(false)}
+      />
+    </>
   );
 }
