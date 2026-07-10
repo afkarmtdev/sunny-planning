@@ -1,17 +1,23 @@
 import * as stylex from "@stylexjs/stylex";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { Screen } from "../components/Screen";
 import { Card } from "../components/Card";
+import { ExpenseSheet } from "../components/ExpenseSheet";
 import { JellyButton } from "../components/JellyButton";
 import { LcdLabel, LcdPanel, LcdValue } from "../components/Lcd";
 import { ProgressDots } from "../components/ProgressDots";
 import { SunnySprite } from "../components/SunnySprite";
+import { UploadDropzone } from "../components/UploadDropzone";
 import { useApp } from "../store/useApp";
-import { nextPlanned } from "../lib/derive";
-import { clockLabel, todayISO } from "../lib/dates";
-import { travelReadout } from "../lib/format";
+import { dateSpend, expensesTotal, hasActuals, nextPlanned } from "../lib/derive";
+import { clockLabel, stampDate, todayISO } from "../lib/dates";
+import { rm, travelReadout } from "../lib/format";
+import { travelBetween } from "../lib/travel";
+import { fileToDataUrl } from "../lib/images";
+import { openGoogleMaps } from "../lib/maps";
+import { photoDecoration } from "../lib/photos";
 import { openWaze } from "../lib/waze";
 
 const confetti = stylex.keyframes({
@@ -76,8 +82,47 @@ const styles = stylex.create({
     opacity: 0.65,
     marginTop: 2,
   },
-  startAgain: {
+  spendWrap: {
+    marginTop: 2,
+  },
+  spendLine: {
+    fontFamily: fonts.lcd,
+    fontSize: 15,
+    color: colors.marmalade,
+  },
+  spendList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    marginTop: 6,
+  },
+  spendItem: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.ink,
+    opacity: 0.65,
+  },
+  logSpendBtn: {
+    marginTop: 12,
+    fontSize: 13,
+    paddingBlock: 9,
+  },
+  photoUpload: {
     marginTop: 16,
+    textAlign: "left",
+  },
+  addedConfirm: {
+    fontFamily: fonts.hand,
+    fontSize: 13,
+    color: colors.heartPop,
+  },
+  rateBtn: {
+    marginTop: 16,
+    fontSize: 14,
+    paddingBlock: 11,
+  },
+  startAgain: {
+    marginTop: 10,
     fontSize: 14,
     paddingBlock: 11,
   },
@@ -201,33 +246,123 @@ const styles = stylex.create({
   emptyLink: {
     color: colors.heartPop,
   },
+  previewNote: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.ink,
+    opacity: 0.55,
+  },
+  previewCard: {
+    padding: "18px 16px 16px",
+  },
+  previewLabel: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.ink,
+    opacity: 0.55,
+    marginBottom: 2,
+  },
+  previewTitle: {
+    fontFamily: fonts.display,
+    fontWeight: 700,
+    fontSize: 19,
+    color: colors.ink,
+    marginBottom: 10,
+  },
+  chipRow: {
+    display: "flex",
+    gap: 6,
+    marginBottom: 12,
+    flexWrap: "wrap",
+  },
+  chip: {
+    backgroundColor: colors.shellPink,
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: colors.ink,
+    borderRadius: 999,
+    paddingBlock: 4,
+    paddingInline: 10,
+    fontSize: 11,
+    fontFamily: fonts.body,
+    fontWeight: 700,
+    color: colors.ink,
+  },
+  viewBtn: {
+    fontSize: 14,
+    paddingBlock: 9,
+    width: "100%",
+  },
 });
 
 export function DayOf() {
+  const navigate = useNavigate();
   const itineraries = useApp((s) => s.itineraries);
   const dayOf = useApp((s) => s.dayOf);
-  const { syncDayOf, advanceDay, resetDay } = useApp();
+  const { syncDayOf, advanceDay, resetDay, addPhoto } = useApp();
   const [now, setNow] = useState(() => new Date());
+  const [justAdded, setJustAdded] = useState(false);
+  const [expenseSheetOpen, setExpenseSheetOpen] = useState(false);
+  const [expenseDefaultStopId, setExpenseDefaultStopId] = useState<string | undefined>(undefined);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const today = todayISO();
-  const todays = itineraries.find((it) => it.dateISO === today && it.status !== "completed");
-  const completedToday = itineraries.find((it) => it.id === dayOf.itineraryId && dayOf.completed);
-  const itinerary = todays ?? completedToday ?? nextPlanned(itineraries);
+  const todays = itineraries.find((it) => it.dateISO === today);
 
   useEffect(() => {
-    syncDayOf(itinerary?.id ?? null);
-  }, [itinerary?.id, syncDayOf]);
+    syncDayOf(todays && todays.dateISO === today ? todays.id : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todays?.id, syncDayOf]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(t);
   }, []);
 
-  const stops = itinerary?.stops ?? [];
+  useEffect(() => {
+    return () => {
+      if (addedTimer.current) clearTimeout(addedTimer.current);
+    };
+  }, []);
+
+  const isComplete = dayOf.completed && !!todays && dayOf.itineraryId === todays.id;
+  const isLive = !!todays && todays.status === "planned" && todays.stops.length > 0;
+  const isEmptyToday = !!todays && todays.status === "planned" && todays.stops.length === 0 && !isComplete;
+
+  const stops = todays?.stops ?? [];
   const idx = Math.min(dayOf.stopIdx, Math.max(0, stops.length - 1));
   const current = stops[idx];
   const next = stops[idx + 1];
   const isLast = idx >= stops.length - 1;
+
+  const upcoming = nextPlanned(itineraries);
+
+  const openExpenseSheet = (stopId?: string) => {
+    setExpenseDefaultStopId(stopId);
+    setExpenseSheetOpen(true);
+  };
+
+  const expenses = todays?.expenses ?? [];
+
+  const handlePhotoFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    let added = false;
+    for (const file of Array.from(files)) {
+      try {
+        const src = await fileToDataUrl(file);
+        const n = useApp.getState().photos.length;
+        addPhoto({ caption: "", dateISO: todayISO(), itineraryId: todays?.id, src, ...photoDecoration(n) });
+        added = true;
+      } catch {
+        // Skip unreadable files.
+      }
+    }
+    if (added) {
+      setJustAdded(true);
+      if (addedTimer.current) clearTimeout(addedTimer.current);
+      addedTimer.current = setTimeout(() => setJustAdded(false), 2500);
+    }
+  };
 
   return (
     <Screen gap={16}>
@@ -238,64 +373,155 @@ export function DayOf() {
         </LcdPanel>
       </div>
 
-      {!itinerary || stops.length === 0 ? (
+      {(isLive || isComplete) && <ProgressDots total={stops.length} current={idx} completed={isComplete} />}
+
+      {isComplete ? (
+        <Card tone="shellPink" xstyle={styles.completeCard}>
+          <div {...stylex.props(styles.confettiHeart("20%", 10, "#FF4D9D", "1.8s", "0s"))} />
+          <div {...stylex.props(styles.confettiHeart("55%", 8, "#CDB4F6", "1.6s", "0.3s"))} />
+          <div {...stylex.props(styles.confettiHeart("75%", 9, "#FFA24C", "2s", "0.6s"))} />
+          <SunnySprite expression="smitten" size={110} hop hopFast xstyle={styles.spriteCenter} />
+          <div {...stylex.props(styles.completeTitle)}>Date complete!</div>
+          {todays && (
+            <div {...stylex.props(styles.spendWrap)}>
+              <div {...stylex.props(styles.spendLine)}>
+                {hasActuals(todays) ? `Spent ${rm(expensesTotal(todays))}` : `est. ~${rm(dateSpend(todays))}`}
+              </div>
+              {expenses.length > 0 && (
+                <div {...stylex.props(styles.spendList)}>
+                  {expenses.slice(0, 3).map((ex) => (
+                    <div key={ex.id} {...stylex.props(styles.spendItem)}>
+                      {ex.label} · {rm(ex.amount)}
+                    </div>
+                  ))}
+                  {expenses.length > 3 && (
+                    <div {...stylex.props(styles.spendItem)}>and {expenses.length - 3} more</div>
+                  )}
+                </div>
+              )}
+              <JellyButton
+                variant="white"
+                fullWidth
+                xstyle={styles.logSpendBtn}
+                onClick={() => openExpenseSheet(undefined)}
+              >
+                + Log a spend
+              </JellyButton>
+            </div>
+          )}
+
+          <div {...stylex.props(styles.photoUpload)}>
+            <UploadDropzone
+              multiple
+              title="+ Add photos from today"
+              subtitle={
+                justAdded ? (
+                  <span {...stylex.props(styles.addedConfirm)}>added to your album</span>
+                ) : (
+                  "They will land in your album"
+                )
+              }
+              spriteSize={54}
+              onFiles={(files) => void handlePhotoFiles(files)}
+            />
+          </div>
+
+          <JellyButton
+            variant="soft"
+            xstyle={styles.rateBtn}
+            fullWidth
+            onClick={() => todays && navigate(`/ratings?date=${todays.id}`)}
+          >
+            Rate the places you went
+          </JellyButton>
+          <JellyButton variant="white" xstyle={styles.startAgain} fullWidth onClick={resetDay}>
+            Start again
+          </JellyButton>
+        </Card>
+      ) : isLive && current ? (
+        <>
+          <Card xstyle={styles.nowCard}>
+            <div {...stylex.props(styles.nowLabel)}>RIGHT NOW</div>
+            <div {...stylex.props(styles.nowName)}>{current.name}</div>
+            <div {...stylex.props(styles.nowSub)}>{current.note || current.time}</div>
+
+            <LcdPanel xstyle={styles.travelPanel}>
+              <LcdLabel>TRAVEL TIME TO NEXT STOP</LcdLabel>
+              <LcdValue xstyle={styles.travelValue}>
+                {isLast || !next ? "--:--" : travelReadout(travelBetween(current, next)?.minutes)}
+              </LcdValue>
+            </LcdPanel>
+
+            <div {...stylex.props(styles.goWrap)} onClick={advanceDay}>
+              <div {...stylex.props(styles.goShadow)} />
+              <button type="button" {...stylex.props(styles.goFace)}>
+                {isLast ? "Mark date complete" : "GO to next stop"}
+              </button>
+            </div>
+
+            <button type="button" {...stylex.props(styles.wazePill)} onClick={() => openWaze(current)}>
+              Navigate in Waze
+            </button>
+            <button type="button" {...stylex.props(styles.wazePill)} onClick={() => openGoogleMaps(current)}>
+              Open in Google Maps
+            </button>
+            <button
+              type="button"
+              {...stylex.props(styles.wazePill)}
+              onClick={() => openExpenseSheet(current.id)}
+            >
+              Log a spend
+            </button>
+          </Card>
+
+          <div {...stylex.props(styles.upNext)}>
+            <div {...stylex.props(styles.upNextLabel)}>UP NEXT</div>
+            <div {...stylex.props(styles.upNextName)}>
+              {next ? next.name : "Wherever the night takes you"}
+            </div>
+          </div>
+        </>
+      ) : isEmptyToday && todays ? (
+        <div {...stylex.props(styles.emptyCard)}>
+          Today's date has no stops yet.{" "}
+          <Link to={`/plan/${todays.id}`} {...stylex.props(styles.emptyLink)}>
+            Add some stops
+          </Link>
+        </div>
+      ) : upcoming ? (
+        <>
+          <div {...stylex.props(styles.previewNote)}>Nothing on today. Here is what is coming up.</div>
+          <Card xstyle={styles.previewCard}>
+            <div {...stylex.props(styles.previewLabel)}>NEXT DATE · {stampDate(upcoming.dateISO)}</div>
+            <div {...stylex.props(styles.previewTitle)}>{upcoming.title}</div>
+            <div {...stylex.props(styles.chipRow)}>
+              {upcoming.stops.map((s) => (
+                <div key={s.id} {...stylex.props(styles.chip)}>
+                  {s.name}
+                </div>
+              ))}
+            </div>
+            <JellyButton variant="soft" xstyle={styles.viewBtn} onClick={() => navigate(`/plan/${upcoming.id}`)}>
+              View itinerary
+            </JellyButton>
+          </Card>
+        </>
+      ) : (
         <div {...stylex.props(styles.emptyCard)}>
           Nothing on today.{" "}
           <Link to="/plan" {...stylex.props(styles.emptyLink)}>
             Plan something sweet
           </Link>
         </div>
-      ) : (
-        <>
-          <ProgressDots total={stops.length} current={idx} completed={dayOf.completed} />
+      )}
 
-          {dayOf.completed ? (
-            <Card tone="shellPink" xstyle={styles.completeCard}>
-              <div {...stylex.props(styles.confettiHeart("20%", 10, "#FF4D9D", "1.8s", "0s"))} />
-              <div {...stylex.props(styles.confettiHeart("55%", 8, "#CDB4F6", "1.6s", "0.3s"))} />
-              <div {...stylex.props(styles.confettiHeart("75%", 9, "#FFA24C", "2s", "0.6s"))} />
-              <SunnySprite expression="smitten" size={110} hop hopFast xstyle={styles.spriteCenter} />
-              <div {...stylex.props(styles.completeTitle)}>Date complete!</div>
-              <div {...stylex.props(styles.completeSub)}>Logged to your album and cost tracker</div>
-              <JellyButton variant="white" xstyle={styles.startAgain} fullWidth onClick={resetDay}>
-                Start again
-              </JellyButton>
-            </Card>
-          ) : (
-            <>
-              <Card xstyle={styles.nowCard}>
-                <div {...stylex.props(styles.nowLabel)}>RIGHT NOW</div>
-                <div {...stylex.props(styles.nowName)}>{current.name}</div>
-                <div {...stylex.props(styles.nowSub)}>{current.note || current.time}</div>
-
-                <LcdPanel xstyle={styles.travelPanel}>
-                  <LcdLabel>TRAVEL TIME TO NEXT STOP</LcdLabel>
-                  <LcdValue xstyle={styles.travelValue}>
-                    {isLast ? "--:--" : travelReadout(current.travelMinutesToNext)}
-                  </LcdValue>
-                </LcdPanel>
-
-                <div {...stylex.props(styles.goWrap)} onClick={advanceDay}>
-                  <div {...stylex.props(styles.goShadow)} />
-                  <button type="button" {...stylex.props(styles.goFace)}>
-                    {isLast ? "Mark date complete" : "GO to next stop"}
-                  </button>
-                </div>
-
-                <button type="button" {...stylex.props(styles.wazePill)} onClick={() => openWaze(current)}>
-                  Navigate in Waze
-                </button>
-              </Card>
-
-              <div {...stylex.props(styles.upNext)}>
-                <div {...stylex.props(styles.upNextLabel)}>UP NEXT</div>
-                <div {...stylex.props(styles.upNextName)}>
-                  {next ? next.name : "Wherever the night takes you"}
-                </div>
-              </div>
-            </>
-          )}
-        </>
+      {todays && (
+        <ExpenseSheet
+          open={expenseSheetOpen}
+          onClose={() => setExpenseSheetOpen(false)}
+          itinerary={todays}
+          defaultStopId={expenseDefaultStopId}
+        />
       )}
     </Screen>
   );
