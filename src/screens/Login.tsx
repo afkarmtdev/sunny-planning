@@ -7,6 +7,8 @@ import { JellyButton } from "../components/JellyButton";
 import { SunnySprite } from "../components/SunnySprite";
 import { Field, TextInput } from "../components/Field";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { takeMagicLinkError } from "../lib/authRedirect";
+import { useOnline } from "../lib/useOnline";
 
 const styles = stylex.create({
   column: {
@@ -50,6 +52,33 @@ const styles = stylex.create({
     fontFamily: fonts.body,
     fontSize: 11,
     color: colors.heartPop,
+  },
+  linkErrorCard: {
+    width: "100%",
+    backgroundColor: colors.cream,
+    borderWidth: 3,
+    borderStyle: "solid",
+    borderColor: colors.heartPop,
+    borderRadius: 18,
+    padding: 14,
+    boxShadow: "3px 3px 0 0 #332B33",
+    textAlign: "left",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  linkErrorText: {
+    fontFamily: fonts.body,
+    fontWeight: 700,
+    fontSize: 13,
+    color: colors.ink,
+    lineHeight: 1.4,
+  },
+  offlineNote: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    fontWeight: 700,
+    color: colors.marmalade,
   },
   divider: {
     width: "100%",
@@ -97,12 +126,17 @@ const styles = stylex.create({
 
 export function Login() {
   const navigate = useNavigate();
+  const online = useOnline();
   const [email, setEmail] = useState("");
   const [phase, setPhase] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
+  // A failed or expired magic link redirects back here with an error in the URL
+  // hash; surface it (once) with a resend, rather than a silent bounce to the form.
+  const [linkError, setLinkError] = useState<string | null>(() => takeMagicLinkError());
 
   const sendLink = async () => {
     setError(null);
+    setLinkError(null);
     if (!isSupabaseConfigured || !supabase) {
       navigate("/");
       return;
@@ -143,6 +177,13 @@ export function Login() {
           </div>
         ) : (
           <>
+            {linkError && (
+              <div {...stylex.props(styles.linkErrorCard)}>
+                <SunnySprite size={40} expression="sleepy" />
+                <div {...stylex.props(styles.linkErrorText)}>{linkError}</div>
+              </div>
+            )}
+
             <div {...stylex.props(styles.fieldWrap)}>
               <Field label="Email">
                 <TextInput
@@ -150,7 +191,7 @@ export function Login() {
                   placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && void sendLink()}
+                  onKeyDown={(e) => e.key === "Enter" && online && void sendLink()}
                 />
               </Field>
             </div>
@@ -159,13 +200,19 @@ export function Login() {
               variant="primary"
               xstyle={styles.button}
               onClick={() => void sendLink()}
-              disabled={phase === "sending"}
+              disabled={phase === "sending" || !online}
             >
               {phase === "sending" ? "Sending..." : "Send me a magic link"}
             </JellyButton>
 
             {error && <div {...stylex.props(styles.error)}>{error}</div>}
-            <div {...stylex.props(styles.note)}>No password. We will email you a one-tap link.</div>
+            {!online ? (
+              <div {...stylex.props(styles.offlineNote)}>
+                You are offline. Reconnect to get your magic link.
+              </div>
+            ) : (
+              <div {...stylex.props(styles.note)}>No password. We will email you a one-tap link.</div>
+            )}
           </>
         )}
 

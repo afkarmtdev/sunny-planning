@@ -294,9 +294,14 @@ up front, expensive to retrofit.
 
 ### Login page as a real gate (3)
 
-The screen exists and works. Remaining: polish per the design doc, magic-link error
-and expired states, and the RequireAuth wrapper becoming a real gate in configured
-mode, which it already is; feature 3 is mostly done once first-time setup hooks in.
+**Status (2026-07-10): DONE.** `RequireAuth` already gates the app in configured mode
+and Login matches the design. This adds the failure paths: a failed or expired magic
+link redirects back with an error in the URL hash, so `src/lib/authRedirect.ts`
+captures it once at startup (before the router drops the hash), strips it, and Login
+shows a themed message with a resend instead of a silent bounce to the form. The send
+button is offline-aware (`useOnline`): disabled with an explanation when offline, per
+the error-offline-states standard. Only error hashes are touched; a success token hash
+is left for the Supabase client to consume.
 
 ### Created by / updated by (7)
 
