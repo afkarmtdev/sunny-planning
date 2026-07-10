@@ -8,6 +8,7 @@ import { SunnySprite } from "../components/SunnySprite";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { resolveSpaceId, stashPendingInvite } from "../lib/space";
 import { startSync } from "../lib/sync";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   column: {
@@ -58,6 +59,7 @@ const styles = stylex.create({
 });
 
 export function AcceptInvite() {
+  const t = useT();
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const [joining, setJoining] = useState(false);
@@ -88,14 +90,14 @@ export function AcceptInvite() {
       <div {...stylex.props(styles.column)}>
         <SunnySprite expression="smitten" size={92} hop />
         <div>
-          <div {...stylex.props(styles.title)}>You found an invite</div>
-          <div {...stylex.props(styles.sub)}>Your person wants you in their Sunny Planning space</div>
+          <div {...stylex.props(styles.title)}>{t("auth.foundInvite")}</div>
+          <div {...stylex.props(styles.sub)}>{t("auth.foundInviteSub")}</div>
         </div>
-        <div {...stylex.props(styles.codeBox)}>invite · {code}</div>
+        <div {...stylex.props(styles.codeBox)}>{t("auth.inviteCodeLabel", { code: code ?? "" })}</div>
         <JellyButton variant="primary" xstyle={styles.joinBtn} onClick={() => void join()} disabled={joining}>
-          {joining ? "Joining..." : "Join this space"}
+          {joining ? t("auth.joining") : t("auth.joinSpace")}
         </JellyButton>
-        <div {...stylex.props(styles.note)}>Only the two of you will ever see it</div>
+        <div {...stylex.props(styles.note)}>{t("auth.privacyNoteShort")}</div>
       </div>
     </Screen>
   );

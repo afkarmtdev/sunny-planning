@@ -3,6 +3,7 @@ import { useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { parseISO, toISODate, addMonths, monthLabel, todayISO, shortDate } from "../lib/dates";
 import { IconChevronLeft } from "./icons";
+import { useT } from "../lib/i18n";
 
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -171,6 +172,7 @@ type Props = {
 };
 
 export function Calendar({ value, onChange, disabledDates }: Props) {
+  const t = useT();
   const selected = value || todayISO();
   const [view, setView] = useState(() => {
     const d = parseISO(selected);
@@ -233,7 +235,7 @@ export function Calendar({ value, onChange, disabledDates }: Props) {
       <div {...stylex.props(styles.head)}>
         <button
           type="button"
-          aria-label={mode === "days" ? "Previous month" : mode === "months" ? "Previous year" : "Previous years"}
+          aria-label={mode === "days" ? t("ui.calendar.prevMonth") : mode === "months" ? t("ui.calendar.prevYear") : t("ui.calendar.prevYears")}
           onClick={stepBack}
           {...stylex.props(styles.nav)}
         >
@@ -241,7 +243,7 @@ export function Calendar({ value, onChange, disabledDates }: Props) {
         </button>
         <button
           type="button"
-          aria-label={mode === "days" ? "Pick a month" : mode === "months" ? "Pick a year" : headerLabel}
+          aria-label={mode === "days" ? t("ui.calendar.pickMonth") : mode === "months" ? t("ui.calendar.pickYear") : headerLabel}
           onClick={onHeaderTap}
           {...stylex.props(styles.monthText)}
         >
@@ -249,7 +251,7 @@ export function Calendar({ value, onChange, disabledDates }: Props) {
         </button>
         <button
           type="button"
-          aria-label={mode === "days" ? "Next month" : mode === "months" ? "Next year" : "Next years"}
+          aria-label={mode === "days" ? t("ui.calendar.nextMonth") : mode === "months" ? t("ui.calendar.nextYear") : t("ui.calendar.nextYears")}
           onClick={stepForward}
           {...stylex.props(styles.nav, styles.navNext)}
         >
@@ -353,7 +355,7 @@ export function Calendar({ value, onChange, disabledDates }: Props) {
 
       {nudged && (
         <div {...stylex.props(styles.note)} role="status">
-          {shortDate(nudged)} already has a date-plan, so it cannot be picked.
+          {t("ui.calendar.nudge", { date: shortDate(nudged) })}
         </div>
       )}
 
@@ -363,7 +365,7 @@ export function Calendar({ value, onChange, disabledDates }: Props) {
         aria-disabled={todayBlocked}
         {...stylex.props(styles.todayBtn, todayBlocked && styles.cellDisabled)}
       >
-        Today
+        {t("ui.calendar.today")}
       </button>
     </div>
   );

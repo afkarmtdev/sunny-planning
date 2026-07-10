@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { useEffect, useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { JellyButton } from "./JellyButton";
+import { useT } from "../lib/i18n";
 import hopPng from "../assets/sunny/hop.png";
 
 // The reusable wait state (design screens 00b / 00c). Two modes: "fullscreen"
@@ -148,12 +149,14 @@ type Props = {
 
 export function LoadingOverlay({
   mode = "overlay",
-  caption = "just a sec...",
+  caption,
   error = null,
   onRetry,
   onCancel,
   delayMs = 180,
 }: Props) {
+  const t = useT();
+  const captionText = caption ?? t("ui.loading.caption");
   // Stay invisible until the delay elapses; an error shows at once.
   const [visible, setVisible] = useState(delayMs <= 0);
   useEffect(() => {
@@ -176,12 +179,12 @@ export function LoadingOverlay({
           <div {...stylex.props(styles.errorText)}>{error}</div>
           {onRetry && (
             <JellyButton variant="soft" fullWidth onClick={onRetry}>
-              Try again
+              {t("common.retry")}
             </JellyButton>
           )}
           {onCancel && (
             <button type="button" onClick={onCancel} {...stylex.props(styles.cancel)}>
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>
@@ -197,11 +200,11 @@ export function LoadingOverlay({
             <div {...stylex.props(styles.dot(isFull ? 11 : 9, 0.3))} />
           </div>
           <div {...stylex.props(styles.caption, isFull ? styles.captionFull : styles.captionOverlay)}>
-            {caption}
+            {captionText}
           </div>
           {onCancel && (
             <button type="button" onClick={onCancel} {...stylex.props(styles.cancel)}>
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </>

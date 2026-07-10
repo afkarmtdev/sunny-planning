@@ -1,6 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { colors, fonts } from "../theme/tokens.stylex";
 import hopPng from "../assets/sunny/hop.png";
+import { useT } from "../lib/i18n";
 
 // Cold-launch splash (design screen 00). Shown while the persisted store
 // rehydrates and fonts load; the Boot gate in App.tsx dismisses it. Sunny hops
@@ -98,6 +99,7 @@ const styles = stylex.create({
 });
 
 export function Splash() {
+  const t = useT();
   // Merge the .no-print utility with the StyleX className rather than
   // overwriting it: a bare className="no-print" after the spread would drop
   // every StyleX class and collapse the layout (see PrintView for the same fix).
@@ -112,7 +114,7 @@ export function Splash() {
       </div>
       <div {...stylex.props(styles.titleWrap)}>
         <div {...stylex.props(styles.title)}>Sunny Planning</div>
-        <div {...stylex.props(styles.tagline)}>plan it, live it, keep it</div>
+        <div {...stylex.props(styles.tagline)}>{t("auth.splashTagline")}</div>
       </div>
     </div>
   );

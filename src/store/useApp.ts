@@ -4,7 +4,7 @@ import type { Expense, Itinerary, Member, Photo, Profile, SkinId, Stop, Venue, V
 import { itineraryTotal } from "../lib/derive";
 import { addDaysISO, nowISO, parseISO, todayISO } from "../lib/dates";
 import { DEFAULT_AVATAR_COLOR } from "../lib/avatar";
-import type { Locale } from "../lib/i18n/core";
+import { translate, type Locale } from "../lib/i18n/core";
 import { fireTodayNotification } from "../lib/notify";
 import { deleteReceipt } from "../lib/receipts";
 import { demoInviteCode, demoItineraries, demoPhotos, demoVenues } from "../data/demo";
@@ -305,7 +305,10 @@ export const useApp = create<AppState>()(
         if (!plan) return;
         // Record before firing so a rapid second wake cannot double-notify.
         set({ lastTodayNotifyISO: today });
-        void fireTodayNotification("You have a date today", `${plan.title} is on. Open Sunny to start Day-of.`);
+        void fireTodayNotification(
+          translate(prefs.locale, "home.notify.title"),
+          translate(prefs.locale, "home.notify.body", { title: plan.title })
+        );
       },
 
       createItinerary: () => {

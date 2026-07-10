@@ -10,6 +10,7 @@ import { useApp } from "../store/useApp";
 import { completedDates, deletedExpenses, monthStats } from "../lib/derive";
 import { addMonths, isSameMonth, monthLabel, shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
+import { useT } from "../lib/i18n";
 
 const PAGE_SIZE = 8;
 
@@ -218,6 +219,7 @@ const styles = stylex.create({
 });
 
 export function Costs() {
+  const t = useT();
   const itineraries = useApp((s) => s.itineraries);
   const restoreExpense = useApp((s) => s.restoreExpense);
   const deleted = deletedExpenses(itineraries);
@@ -243,7 +245,7 @@ export function Costs() {
   return (
     <Screen gap={14}>
       <div {...stylex.props(styles.stickyHead)}>
-        <div {...stylex.props(styles.title)}>Cost Tracker</div>
+        <div {...stylex.props(styles.title)}>{t("costs.title")}</div>
 
         <div {...stylex.props(styles.hud)}>
         <div {...stylex.props(styles.hudScanlines)} />
@@ -252,7 +254,7 @@ export function Costs() {
             <SunnySprite size={48} expression="happy" blink />
             <div>
               <div {...stylex.props(styles.hudLabel)}>
-                {isCurrentMonth ? "THIS MONTH" : monthLabel(refDate).toUpperCase()}
+                {isCurrentMonth ? t("costs.thisMonthUpper") : monthLabel(refDate).toUpperCase()}
               </div>
               <div {...stylex.props(styles.hudValue)}>{rm(total)}</div>
             </div>
@@ -260,7 +262,7 @@ export function Costs() {
           <div {...stylex.props(styles.monthNav)}>
             <button
               type="button"
-              aria-label="Previous month"
+              aria-label={t("costs.aria.prevMonth")}
               onClick={() => changeMonth(-1)}
               {...stylex.props(styles.monthBtn)}
             >
@@ -268,7 +270,7 @@ export function Costs() {
             </button>
             <button
               type="button"
-              aria-label="Next month"
+              aria-label={t("costs.aria.nextMonth")}
               disabled={isCurrentMonth}
               onClick={() => changeMonth(1)}
               {...stylex.props(styles.monthBtn, isCurrentMonth && styles.monthBtnDisabled)}
@@ -280,17 +282,17 @@ export function Costs() {
       </div>
 
         <div {...stylex.props(styles.statRow)}>
-          <StatTile value={rm(avg)} label="avg per date" />
-          <StatTile value={String(count)} label="dates this month" />
+          <StatTile value={rm(avg)} label={t("costs.stat.avgPerDate")} />
+          <StatTile value={String(count)} label={t("costs.stat.datesThisMonth")} />
         </div>
 
         <div {...stylex.props(styles.sectionTitle)}>
-          {isCurrentMonth ? "Dates this month" : `Dates in ${monthLabel(refDate)}`}
+          {isCurrentMonth ? t("costs.datesThisMonth") : t("costs.datesIn", { month: monthLabel(refDate) })}
         </div>
       </div>
 
       {dates.length === 0 ? (
-        <div {...stylex.props(styles.emptyMonth)}>No dates logged this month.</div>
+        <div {...stylex.props(styles.emptyMonth)}>{t("costs.emptyMonth")}</div>
       ) : (
         <div {...stylex.props(styles.list)}>
           {shown.map((d) => (
@@ -319,13 +321,13 @@ export function Costs() {
           {...stylex.props(styles.showMore)}
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
         >
-          Show more
+          {t("costs.showMore")}
         </button>
       )}
 
       {deleted.length > 0 && (
         <>
-          <div {...stylex.props(styles.sectionTitle)}>Recently deleted</div>
+          <div {...stylex.props(styles.sectionTitle)}>{t("costs.recentlyDeleted")}</div>
           <div {...stylex.props(styles.list)}>
             {deleted.map((d) => (
               <div key={d.expense.id} {...stylex.props(styles.deletedRow)}>
@@ -342,7 +344,7 @@ export function Costs() {
                   xstyle={styles.restoreBtn}
                   onClick={() => restoreExpense(d.itineraryId, d.expense.id)}
                 >
-                  Restore
+                  {t("costs.restore")}
                 </JellyButton>
               </div>
             ))}

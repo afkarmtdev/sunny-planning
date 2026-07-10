@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { useEffect, useState } from "react";
 import { colors } from "../theme/tokens.stylex";
 import { JellyButton } from "./JellyButton";
+import { useT } from "../lib/i18n";
 
 const EXIT_MS = 220;
 
@@ -59,6 +60,7 @@ type Props = {
 
 /** Minimal full-size viewer for a single receipt image, separate from PhotoLightbox. */
 export function ReceiptLightbox({ url, onClose }: Props) {
+  const t = useT();
   const [mounted, setMounted] = useState(Boolean(url));
   const [shown, setShown] = useState(false);
   // Keep the last url while sliding out so the image does not blank mid-exit.
@@ -96,11 +98,11 @@ export function ReceiptLightbox({ url, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div {...stylex.props(styles.photoBox)}>
-          {current && <img src={current} alt="Receipt" {...stylex.props(styles.img)} />}
+          {current && <img src={current} alt={t("costs.receipt")} {...stylex.props(styles.img)} />}
         </div>
         <div {...stylex.props(styles.actions)}>
           <JellyButton variant="white" fullWidth onClick={onClose}>
-            Close
+            {t("common.close")}
           </JellyButton>
         </div>
       </div>

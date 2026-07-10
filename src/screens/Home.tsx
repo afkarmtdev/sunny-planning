@@ -15,7 +15,14 @@ import { useApp } from "../store/useApp";
 import { dateSpend, datesLogged, happiness, isEstimateSpend, monthStats, moodFor, nextPlanned, streakWeeks } from "../lib/derive";
 import { greeting, isSameMonthDay, stampDate, todayISO } from "../lib/dates";
 import { rm, rmCompact } from "../lib/format";
+import { useT } from "../lib/i18n";
 import { sfx } from "../lib/sfx";
+
+const GREETING_KEY = {
+  morning: "home.greeting.morning",
+  afternoon: "home.greeting.afternoon",
+  evening: "home.greeting.evening",
+} as const;
 
 const styles = stylex.create({
   headerRow: {
@@ -226,6 +233,7 @@ const styles = stylex.create({
 
 export function Home() {
   const navigate = useNavigate();
+  const t = useT();
   const itineraries = useApp((s) => s.itineraries);
   const createItinerary = useApp((s) => s.createItinerary);
   const profile = useApp((s) => s.profile);
@@ -269,13 +277,13 @@ export function Home() {
       <Confetti fireKey={confettiKey} />
       <div {...stylex.props(styles.headerRow)}>
         <div>
-          <div {...stylex.props(styles.greeting)}>{greeting(new Date())}</div>
-          <div {...stylex.props(styles.title)}>Home</div>
+          <div {...stylex.props(styles.greeting)}>{t(GREETING_KEY[greeting(new Date())])}</div>
+          <div {...stylex.props(styles.title)}>{t("common.home")}</div>
         </div>
         <div {...stylex.props(styles.headerBtns)}>
           <button
             type="button"
-            aria-label="Settings"
+            aria-label={t("settings.title")}
             onClick={() => navigate("/settings")}
             {...stylex.props(styles.iconBtn, styles.settingsBtn)}
           >
@@ -283,7 +291,7 @@ export function Home() {
           </button>
           <button
             type="button"
-            aria-label="Invite your partner"
+            aria-label={t("home.aria.invite")}
             onClick={() => navigate("/invite")}
             {...stylex.props(styles.iconBtn)}
           >
@@ -297,9 +305,9 @@ export function Home() {
           <SunnySprite size={64} expression="smitten" hop hopFast blink />
           <div {...stylex.props(styles.birthdayText)}>
             <div {...stylex.props(styles.birthdayTitle)}>
-              Happy birthday{firstName ? `, ${firstName}` : ""}!
+              {firstName ? t("home.birthday.titleNamed", { name: firstName }) : t("home.birthday.title")}
             </div>
-            <div {...stylex.props(styles.birthdaySub)}>Today is all yours. Sunny is so happy.</div>
+            <div {...stylex.props(styles.birthdaySub)}>{t("home.birthday.sub")}</div>
           </div>
         </Card>
       )}
@@ -307,10 +315,10 @@ export function Home() {
       {todayPlan && (
         <Card xstyle={styles.reminder} onClick={openTodaysDate}>
           <div {...stylex.props(styles.reminderText)}>
-            <div {...stylex.props(styles.reminderLabel)}>YOUR DATE IS TODAY</div>
+            <div {...stylex.props(styles.reminderLabel)}>{t("home.reminder.label")}</div>
             <div {...stylex.props(styles.reminderTitle)}>{todayPlan.title}</div>
           </div>
-          <div {...stylex.props(styles.reminderGo)}>Start &rsaquo;</div>
+          <div {...stylex.props(styles.reminderGo)}>{t("home.reminder.start")} &rsaquo;</div>
         </Card>
       )}
 
@@ -319,10 +327,10 @@ export function Home() {
           <SunnySprite expression={moodFor(pct)} size={110} hop={moodFor(pct) === "happy"} blink />
         </div>
         <LcdPanel xstyle={styles.happyPanel}>
-          <LcdLabel>HAPPINESS</LcdLabel>
+          <LcdLabel>{t("home.happiness.label")}</LcdLabel>
           <div {...stylex.props(styles.happyRow)}>
             <LcdValue xstyle={styles.happyValue}>{pct}%</LcdValue>
-            <div {...stylex.props(styles.happySub)}>{logged} dates keep them glowing</div>
+            <div {...stylex.props(styles.happySub)}>{t("home.happiness.sub", { count: logged })}</div>
           </div>
         </LcdPanel>
       </Card>
@@ -330,7 +338,7 @@ export function Home() {
       {next ? (
         <Card xstyle={styles.nextCard}>
           <WashiTape w={70} h={22} rot={-4} color="lavender" xstyle={tapePos.next} />
-          <div {...stylex.props(styles.nextLabel)}>NEXT DATE · {stampDate(next.dateISO)}</div>
+          <div {...stylex.props(styles.nextLabel)}>{t("home.next.label")} · {stampDate(next.dateISO)}</div>
           <div {...stylex.props(styles.nextTitle)}>{next.title}</div>
           <div {...stylex.props(styles.chipRow)}>
             {next.stops.map((s) => (
@@ -345,18 +353,18 @@ export function Home() {
               {rm(dateSpend(next))}
             </div>
             <JellyButton variant="soft" xstyle={styles.viewBtn} onClick={() => navigate(`/plan/${next.id}`)}>
-              View itinerary
+              {t("home.next.view")}
             </JellyButton>
           </div>
         </Card>
       ) : (
-        <div {...stylex.props(styles.emptyNext)}>No date on the calendar yet. Sunny is waiting.</div>
+        <div {...stylex.props(styles.emptyNext)}>{t("home.empty")}</div>
       )}
 
       <div {...stylex.props(styles.statRow)}>
-        <StatTile value={String(logged)} label="dates logged" />
-        <StatTile value={rmCompact(monthTotal)} label="this month" />
-        <StatTile value={`${streak}wks`} label="streak" />
+        <StatTile value={String(logged)} label={t("home.stat.logged")} />
+        <StatTile value={rmCompact(monthTotal)} label={t("home.stat.month")} />
+        <StatTile value={t("home.stat.weeks", { n: streak })} label={t("home.stat.streak")} />
       </div>
 
       <JellyButton
@@ -367,7 +375,7 @@ export function Home() {
           navigate(`/plan/${id}`);
         }}
       >
-        Plan a new date
+        {t("home.plan")}
       </JellyButton>
     </Screen>
   );

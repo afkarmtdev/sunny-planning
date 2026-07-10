@@ -1,5 +1,6 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { useT } from "../lib/i18n";
 
 /**
  * Watches the service worker for a freshly deployed build and, when one is
@@ -9,6 +10,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
  * no-op in dev / when no service worker is registered.
  */
 export function UpdatePrompt() {
+  const t = useT();
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
@@ -17,10 +19,10 @@ export function UpdatePrompt() {
   return (
     <ConfirmDialog
       open={needRefresh}
-      title="Sunny learned new tricks"
-      message={`A fresh version (v${__APP_VERSION__}) is ready. Update now?`}
-      confirmLabel="Update"
-      cancelLabel="Later"
+      title={t("ui.update.title")}
+      message={t("ui.update.message", { version: __APP_VERSION__ })}
+      confirmLabel={t("ui.update.confirm")}
+      cancelLabel={t("ui.update.later")}
       onConfirm={() => void updateServiceWorker(true)}
       onClose={() => setNeedRefresh(false)}
     />

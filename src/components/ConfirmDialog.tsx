@@ -1,6 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { useEffect } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   overlay: {
@@ -88,12 +89,15 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   tone = "default",
   onConfirm,
   onClose,
 }: Props) {
+  const t = useT();
+  const confirmText = confirmLabel ?? t("ui.confirm");
+  const cancelText = cancelLabel ?? t("common.cancel");
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -118,14 +122,14 @@ export function ConfirmDialog({
           {message && <div {...stylex.props(styles.message)}>{message}</div>}
           <div {...stylex.props(styles.row)}>
             <button type="button" {...stylex.props(styles.btn)} onClick={onClose}>
-              {cancelLabel}
+              {cancelText}
             </button>
             <button
               type="button"
               {...stylex.props(styles.btn, tone === "danger" ? styles.confirmDanger : styles.confirmDefault)}
               onClick={onConfirm}
             >
-              {confirmLabel}
+              {confirmText}
             </button>
           </div>
         </div>

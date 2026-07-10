@@ -9,6 +9,7 @@ import { UploadDropzone } from "./UploadDropzone";
 import { useApp } from "../store/useApp";
 import { deleteReceipt, saveReceipt, useReceiptUrl } from "../lib/receipts";
 import { useStorageUrl } from "../lib/storage";
+import { useT } from "../lib/i18n";
 import type { Expense, Itinerary } from "../lib/types";
 
 const styles = stylex.create({
@@ -83,6 +84,7 @@ type Props = {
 };
 
 export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId }: Props) {
+  const t = useT();
   const { addExpense, updateExpense, removeExpense } = useApp();
   const stops = itinerary.stops;
 
@@ -170,15 +172,15 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
   };
 
   return (
-    <Sheet open={open} onClose={handleClose} title={expense ? "Edit expense" : "Log a spend"}>
-      <Field label="Label">
+    <Sheet open={open} onClose={handleClose} title={expense ? t("costs.editExpense") : t("costs.logSpend")}>
+      <Field label={t("costs.field.label")}>
         <TextInput
           value={label}
-          placeholder="Parking, snacks..."
+          placeholder={t("costs.field.labelPlaceholder")}
           onChange={(e) => setLabel(e.target.value)}
         />
       </Field>
-      <Field label="Amount (RM)">
+      <Field label={t("costs.field.amount")}>
         <TextInput
           value={amount}
           placeholder="28"
@@ -187,7 +189,7 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
         />
       </Field>
       {stops.length > 0 && (
-        <Field label="Linked stop">
+        <Field label={t("costs.field.linkedStop")}>
           <div {...stylex.props(styles.chipRow)}>
             {stops.map((s) => (
               <button
@@ -202,25 +204,25 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
           </div>
         </Field>
       )}
-      <Field label="Receipt">
+      <Field label={t("costs.receipt")}>
         {receiptUrl ? (
           <div {...stylex.props(styles.receiptRow)}>
-            <img src={receiptUrl} alt="Receipt" {...stylex.props(styles.receiptThumb)} />
+            <img src={receiptUrl} alt={t("costs.receipt")} {...stylex.props(styles.receiptThumb)} />
             <button type="button" {...stylex.props(styles.removeReceiptBtn)} onClick={removeReceipt}>
-              Remove receipt
+              {t("costs.removeReceipt")}
             </button>
           </div>
         ) : (
           <UploadDropzone
-            title="+ Add a receipt"
-            subtitle="Snap or upload a photo"
+            title={t("costs.addReceipt")}
+            subtitle={t("costs.addReceiptSub")}
             spriteSize={48}
             onFiles={(files) => void handleFiles(files)}
           />
         )}
       </Field>
       <JellyButton variant="primary" onClick={save}>
-        {expense ? "Save expense" : "Add expense"}
+        {expense ? t("costs.saveExpense") : t("costs.addExpense")}
       </JellyButton>
       {expense && (
         <button
@@ -228,15 +230,15 @@ export function ExpenseSheet({ open, onClose, itinerary, expense, defaultStopId 
           {...stylex.props(styles.deleteBtn)}
           onClick={() => setConfirmDelete(true)}
         >
-          Delete this expense
+          {t("costs.deleteExpense")}
         </button>
       )}
       <ConfirmDialog
         open={confirmDelete}
-        title="Delete this expense?"
-        message="You can restore it from Recently deleted for 30 days."
-        confirmLabel="Delete"
-        cancelLabel="Keep"
+        title={t("costs.deleteExpenseTitle")}
+        message={t("costs.deleteExpenseMessage")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.keep")}
         tone="danger"
         onConfirm={() => {
           if (expense) removeExpense(itinerary.id, expense.id);

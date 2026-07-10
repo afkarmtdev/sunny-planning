@@ -7,7 +7,8 @@ import { BackButton } from "../components/BackButton";
 import { JellyButton } from "../components/JellyButton";
 import { useApp } from "../store/useApp";
 import { shortDate } from "../lib/dates";
-import { SKIN_NAMES, SKIN_SUBTITLES, type SkinId } from "../lib/types";
+import { type SkinId } from "../lib/types";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   title: {
@@ -181,6 +182,7 @@ function Swatch({ skin }: { skin: SkinId }) {
 }
 
 export function ExportPicker() {
+  const t = useT();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const itinerary = useApp((s) => s.itineraries.find((it) => it.id === id));
@@ -190,11 +192,11 @@ export function ExportPicker() {
 
   return (
     <Screen noTab gap={14}>
-      <BackButton label="Back to Itinerary" to={`/plan/${id}`} />
+      <BackButton label={t("export.back.itinerary")} to={`/plan/${id}`} />
 
       <div>
-        <div {...stylex.props(styles.title)}>Export itinerary</div>
-        <div {...stylex.props(styles.sub)}>Pick a shell skin for your PDF</div>
+        <div {...stylex.props(styles.title)}>{t("export.title")}</div>
+        <div {...stylex.props(styles.sub)}>{t("export.subtitle")}</div>
       </div>
 
       <div {...stylex.props(styles.grid)}>
@@ -206,15 +208,15 @@ export function ExportPicker() {
             {...stylex.props(styles.skinCard, itinerary.skin === skin && styles.skinCardSelected)}
           >
             <Swatch skin={skin} />
-            <div {...stylex.props(styles.skinName)}>{SKIN_NAMES[skin]}</div>
-            <div {...stylex.props(styles.skinSub)}>{SKIN_SUBTITLES[skin]}</div>
+            <div {...stylex.props(styles.skinName)}>{t(`export.skin.${skin}.name`)}</div>
+            <div {...stylex.props(styles.skinSub)}>{t(`export.skin.${skin}.sub`)}</div>
           </button>
         ))}
       </div>
 
       <Card xstyle={styles.previewCard}>
-        <div {...stylex.props(styles.previewLabel)}>PREVIEW</div>
-        <div {...stylex.props(styles.previewName)}>{SKIN_NAMES[itinerary.skin]}</div>
+        <div {...stylex.props(styles.previewLabel)}>{t("export.preview")}</div>
+        <div {...stylex.props(styles.previewName)}>{t(`export.skin.${itinerary.skin}.name`)}</div>
         <div {...stylex.props(styles.previewSub)}>
           {itinerary.title} · {shortDate(itinerary.dateISO)}
         </div>
@@ -225,7 +227,7 @@ export function ExportPicker() {
         xstyle={styles.exportBtn}
         onClick={() => navigate(`/print/${id}?skin=${itinerary.skin}`)}
       >
-        Export as PDF
+        {t("export.asPdf")}
       </JellyButton>
     </Screen>
   );

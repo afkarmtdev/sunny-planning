@@ -105,9 +105,10 @@ export function formatTime({ hour12, minute, ampm }: TimeParts): string {
   return `${hour12}:${String(minute).padStart(2, "0")} ${ampm}`;
 }
 
-export function greeting(d: Date): string {
+/** Time-of-day bucket for the Home greeting; localised by the caller via i18n. */
+export function greeting(d: Date): "morning" | "afternoon" | "evening" {
   const h = d.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "morning";
+  if (h < 18) return "afternoon";
+  return "evening";
 }

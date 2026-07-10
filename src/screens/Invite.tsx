@@ -7,6 +7,7 @@ import { BackButton } from "../components/BackButton";
 import { JellyButton } from "../components/JellyButton";
 import { SunnySprite } from "../components/SunnySprite";
 import { useApp } from "../store/useApp";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   column: {
@@ -85,6 +86,7 @@ const styles = stylex.create({
 });
 
 export function Invite() {
+  const t = useT();
   const inviteCode = useApp((s) => s.inviteCode);
   const [copied, setCopied] = useState(false);
 
@@ -104,7 +106,7 @@ export function Invite() {
   const share = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Sunny Planning", text: "Join our little space", url: inviteUrl });
+        await navigator.share({ title: "Sunny Planning", text: t("auth.shareText"), url: inviteUrl });
         return;
       } catch {
         // Cancelled or unsupported; fall through to copy.
@@ -115,17 +117,17 @@ export function Invite() {
 
   return (
     <Screen noTab gap={14}>
-      <BackButton label="Back to Home" to="/" />
+      <BackButton label={t("auth.backToHome")} to="/" />
 
       <div {...stylex.props(styles.column)}>
         <div>
-          <div {...stylex.props(styles.title)}>Invite your person</div>
-          <div {...stylex.props(styles.sub)}>Share this link so they can join your space</div>
+          <div {...stylex.props(styles.title)}>{t("auth.inviteTitle")}</div>
+          <div {...stylex.props(styles.sub)}>{t("auth.inviteSub")}</div>
         </div>
 
         <Card tone="shellPink" xstyle={styles.waitingCard}>
           <SunnySprite expression="smitten" size={76} xstyle={styles.spriteCenter} />
-          <div {...stylex.props(styles.waitingText)}>Waiting for them to join…</div>
+          <div {...stylex.props(styles.waitingText)}>{t("auth.waiting")}</div>
         </Card>
 
         <div {...stylex.props(styles.linkBox)}>
@@ -133,14 +135,14 @@ export function Invite() {
         </div>
 
         <JellyButton variant="white" xstyle={styles.copyBtn} onClick={() => void copy()}>
-          {copied ? "Copied!" : "Copy link"}
+          {copied ? t("auth.copied") : t("auth.copyLink")}
         </JellyButton>
 
         <JellyButton variant="primary" xstyle={styles.shareBtn} onClick={() => void share()}>
-          Share invite
+          {t("auth.shareInvite")}
         </JellyButton>
 
-        <div {...stylex.props(styles.privacyNote)}>Only the two of you will ever see this space</div>
+        <div {...stylex.props(styles.privacyNote)}>{t("auth.privacyNote")}</div>
       </div>
     </Screen>
   );

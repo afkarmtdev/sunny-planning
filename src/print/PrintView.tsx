@@ -11,6 +11,7 @@ import { longDate } from "../lib/dates";
 import { rm } from "../lib/format";
 import { travelBetween } from "../lib/travel";
 import { SKIN_NAMES, type SkinId } from "../lib/types";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   page: {
@@ -248,6 +249,7 @@ const HEADER_BY_SKIN: Record<SkinId, stylex.StyleXStyles> = {
 };
 
 export function PrintView() {
+  const t = useT();
   const { id } = useParams<{ id: string }>();
   const [params] = useSearchParams();
   const itinerary = useApp((s) => s.itineraries.find((it) => it.id === id));
@@ -284,17 +286,17 @@ export function PrintView() {
 
   return (
     <div {...stylex.props(styles.page)}>
-      {packing && <LoadingOverlay mode="fullscreen" caption="packing up your PDF..." delayMs={0} />}
+      {packing && <LoadingOverlay mode="fullscreen" caption={t("export.packing")} delayMs={0} />}
       <div {...toolbarProps} className={`${toolbarProps.className ?? ""} no-print`}>
-        <BackButton label="Back to export" to={`/plan/${id}/export`} />
+        <BackButton label={t("export.back.export")} to={`/plan/${id}/export`} />
       </div>
 
       <div {...stylex.props(styles.doc)}>
         <div {...stylex.props(styles.header, HEADER_BY_SKIN[skin])}>
           {scrapbook && <div {...stylex.props(styles.scrapTapeA)} />}
-          {skin === "loveletter" && <div {...stylex.props(styles.stampBox)}>with love</div>}
+          {skin === "loveletter" && <div {...stylex.props(styles.stampBox)}>{t("export.stamp")}</div>}
           <div {...stylex.props(styles.headerInner)}>
-            <div {...stylex.props(styles.kicker)}>{SKIN_NAMES[skin]} itinerary</div>
+            <div {...stylex.props(styles.kicker)}>{t("export.kicker", { skin: SKIN_NAMES[skin] })}</div>
             <div {...stylex.props(styles.docTitle, retro && styles.docTitleRetro)}>{itinerary.title}</div>
             <div {...stylex.props(styles.docDate)}>{longDate(itinerary.dateISO)}</div>
           </div>
@@ -302,7 +304,7 @@ export function PrintView() {
 
         <div {...stylex.props(styles.body)}>
           {itinerary.stops.length === 0 && (
-            <div {...stylex.props(styles.empty)}>No stops yet. Add some in the builder first.</div>
+            <div {...stylex.props(styles.empty)}>{t("export.empty")}</div>
           )}
           {itinerary.stops.map((stop, i) => {
             const next = itinerary.stops[i + 1];
@@ -312,7 +314,7 @@ export function PrintView() {
               <Fragment key={stop.id}>
                 <div {...stylex.props(styles.stopRow)}>
                   <div {...stylex.props(styles.timeCol, retro && styles.timeColRetro)}>
-                    {stop.time || `Stop ${i + 1}`}
+                    {stop.time || t("export.stopFallback", { n: i + 1 })}
                   </div>
                   <div>
                     <div {...stylex.props(styles.stopName)}>{stop.name}</div>
@@ -326,7 +328,10 @@ export function PrintView() {
                 </div>
                 {travel && (
                   <div {...stylex.props(styles.travelRow)}>
-                    ↓ {travel.minutes} min {travel.mode} to the next stop
+                    {t("export.travel.readout", {
+                      minutes: travel.minutes,
+                      mode: t(`export.travel.${travel.mode}`),
+                    })}
                   </div>
                 )}
                 {!last && <div {...stylex.props(styles.separator)} />}
@@ -335,17 +340,17 @@ export function PrintView() {
           })}
 
           <div {...stylex.props(styles.totalRow)}>
-            <div {...stylex.props(styles.totalLabel)}>Est. total</div>
+            <div {...stylex.props(styles.totalLabel)}>{t("export.estTotal")}</div>
             <div {...stylex.props(styles.totalValue)}>{rm(itineraryTotal(itinerary))}</div>
           </div>
 
-          <div {...stylex.props(styles.footer)}>made with Sunny Planning, just for the two of us</div>
+          <div {...stylex.props(styles.footer)}>{t("export.madeWith")}</div>
         </div>
       </div>
 
       <div {...actionsProps} className={`${actionsProps.className ?? ""} no-print`}>
         <JellyButton variant="primary" fullWidth onClick={() => window.print()}>
-          Print or save as PDF
+          {t("export.printOrSave")}
         </JellyButton>
       </div>
     </div>

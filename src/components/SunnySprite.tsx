@@ -1,5 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import type { StyleXStyles } from "@stylexjs/stylex";
+import { useT, type MessageKey } from "../lib/i18n";
 import happyPng from "../assets/sunny/happy.png";
 import sleepyPng from "../assets/sunny/sleepy.png";
 import asleepPng from "../assets/sunny/asleep.png";
@@ -12,6 +13,14 @@ const SPRITES: Record<Expression, string> = {
   sleepy: sleepyPng,
   asleep: asleepPng,
   smitten: smittenPng,
+};
+
+// Alt-text mood word per expression, so the mascot's accessible name localises.
+const MOOD: Record<Expression, MessageKey> = {
+  happy: "ui.sprite.mood.happy",
+  sleepy: "ui.sprite.mood.sleepy",
+  asleep: "ui.sprite.mood.asleep",
+  smitten: "ui.sprite.mood.smitten",
 };
 
 const hop = stylex.keyframes({
@@ -79,11 +88,16 @@ export function SunnySprite({
   dim = false,
   xstyle,
 }: Props) {
+  const t = useT();
   return (
     <div
       {...stylex.props(styles.box(size), hopping && styles.hop, hopping && hopFast && styles.hopFast, xstyle)}
     >
-      <img src={SPRITES[expression]} alt={`Sunny ${expression}`} {...stylex.props(styles.img, dim && styles.dim)} />
+      <img
+        src={SPRITES[expression]}
+        alt={t("ui.sprite.alt", { mood: t(MOOD[expression]) })}
+        {...stylex.props(styles.img, dim && styles.dim)}
+      />
       {blink && expression === "happy" && (
         <img src={SPRITES.asleep} alt="" aria-hidden {...stylex.props(styles.img, styles.blinkFrame)} />
       )}

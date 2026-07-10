@@ -1,5 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { colors, fonts } from "../theme/tokens.stylex";
+import { useT } from "../lib/i18n";
 
 const shimmer = stylex.keyframes({
   "0%": { backgroundPosition: "0% 50%" },
@@ -61,16 +62,17 @@ type Props = {
 };
 
 export function FaveBadge({ fave, onToggle }: Props) {
+  const t = useT();
   if (fave) {
     return (
       <button
         type="button"
         aria-pressed
-        aria-label="Remove from favorites"
+        aria-label={t("ratings.removeFave")}
         onClick={onToggle}
         {...stylex.props(styles.badge)}
       >
-        FAVE
+        {t("ratings.faveBadge")}
       </button>
     );
   }
@@ -79,7 +81,7 @@ export function FaveBadge({ fave, onToggle }: Props) {
     <button
       type="button"
       aria-pressed={false}
-      aria-label="Mark as favorite"
+      aria-label={t("ratings.addFave")}
       onClick={onToggle}
       {...stylex.props(styles.heart)}
     >

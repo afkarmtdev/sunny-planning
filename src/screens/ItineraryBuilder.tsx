@@ -29,6 +29,7 @@ import { rm } from "../lib/format";
 import { openGoogleMaps, openDirections } from "../lib/maps";
 import { openWaze } from "../lib/waze";
 import { travelBetween } from "../lib/travel";
+import { useT } from "../lib/i18n";
 import type { Itinerary, Photo, Stop } from "../lib/types";
 
 const styles = stylex.create({
@@ -503,6 +504,7 @@ function draftFrom(stop: Stop): StopDraft {
 }
 
 export function ItineraryBuilder() {
+  const t = useT();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const itinerary = useApp((s) => s.itineraries.find((it) => it.id === id));
@@ -702,7 +704,7 @@ export function ItineraryBuilder() {
     }
 
     const patch = {
-      name: draft.name.trim() || "Somewhere fun",
+      name: draft.name.trim() || t("builder.defaultStopName"),
       time: draft.time.trim(),
       note: draft.note.trim(),
       cost: Number(draft.cost) || 0,
@@ -722,7 +724,7 @@ export function ItineraryBuilder() {
 
   return (
     <Screen gap={14}>
-      <BackButton label="All dates" to="/plan" />
+      <BackButton label={t("builder.backAll")} to="/plan" />
       <div {...stylex.props(styles.headerRow)}>
         <div
           {...stylex.props(styles.headerText, locked && styles.headerTextLocked)}
@@ -746,15 +748,15 @@ export function ItineraryBuilder() {
               </span>
             )}
           </div>
-          {completed && <div {...stylex.props(styles.completedPill)}>Completed</div>}
-          {cancelled && <div {...stylex.props(styles.cancelledPill)}>Cancelled</div>}
+          {completed && <div {...stylex.props(styles.completedPill)}>{t("builder.status.completed")}</div>}
+          {cancelled && <div {...stylex.props(styles.cancelledPill)}>{t("builder.status.cancelled")}</div>}
         </div>
         <div {...stylex.props(styles.headerActions)}>
           <AuthorChip by={itinerary.createdBy} size={28} />
           {!isDraft && (
             <button
               type="button"
-              aria-label="Export this itinerary"
+              aria-label={t("builder.aria.export")}
               onClick={() => navigate(`/plan/${id}/export`)}
               {...stylex.props(styles.exportBtn)}
             >
@@ -799,11 +801,11 @@ export function ItineraryBuilder() {
                       <div {...stylex.props(styles.stopRate)} onClick={(e) => e.stopPropagation()}>
                         <PawRating value={visitRating} size={16} />
                         <span {...stylex.props(styles.stopRateLabel)}>
-                          {visitRating > 0 ? "this visit" : "rate this visit"}
+                          {visitRating > 0 ? t("builder.thisVisit") : t("builder.rateThisVisit")}
                         </span>
                         <button
                           type="button"
-                          aria-label={`Rate ${venue.name}`}
+                          aria-label={t("builder.aria.rate", { name: venue.name })}
                           {...stylex.props(styles.stopRatePencil)}
                           onClick={() => setRateVenueId(venue.id)}
                         >
@@ -837,13 +839,16 @@ export function ItineraryBuilder() {
               {travel && next && (
                 <button
                   type="button"
-                  aria-label="Open directions in Google Maps"
+                  aria-label={t("builder.aria.directions")}
                   onClick={() => openDirections(stop, next, travel.mode)}
                   {...stylex.props(styles.travelChip, styles.travelChipBtn)}
                 >
                   <span>↓</span>
                   <span>
-                    {travel.minutes} min {travel.mode} to next stop · directions
+                    {t("builder.travelReadout", {
+                      minutes: travel.minutes,
+                      mode: t(travel.mode === "drive" ? "builder.mode.drive" : "builder.mode.walk"),
+                    })}
                   </span>
                 </button>
               )}
@@ -860,16 +865,16 @@ export function ItineraryBuilder() {
               setAddingStop(true);
             }}
           >
-            + Add a stop
+            + {t("builder.addStopTitle")}
           </button>
         )}
       </div>
 
       <LcdPanel xstyle={styles.totalBar}>
         <div>
-          <div {...stylex.props(styles.totalLabel)}>{completed ? "ACTUAL TOTAL" : "EST. TOTAL"}</div>
+          <div {...stylex.props(styles.totalLabel)}>{completed ? t("builder.actualTotal") : t("builder.estTotal")}</div>
           {completed && dateSpend(itinerary) !== itineraryTotal(itinerary) && (
-            <div {...stylex.props(styles.totalSub)}>est. ~{rm(itineraryTotal(itinerary))}</div>
+            <div {...stylex.props(styles.totalSub)}>{t("builder.estAmount", { amount: rm(itineraryTotal(itinerary)) })}</div>
           )}
         </div>
         <LcdValue xstyle={styles.totalValue}>
@@ -879,12 +884,12 @@ export function ItineraryBuilder() {
 
       {!isDraft && (myPhotos.length > 0 || !locked) && (
         <>
-          <div {...stylex.props(styles.photosTitle)}>Photos from this date</div>
+          <div {...stylex.props(styles.photosTitle)}>{t("builder.photosTitle")}</div>
           {photoGroups.map((group) => (
             <div key={group.stop?.id ?? "loose"} {...stylex.props(styles.photoGroup)}>
               {stops.length > 0 && (
                 <div {...stylex.props(styles.photoStopHead)}>
-                  {group.stop ? group.stop.name : "Not tied to a stop"}
+                  {group.stop ? group.stop.name : t("builder.notTiedToStop")}
                 </div>
               )}
               <div {...stylex.props(styles.photoGrid)}>
@@ -903,11 +908,11 @@ export function ItineraryBuilder() {
           {!locked && (
             <UploadDropzone
               multiple
-              title="+ Add a photo"
+              title={t("builder.addPhoto")}
               subtitle={
                 myPhotos.length > 0
-                  ? "Add more memories from this date"
-                  : "No photos from this date yet"
+                  ? t("builder.addPhotoMore")
+                  : t("builder.noPhotosYet")
               }
               onFiles={(files) => void handlePhotoFiles(files)}
             />
@@ -916,17 +921,17 @@ export function ItineraryBuilder() {
       )}
 
       {completed && (
-        <div {...stylex.props(styles.completedNote)}>Completed and logged to your costs.</div>
+        <div {...stylex.props(styles.completedNote)}>{t("builder.completedNote")}</div>
       )}
       {cancelled && (
         <>
-          <div {...stylex.props(styles.completedNote)}>This date is cancelled.</div>
+          <div {...stylex.props(styles.completedNote)}>{t("builder.cancelledNote")}</div>
           <button
             type="button"
             {...stylex.props(styles.deleteBtn)}
             onClick={() => setConfirm("delete")}
           >
-            Delete this date
+            {t("builder.deleteDate")}
           </button>
         </>
       )}
@@ -941,7 +946,7 @@ export function ItineraryBuilder() {
             xstyle={styles.footerBtn}
             onClick={saveDraftDate}
           >
-            Save this date
+            {t("builder.saveDate")}
           </JellyButton>
         ) : completed ? (
           <JellyButton
@@ -950,7 +955,7 @@ export function ItineraryBuilder() {
             xstyle={styles.footerBtn}
             onClick={() => reopenItinerary(id)}
           >
-            Reopen to edit
+            {t("builder.reopenEdit")}
           </JellyButton>
         ) : cancelled ? (
           <JellyButton
@@ -959,7 +964,7 @@ export function ItineraryBuilder() {
             xstyle={styles.footerBtn}
             onClick={() => reopenItinerary(id)}
           >
-            Reopen to plan
+            {t("builder.reopenPlan")}
           </JellyButton>
         ) : isDirty ? (
           <JellyButton
@@ -968,7 +973,7 @@ export function ItineraryBuilder() {
             xstyle={styles.footerBtn}
             onClick={saveChanges}
           >
-            Save changes
+            {t("builder.saveChanges")}
           </JellyButton>
         ) : (
           <JellyButton
@@ -978,7 +983,7 @@ export function ItineraryBuilder() {
             disabled={stops.length === 0}
             onClick={() => completeItinerary(id)}
           >
-            Mark as complete
+            {t("builder.markComplete")}
           </JellyButton>
         )}
       </div>
@@ -1004,7 +1009,7 @@ export function ItineraryBuilder() {
       <Sheet
         open={taggingPhotoId !== null}
         onClose={() => setTaggingPhotoId(null)}
-        title="Which stop is this from?"
+        title={t("builder.tagPhotoTitle")}
       >
         <div {...stylex.props(styles.pickerList)}>
           {stops.map((stop) => (
@@ -1029,17 +1034,17 @@ export function ItineraryBuilder() {
               setTaggingPhotoId(null);
             }}
           >
-            <span {...stylex.props(styles.pickerOptionTitle)}>No stop</span>
-            <span {...stylex.props(styles.pickerOptionSub)}>whole date</span>
+            <span {...stylex.props(styles.pickerOptionTitle)}>{t("builder.noStop")}</span>
+            <span {...stylex.props(styles.pickerOptionSub)}>{t("builder.wholeDate")}</span>
           </button>
         </div>
       </Sheet>
 
-      <Sheet open={sheetOpen} onClose={closeSheet} title={addingStop ? "Add a stop" : "Edit stop"}>
-        <Field label="Venue">
+      <Sheet open={sheetOpen} onClose={closeSheet} title={addingStop ? t("builder.addStopTitle") : t("builder.editStopTitle")}>
+        <Field label={t("builder.field.venue")}>
           <TextInput
             value={draft.name}
-            placeholder="Kopi & Cream Cafe"
+            placeholder={t("builder.ph.venue")}
             onFocus={() => setNameFocused(true)}
             onBlur={() => setNameFocused(false)}
             onChange={(e) => {
@@ -1067,10 +1072,10 @@ export function ItineraryBuilder() {
             ))}
           </div>
         )}
-        <Field label="Time">
+        <Field label={t("builder.field.time")}>
           <TimePicker value={draft.time} onChange={(time) => setDraft({ ...draft, time })} />
         </Field>
-        <Field label="Est. cost (RM)">
+        <Field label={t("builder.field.estCost")}>
           <TextInput
             value={draft.cost}
             placeholder="28"
@@ -1078,24 +1083,24 @@ export function ItineraryBuilder() {
             onChange={(e) => setDraft({ ...draft, cost: e.target.value })}
           />
         </Field>
-        <Field label="Note">
+        <Field label={t("builder.field.note")}>
           <TextInput
             value={draft.note}
-            placeholder="iced matcha & pastries"
+            placeholder={t("builder.ph.note")}
             onChange={(e) => setDraft({ ...draft, note: e.target.value })}
           />
         </Field>
-        <Field label="Location">
+        <Field label={t("builder.field.location")}>
           <TextInput
             value={draft.location}
-            placeholder="Paste a Google Maps link or lat, lng"
+            placeholder={t("builder.ph.location")}
             onChange={(e) => setDraft({ ...draft, location: e.target.value })}
           />
         </Field>
-        {locationParses && <div {...stylex.props(styles.locationHint)}>Pinned</div>}
+        {locationParses && <div {...stylex.props(styles.locationHint)}>{t("builder.pinned")}</div>}
         <div {...stylex.props(styles.sheetRow)}>
           <div {...stylex.props(styles.sheetHalf)}>
-            <Field label="Travel to next (min)">
+            <Field label={t("builder.field.travelNext")}>
               <TextInput
                 value={draft.travelMinutes}
                 placeholder="12"
@@ -1105,7 +1110,7 @@ export function ItineraryBuilder() {
             </Field>
           </div>
           <div {...stylex.props(styles.sheetHalf)}>
-            <Field label="Mode">
+            <Field label={t("builder.field.mode")}>
               <div {...stylex.props(styles.modeRow)}>
                 {(["drive", "walk"] as const).map((mode) => (
                   <button
@@ -1114,7 +1119,7 @@ export function ItineraryBuilder() {
                     onClick={() => setDraft({ ...draft, travelMode: mode })}
                     {...stylex.props(styles.modeChip, draft.travelMode === mode && styles.modeChipOn)}
                   >
-                    {mode}
+                    {t(mode === "drive" ? "builder.mode.drive" : "builder.mode.walk")}
                   </button>
                 ))}
               </div>
@@ -1122,7 +1127,7 @@ export function ItineraryBuilder() {
           </div>
         </div>
         <JellyButton variant="primary" onClick={saveDraft}>
-          {addingStop ? "Add stop" : "Save stop"}
+          {addingStop ? t("builder.addStopBtn") : t("builder.saveStop")}
         </JellyButton>
         {editingStopId && (
           <>
@@ -1132,14 +1137,14 @@ export function ItineraryBuilder() {
                 xstyle={moveBtn.btn}
                 onClick={() => moveStop(id, editingIdx, Math.max(0, editingIdx - 1))}
               >
-                Move up
+                {t("builder.moveUp")}
               </JellyButton>
               <JellyButton
                 variant="white"
                 xstyle={moveBtn.btn}
                 onClick={() => moveStop(id, editingIdx, Math.min(stops.length - 1, editingIdx + 1))}
               >
-                Move down
+                {t("builder.moveDown")}
               </JellyButton>
             </div>
             <button
@@ -1150,17 +1155,17 @@ export function ItineraryBuilder() {
                 closeSheet();
               }}
             >
-              Delete this stop
+              {t("builder.deleteStop")}
             </button>
           </>
         )}
       </Sheet>
 
-      <Sheet open={metaOpen} onClose={() => setMetaOpen(false)} title="Date details">
-        <Field label="Title">
+      <Sheet open={metaOpen} onClose={() => setMetaOpen(false)} title={t("builder.dateDetails")}>
+        <Field label={t("builder.field.title")}>
           <TextInput value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} />
         </Field>
-        <Field label="Date">
+        <Field label={t("builder.field.date")}>
           {metaDate && <div {...stylex.props(styles.metaDateValue)}>{longDate(metaDate)}</div>}
           <Calendar
             value={metaDate}
@@ -1171,7 +1176,7 @@ export function ItineraryBuilder() {
             }}
           />
           {dateError && (
-            <div {...stylex.props(styles.dateError)}>That date already has a date-plan.</div>
+            <div {...stylex.props(styles.dateError)}>{t("builder.dateTaken")}</div>
           )}
         </Field>
         <JellyButton
@@ -1185,7 +1190,7 @@ export function ItineraryBuilder() {
             setMetaOpen(false);
           }}
         >
-          Save
+          {t("common.save")}
         </JellyButton>
         {!locked && (
           <button
@@ -1196,7 +1201,7 @@ export function ItineraryBuilder() {
               setConfirm("cancel");
             }}
           >
-            Cancel this date
+            {t("builder.cancelDate")}
           </button>
         )}
         <button
@@ -1207,16 +1212,16 @@ export function ItineraryBuilder() {
             setConfirm("delete");
           }}
         >
-          Delete this date
+          {t("builder.deleteDate")}
         </button>
       </Sheet>
 
       <ConfirmDialog
         open={confirm === "delete"}
-        title="Delete this date?"
-        message="This cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Keep"
+        title={t("builder.deleteDate.title")}
+        message={t("builder.deleteDate.message")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.keep")}
         tone="danger"
         onConfirm={() => {
           setConfirm(null);
@@ -1229,10 +1234,10 @@ export function ItineraryBuilder() {
 
       <ConfirmDialog
         open={confirm === "cancel"}
-        title="Cancel this date?"
-        message="You can reopen it later to keep planning."
-        confirmLabel="Cancel date"
-        cancelLabel="Keep"
+        title={t("builder.cancelDate.title")}
+        message={t("builder.cancelDate.message")}
+        confirmLabel={t("builder.cancelDate.confirm")}
+        cancelLabel={t("common.keep")}
         onConfirm={() => {
           setConfirm(null);
           cancelItinerary(id);
@@ -1242,14 +1247,14 @@ export function ItineraryBuilder() {
 
       <ConfirmDialog
         open={blocker.state === "blocked"}
-        title={isDraft ? "Leave without saving?" : "Discard changes?"}
+        title={isDraft ? t("builder.leaveTitle") : t("builder.discardTitle")}
         message={
           isDraft
-            ? "This new date has not been saved yet and will be discarded."
-            : "Your unsaved changes to this date will be lost."
+            ? t("builder.leaveMessage")
+            : t("builder.discardMessage")
         }
-        confirmLabel="Discard"
-        cancelLabel="Keep editing"
+        confirmLabel={t("common.discard")}
+        cancelLabel={t("builder.keepEditing")}
         tone="danger"
         onConfirm={() => {
           if (isDraft) {

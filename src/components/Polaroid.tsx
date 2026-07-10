@@ -5,6 +5,7 @@ import type { Photo } from "../lib/types";
 import { WashiTape } from "./WashiTape";
 import { AuthorChip } from "./AuthorChip";
 import { useStorageUrl } from "../lib/storage";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   frame: (deg: number) => ({
@@ -241,6 +242,7 @@ type Props = {
 };
 
 export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }: Props) {
+  const t = useT();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(photo.caption);
   // Local data URL if this device uploaded it, else the signed Storage URL.
@@ -266,10 +268,10 @@ export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }:
         )}
         onClick={onEnlarge}
         role={onEnlarge ? "button" : undefined}
-        aria-label={onEnlarge ? `Enlarge ${photo.caption || "photo"}` : undefined}
+        aria-label={onEnlarge ? t("album.enlarge", { caption: photo.caption || t("album.photoWord") }) : undefined}
       >
         {src ? (
-          <img src={src} alt={photo.caption || "date photo"} {...stylex.props(styles.img)} />
+          <img src={src} alt={photo.caption || t("album.datePhotoAlt")} {...stylex.props(styles.img)} />
         ) : (
           <ArtPlaceholder variant={photo.art ?? 0} />
         )}
@@ -294,7 +296,7 @@ export function Polaroid({ photo, size = "large", onCaption, label, onEnlarge }:
             setEditing(true);
           }}
         >
-          {photo.caption || "add a caption"}
+          {photo.caption || t("album.addCaption")}
         </div>
       )}
       {photo.dot && <div {...stylex.props(styles.dotSticker)} />}

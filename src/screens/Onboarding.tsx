@@ -13,6 +13,7 @@ import { AVATAR_COLORS, DEFAULT_AVATAR_COLOR, initialFor } from "../lib/avatar";
 import { longDate } from "../lib/dates";
 import { useApp } from "../store/useApp";
 import { sfx } from "../lib/sfx";
+import { useT } from "../lib/i18n";
 
 const STEPS = 4;
 
@@ -118,6 +119,7 @@ const styles = stylex.create({
 });
 
 export function Onboarding() {
+  const t = useT();
   const navigate = useNavigate();
   const completeOnboarding = useApp((s) => s.completeOnboarding);
 
@@ -146,13 +148,13 @@ export function Onboarding() {
 
         {step === 0 && (
           <>
-            <div {...stylex.props(styles.heading)}>Hi, I'm Sunny</div>
-            <div {...stylex.props(styles.sub)}>What should I call you?</div>
+            <div {...stylex.props(styles.heading)}>{t("auth.hiSunny")}</div>
+            <div {...stylex.props(styles.sub)}>{t("auth.whatCall")}</div>
             <div {...stylex.props(styles.body)}>
-              <Field label="Your name">
+              <Field label={t("auth.yourName")}>
                 <TextInput
                   value={name}
-                  placeholder="Your name"
+                  placeholder={t("auth.yourName")}
                   autoFocus
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && canAdvance && setStep(1)}
@@ -164,8 +166,8 @@ export function Onboarding() {
 
         {step === 1 && (
           <>
-            <div {...stylex.props(styles.heading)}>When's your birthday?</div>
-            <div {...stylex.props(styles.sub)}>So I can plan a little something</div>
+            <div {...stylex.props(styles.heading)}>{t("auth.whenBirthday")}</div>
+            <div {...stylex.props(styles.sub)}>{t("auth.birthdayReason")}</div>
             <div {...stylex.props(styles.body)}>
               <div {...stylex.props(styles.birthdayValue)}>
                 {birthdayISO ? longDate(birthdayISO) : ""}
@@ -179,8 +181,8 @@ export function Onboarding() {
 
         {step === 2 && (
           <>
-            <div {...stylex.props(styles.heading)}>Pick your color</div>
-            <div {...stylex.props(styles.sub)}>It marks what's yours around the app</div>
+            <div {...stylex.props(styles.heading)}>{t("auth.pickColor")}</div>
+            <div {...stylex.props(styles.sub)}>{t("auth.colorHint")}</div>
             <div {...stylex.props(styles.body)}>
               <Avatar initial={initialFor(name)} color={color} size={64} />
               <div {...stylex.props(styles.swatchRow)}>
@@ -203,15 +205,17 @@ export function Onboarding() {
 
         {step === 3 && (
           <>
-            <div {...stylex.props(styles.heading)}>All set, {name.trim() || "you"}!</div>
-            <div {...stylex.props(styles.sub)}>Sunny Planning is better for two. Bring your partner?</div>
+            <div {...stylex.props(styles.heading)}>
+              {t("auth.allSet", { name: name.trim() || t("auth.you") })}
+            </div>
+            <div {...stylex.props(styles.sub)}>{t("auth.betterForTwo")}</div>
             <div {...stylex.props(styles.body)}>
               <div {...stylex.props(styles.forkBtns)}>
                 <JellyButton variant="primary" onClick={() => finish(true)}>
-                  Invite your partner
+                  {t("auth.invitePartner")}
                 </JellyButton>
                 <JellyButton variant="white" onClick={() => finish(false)}>
-                  Just me for now
+                  {t("auth.justMe")}
                 </JellyButton>
               </div>
             </div>
@@ -225,7 +229,7 @@ export function Onboarding() {
             <div {...stylex.props(styles.nav)}>
               {step > 0 && (
                 <JellyButton variant="white" fullWidth onClick={() => setStep((s) => s - 1)}>
-                  Back
+                  {t("common.back")}
                 </JellyButton>
               )}
               <JellyButton
@@ -234,12 +238,12 @@ export function Onboarding() {
                 disabled={!canAdvance}
                 onClick={() => setStep((s) => s + 1)}
               >
-                Next
+                {t("auth.next")}
               </JellyButton>
             </div>
             {step === 1 && (
               <button type="button" {...stylex.props(styles.skip)} onClick={() => setStep(2)}>
-                Skip for now
+                {t("auth.skip")}
               </button>
             )}
           </div>

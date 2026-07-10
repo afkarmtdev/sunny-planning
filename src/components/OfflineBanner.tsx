@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { IconWifiOff } from "./icons";
 import { useOnline } from "../lib/useOnline";
+import { useT } from "../lib/i18n";
 
 // A non-blocking notice, not a wall. Sunny is local-first, so offline is not a
 // failure state: everything keeps working and saves on the device. This slim
@@ -55,6 +56,7 @@ const styles = stylex.create({
 });
 
 export function OfflineBanner() {
+  const t = useT();
   const online = useOnline();
   if (online) return null;
   return (
@@ -63,7 +65,7 @@ export function OfflineBanner() {
         <IconWifiOff size={16} />
       </span>
       <span {...stylex.props(styles.text)}>
-        You're offline. <span {...stylex.props(styles.sub)}>Changes save on this device.</span>
+        {t("ui.offline.text")} <span {...stylex.props(styles.sub)}>{t("ui.offline.sub")}</span>
       </span>
     </div>
   );

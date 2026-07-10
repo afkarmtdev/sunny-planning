@@ -5,6 +5,7 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { resolveSpaceId } from "../lib/space";
 import { startSync, stopSync } from "../lib/sync";
 import { LoadingOverlay } from "./LoadingOverlay";
+import { useT } from "../lib/i18n";
 
 type Phase = "checking" | "resolving" | "ready" | "error" | "signedout";
 
@@ -16,6 +17,7 @@ type Phase = "checking" | "resolving" | "ready" | "error" | "signedout";
  * Without Supabase the app runs in local demo mode and everything is open.
  */
 export function RequireAuth() {
+  const t = useT();
   const [session, setSession] = useState<Session | null>(null);
   const [phase, setPhase] = useState<Phase>(isSupabaseConfigured ? "checking" : "ready");
   // The user id we have already booted sync for, so repeated auth events (and
@@ -69,15 +71,15 @@ export function RequireAuth() {
     return (
       <LoadingOverlay
         mode="fullscreen"
-        caption="syncing your space..."
-        error="Could not load your space. Check your connection and try again."
+        caption={t("auth.syncing")}
+        error={t("auth.syncError")}
         onRetry={() => void boot(session)}
         delayMs={0}
       />
     );
   }
   if (phase !== "ready") {
-    return <LoadingOverlay mode="fullscreen" caption="syncing your space..." delayMs={0} />;
+    return <LoadingOverlay mode="fullscreen" caption={t("auth.syncing")} delayMs={0} />;
   }
   return <Outlet />;
 }

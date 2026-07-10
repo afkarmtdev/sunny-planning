@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { SunnySprite } from "./SunnySprite";
 import { JellyButton } from "./JellyButton";
+import { useT } from "../lib/i18n";
 
 // A full-screen themed fallback for states we cannot recover from in place.
 // It deliberately uses no router hooks and only `window.location`, so it works
@@ -96,26 +97,30 @@ type Props = {
 };
 
 export function ErrorScreen({
-  title = "Something went sideways",
-  message = "Sunny tripped over a wire. A quick reload usually sorts it out.",
+  title,
+  message,
   expression = "sleepy",
-  actionLabel = "Reload",
+  actionLabel,
   onAction,
   secondaryLabel,
   onSecondary,
   detail = null,
 }: Props) {
+  const t = useT();
+  const titleText = title ?? t("ui.error.title");
+  const messageText = message ?? t("ui.error.message");
+  const actionText = actionLabel ?? t("ui.error.reload");
   const reload = onAction ?? (() => window.location.reload());
   return (
     <div {...stylex.props(styles.page)} role="alert" className="no-print">
       <SunnySprite expression={expression} size={104} hop hopFast />
       <div {...stylex.props(styles.card)}>
-        <div {...stylex.props(styles.title)}>{title}</div>
-        <div {...stylex.props(styles.message)}>{message}</div>
+        <div {...stylex.props(styles.title)}>{titleText}</div>
+        <div {...stylex.props(styles.message)}>{messageText}</div>
         {detail && <div {...stylex.props(styles.detail)}>{detail}</div>}
         <div {...stylex.props(styles.actions)}>
           <JellyButton variant="primary" fullWidth onClick={reload}>
-            {actionLabel}
+            {actionText}
           </JellyButton>
           {secondaryLabel && (
             <JellyButton variant="white" fullWidth onClick={onSecondary ?? (() => window.location.assign("/"))}>

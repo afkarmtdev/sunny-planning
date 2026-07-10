@@ -2,6 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef, useState } from "react";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { parseTime, formatTime, type TimeParts } from "../lib/dates";
+import { useT } from "../lib/i18n";
 import { IconChevronLeft } from "./icons";
 
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -132,6 +133,7 @@ type Props = {
  * string so stored stop times stay in the same format the app displays.
  */
 export function TimePicker({ value, onChange }: Props) {
+  const t = useT();
   const parts = parseTime(value);
   const [open, setOpen] = useState<null | "hour" | "minute">(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -174,13 +176,13 @@ export function TimePicker({ value, onChange }: Props) {
           onClick={() => setOpen(open === "hour" ? null : "hour")}
           {...stylex.props(styles.select, open === "hour" && styles.selectOpen)}
         >
-          <span {...(parts ? {} : stylex.props(styles.placeholder))}>{parts ? parts.hour12 : "Hour"}</span>
+          <span {...(parts ? {} : stylex.props(styles.placeholder))}>{parts ? parts.hour12 : t("builder.time.hour")}</span>
           <span {...stylex.props(styles.chevron)}>
             <IconChevronLeft />
           </span>
         </button>
         {open === "hour" && (
-          <div {...stylex.props(styles.panel)} role="listbox" aria-label="Hour">
+          <div {...stylex.props(styles.panel)} role="listbox" aria-label={t("builder.time.hour")}>
             {HOURS.map((h) => (
               <button
                 key={h}
@@ -207,14 +209,14 @@ export function TimePicker({ value, onChange }: Props) {
           {...stylex.props(styles.select, open === "minute" && styles.selectOpen)}
         >
           <span {...(parts ? {} : stylex.props(styles.placeholder))}>
-            {parts ? String(parts.minute).padStart(2, "0") : "Min"}
+            {parts ? String(parts.minute).padStart(2, "0") : t("builder.time.min")}
           </span>
           <span {...stylex.props(styles.chevron)}>
             <IconChevronLeft />
           </span>
         </button>
         {open === "minute" && (
-          <div {...stylex.props(styles.panel)} role="listbox" aria-label="Minute">
+          <div {...stylex.props(styles.panel)} role="listbox" aria-label={t("builder.time.minute")}>
             {MINUTES.map((min) => {
               const on = parts?.minute === min;
               return (
@@ -237,7 +239,7 @@ export function TimePicker({ value, onChange }: Props) {
         )}
       </div>
 
-      <div {...stylex.props(styles.ampmRow)} role="group" aria-label="AM or PM">
+      <div {...stylex.props(styles.ampmRow)} role="group" aria-label={t("builder.time.ampm")}>
         {(["AM", "PM"] as const).map((ap) => (
           <button
             key={ap}
@@ -246,7 +248,7 @@ export function TimePicker({ value, onChange }: Props) {
             onClick={() => emit({ ampm: ap })}
             {...stylex.props(styles.ampmChip, parts?.ampm === ap && styles.ampmChipOn)}
           >
-            {ap}
+            {t(ap === "AM" ? "builder.time.am" : "builder.time.pm")}
           </button>
         ))}
       </div>

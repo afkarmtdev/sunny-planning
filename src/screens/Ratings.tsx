@@ -16,6 +16,7 @@ import { IconPencil } from "../components/icons";
 import { useApp } from "../store/useApp";
 import { latestRating, venueVisits } from "../lib/derive";
 import { shortDate } from "../lib/dates";
+import { useT } from "../lib/i18n";
 import type { Venue } from "../lib/types";
 
 const PAGE_SIZE = 8;
@@ -219,6 +220,7 @@ function sortedByFilter(venues: Venue[], filter: Filter): Venue[] {
 }
 
 export function Ratings() {
+  const t = useT();
   const venues = useApp((s) => s.venues);
   const itineraries = useApp((s) => s.itineraries);
   const { toggleFave, addVenueNote } = useApp();
@@ -282,7 +284,7 @@ export function Ratings() {
 
   return (
     <Screen gap={14}>
-      <div {...stylex.props(styles.title)}>Venue Ratings</div>
+      <div {...stylex.props(styles.title)}>{t("ratings.title")}</div>
 
       <div {...stylex.props(styles.chipRow)}>
         <button
@@ -290,14 +292,14 @@ export function Ratings() {
           onClick={() => changeFilter("all")}
           {...stylex.props(styles.chip, filter === "all" && styles.chipOn)}
         >
-          All
+          {t("ratings.filterAll")}
         </button>
         <button
           type="button"
           onClick={() => changeFilter("faves")}
           {...stylex.props(styles.chip, filter === "faves" && styles.chipOn)}
         >
-          Faves
+          {t("ratings.filterFaves")}
         </button>
         {categories.map((c) => (
           <button
@@ -314,13 +316,13 @@ export function Ratings() {
       {ratingItinerary && (
         <Card tone="shellPink" xstyle={styles.banner}>
           <div {...stylex.props(styles.bannerTop)}>
-            <div {...stylex.props(styles.bannerTitle)}>Rating {ratingItinerary.title}</div>
+            <div {...stylex.props(styles.bannerTitle)}>{t("ratings.bannerTitle", { title: ratingItinerary.title })}</div>
             <div {...stylex.props(styles.bannerDismiss)} onClick={dismissBanner}>
-              Dismiss
+              {t("ratings.dismiss")}
             </div>
           </div>
           {bannerVenues.length === 0 ? (
-            <div {...stylex.props(styles.bannerRow)}>Nothing to rate for this date.</div>
+            <div {...stylex.props(styles.bannerRow)}>{t("ratings.nothingToRate")}</div>
           ) : (
             bannerVenues.map(({ stop, venue }) => {
               const entry = venue.ratings.find((r) => r.itineraryId === ratingItinerary.id);
@@ -334,7 +336,7 @@ export function Ratings() {
                     <PawRating value={entry?.rating ?? 0} size={18} />
                     <button
                       type="button"
-                      aria-label={`Edit ${venue.name}`}
+                      aria-label={t("ratings.editVenue", { name: venue.name })}
                       {...stylex.props(styles.pencilBtn)}
                       onClick={() =>
                         setEditFor({
@@ -358,7 +360,7 @@ export function Ratings() {
         </Card>
       )}
 
-      {filtered.length === 0 && <div {...stylex.props(styles.emptyCard)}>Nothing here yet.</div>}
+      {filtered.length === 0 && <div {...stylex.props(styles.emptyCard)}>{t("ratings.empty")}</div>}
 
       {shown.map((venue) => {
         const lastVisit = venueVisits(venue, itineraries).find((v) => v.itinerary);
@@ -371,7 +373,10 @@ export function Ratings() {
             <div {...stylex.props(styles.category)}>{venue.category}</div>
             {lastVisit?.itinerary && (
               <div {...stylex.props(styles.lastVisited)}>
-                last visited {shortDate(lastVisit.itinerary.dateISO)} · {lastVisit.itinerary.title}
+                {t("ratings.lastVisited", {
+                  date: shortDate(lastVisit.itinerary.dateISO),
+                  title: lastVisit.itinerary.title,
+                })}
               </div>
             )}
             <div {...stylex.props(styles.paws, styles.pawEditRow)} onClick={(e) => e.stopPropagation()}>
@@ -399,7 +404,7 @@ export function Ratings() {
                 setText("");
               }}
             >
-              + add a note
+              {t("ratings.addNote")}
             </div>
           </Card>
         );
@@ -411,20 +416,20 @@ export function Ratings() {
           {...stylex.props(styles.showMore)}
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
         >
-          Show more
+          {t("ratings.showMore")}
         </button>
       )}
 
-      <Sheet open={noteFor !== null} onClose={() => setNoteFor(null)} title="Add a note">
-        <Field label="Note">
+      <Sheet open={noteFor !== null} onClose={() => setNoteFor(null)} title={t("ratings.noteSheetTitle")}>
+        <Field label={t("ratings.noteLabel")}>
           <TextInput
             value={text}
-            placeholder="always our first stop"
+            placeholder={t("ratings.notePlaceholder")}
             onChange={(e) => setText(e.target.value)}
           />
         </Field>
         <JellyButton variant="primary" onClick={saveNote}>
-          Save note
+          {t("ratings.saveNote")}
         </JellyButton>
       </Sheet>
 

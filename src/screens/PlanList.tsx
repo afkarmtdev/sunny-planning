@@ -8,6 +8,7 @@ import type { SwipeAction } from "../components/SwipeRow";
 import { JellyButton } from "../components/JellyButton";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useApp } from "../store/useApp";
+import { useT, type MessageKey, type TFn } from "../lib/i18n";
 import { dateSpend, isEstimateSpend } from "../lib/derive";
 import { shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
@@ -17,11 +18,11 @@ const PAGE_SIZE = 8;
 
 type Filter = "all" | "planned" | "completed" | "cancelled";
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "planned", label: "Planned" },
-  { id: "completed", label: "Completed" },
-  { id: "cancelled", label: "Cancelled" },
+const FILTERS: { id: Filter; labelKey: MessageKey }[] = [
+  { id: "all", labelKey: "dayplan.filter.all" },
+  { id: "planned", labelKey: "dayplan.filter.planned" },
+  { id: "completed", labelKey: "dayplan.filter.completed" },
+  { id: "cancelled", labelKey: "dayplan.filter.cancelled" },
 ];
 
 const styles = stylex.create({
@@ -172,13 +173,6 @@ const styles = stylex.create({
   },
 });
 
-const EMPTY_COPY: Record<Filter, string> = {
-  all: "No dates yet. Plan your first one.",
-  planned: "No dates planned yet.",
-  completed: "No completed dates yet.",
-  cancelled: "No cancelled dates.",
-};
-
 function sortedByFilter(itineraries: Itinerary[], filter: Filter): Itinerary[] {
   const planned = itineraries
     .filter((it) => it.status === "planned")
@@ -195,14 +189,15 @@ function sortedByFilter(itineraries: Itinerary[], filter: Filter): Itinerary[] {
   return [...planned, ...completed, ...cancelled];
 }
 
-function metaLine(it: Itinerary): string {
+function metaLine(it: Itinerary, t: TFn): string {
   const date = shortDate(it.dateISO);
   const n = it.stops.length;
   if (n === 0) return date;
-  return `${date} · ${n === 1 ? "1 stop" : `${n} stops`}`;
+  return `${date} · ${n === 1 ? t("dayplan.stopCount.one") : t("dayplan.stopCount.other", { n })}`;
 }
 
 export function PlanList() {
+  const t = useT();
   const navigate = useNavigate();
   const itineraries = useApp((s) => s.itineraries);
   const createItinerary = useApp((s) => s.createItinerary);
@@ -228,14 +223,14 @@ export function PlanList() {
   const leftActionFor = (it: Itinerary): SwipeAction | undefined => {
     if (it.status === "planned") {
       if (it.stops.length === 0) return undefined;
-      return { label: "Complete", tone: "complete", onAction: () => completeItinerary(it.id) };
+      return { label: t("dayplan.action.complete"), tone: "complete", onAction: () => completeItinerary(it.id) };
     }
-    return { label: "Reopen", tone: "reopen", onAction: () => reopenItinerary(it.id) };
+    return { label: t("dayplan.action.reopen"), tone: "reopen", onAction: () => reopenItinerary(it.id) };
   };
 
   return (
     <Screen gap={14}>
-      <div {...stylex.props(styles.title)}>Our Dates</div>
+      <div {...stylex.props(styles.title)}>{t("dayplan.title")}</div>
 
       <div {...stylex.props(styles.chipRow)}>
         {FILTERS.map((f) => (
@@ -245,13 +240,13 @@ export function PlanList() {
             onClick={() => changeFilter(f.id)}
             {...stylex.props(styles.chip, filter === f.id && styles.chipOn)}
           >
-            {f.label}
+            {t(f.labelKey)}
           </button>
         ))}
       </div>
 
       {filtered.length === 0 ? (
-        <div {...stylex.props(styles.emptyCard)}>{EMPTY_COPY[filter]}</div>
+        <div {...stylex.props(styles.emptyCard)}>{t(`dayplan.empty.${filter}`)}</div>
       ) : (
         <div {...stylex.props(styles.list)}>
           {shown.map((it) => (
@@ -259,7 +254,7 @@ export function PlanList() {
               key={it.id}
               onClick={() => navigate(`/plan/${it.id}`)}
               leftAction={leftActionFor(it)}
-              rightAction={{ label: "Delete", tone: "delete", onAction: () => setPendingDelete(it.id) }}
+              rightAction={{ label: t("common.delete"), tone: "delete", onAction: () => setPendingDelete(it.id) }}
             >
               <div {...stylex.props(styles.row1)}>
                 <div {...stylex.props(styles.cardTitle, it.status === "cancelled" && styles.titleMuted)}>
@@ -271,9 +266,9 @@ export function PlanList() {
                 </div>
               </div>
               <div {...stylex.props(styles.row2)}>
-                <div {...stylex.props(styles.meta)}>{metaLine(it)}</div>
-                {it.status === "completed" && <div {...stylex.props(styles.doneChip)}>done</div>}
-                {it.status === "cancelled" && <div {...stylex.props(styles.cancelledChip)}>cancelled</div>}
+                <div {...stylex.props(styles.meta)}>{metaLine(it, t)}</div>
+                {it.status === "completed" && <div {...stylex.props(styles.doneChip)}>{t("dayplan.doneChip")}</div>}
+                {it.status === "cancelled" && <div {...stylex.props(styles.cancelledChip)}>{t("dayplan.cancelledChip")}</div>}
               </div>
             </SwipeRow>
           ))}
@@ -286,7 +281,7 @@ export function PlanList() {
           {...stylex.props(styles.showMore)}
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
         >
-          Show more
+          {t("dayplan.showMore")}
         </button>
       )}
 
@@ -302,16 +297,16 @@ export function PlanList() {
             navigate(`/plan/${id}`);
           }}
         >
-          Plan a new date
+          {t("dayplan.planNewDate")}
         </JellyButton>
       </div>
 
       <ConfirmDialog
         open={pendingDelete !== null}
-        title="Delete this date?"
-        message="This cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Keep"
+        title={t("dayplan.delete.title")}
+        message={t("dayplan.delete.message")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.keep")}
         tone="danger"
         onConfirm={() => {
           if (pendingDelete) deleteItinerary(pendingDelete);

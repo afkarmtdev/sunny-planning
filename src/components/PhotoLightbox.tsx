@@ -6,6 +6,7 @@ import { JellyButton } from "./JellyButton";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { shortDate } from "../lib/dates";
 import { useStorageUrl } from "../lib/storage";
+import { useT } from "../lib/i18n";
 
 const EXIT_MS = 220;
 
@@ -107,6 +108,7 @@ type Props = {
 };
 
 export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onView, onTagStop, onDelete }: Props) {
+  const t = useT();
   const [mounted, setMounted] = useState(Boolean(photo));
   const [shown, setShown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -155,34 +157,34 @@ export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onVie
       >
         <div {...stylex.props(styles.photoBox)}>
           {src ? (
-            <img src={src} alt={current.caption || "date photo"} {...stylex.props(styles.img)} />
+            <img src={src} alt={current.caption || t("album.datePhotoAlt")} {...stylex.props(styles.img)} />
           ) : (
             <div {...stylex.props(styles.fill, ART_STYLES[((current.art ?? 0) % 4 + 4) % 4])} />
           )}
         </div>
         {current.caption && <div {...stylex.props(styles.caption)}>{current.caption}</div>}
         <div {...stylex.props(styles.meta)}>
-          {[currentTitle, currentStop, shortDate(current.dateISO), current.author && `added by ${current.author}`]
+          {[currentTitle, currentStop, shortDate(current.dateISO), current.author && t("album.addedBy", { name: current.author })]
             .filter(Boolean)
             .join(" · ")}
         </div>
         <div {...stylex.props(styles.actions)}>
           {onTagStop && (
             <JellyButton variant="soft" fullWidth onClick={onTagStop}>
-              {currentStop ? "Change stop" : "Tag to a stop"}
+              {currentStop ? t("album.changeStop") : t("album.tagStop")}
             </JellyButton>
           )}
           {current.itineraryId && onView && (
             <JellyButton fullWidth onClick={() => onView(current.itineraryId as string)}>
-              View this date
+              {t("album.viewDate")}
             </JellyButton>
           )}
           <JellyButton variant="white" fullWidth onClick={onClose}>
-            Close
+            {t("common.close")}
           </JellyButton>
           {onDelete && (
             <button type="button" {...stylex.props(styles.deleteBtn)} onClick={() => setConfirmDelete(true)}>
-              Delete photo
+              {t("album.deletePhoto")}
             </button>
           )}
         </div>
@@ -191,10 +193,10 @@ export function PhotoLightbox({ photo, itineraryTitle, stopLabel, onClose, onVie
 
       <ConfirmDialog
         open={confirmDelete}
-        title="Delete this photo?"
-        message="This removes it from your album for good."
-        confirmLabel="Delete"
-        cancelLabel="Keep"
+        title={t("album.deleteConfirmTitle")}
+        message={t("album.deleteConfirmMsg")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.keep")}
         tone="danger"
         onConfirm={() => {
           setConfirmDelete(false);

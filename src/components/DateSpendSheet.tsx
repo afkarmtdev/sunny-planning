@@ -12,6 +12,7 @@ import { useStorageUrl } from "../lib/storage";
 import { activeExpenses, dateSpend, itineraryTotal } from "../lib/derive";
 import { shortDate } from "../lib/dates";
 import { rm } from "../lib/format";
+import { useT } from "../lib/i18n";
 import type { Expense, Itinerary } from "../lib/types";
 
 const styles = stylex.create({
@@ -134,6 +135,7 @@ function ExpenseRow({
   onEdit: () => void;
   onOpenReceipt: (url: string) => void;
 }) {
+  const t = useT();
   // Prefer the local IndexedDB blob (fast, offline); fall back to the signed
   // Storage URL on a device without the local copy.
   const localUrl = useReceiptUrl(expense.receiptId);
@@ -145,7 +147,7 @@ function ExpenseRow({
         {url && (
           <img
             src={url}
-            alt="Receipt"
+            alt={t("costs.receipt")}
             {...stylex.props(styles.rowThumb)}
             onClick={(e) => {
               e.stopPropagation();
@@ -174,6 +176,7 @@ type Props = {
 
 /** Date-detail sheet opened from a Costs screen row: itemized spend plus receipts. */
 export function DateSpendSheet({ itinerary, onClose }: Props) {
+  const t = useT();
   // Keep the last itinerary while the sheet slides out so content does not blank mid-exit.
   const [current, setCurrent] = useState<Itinerary | null>(itinerary);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -206,15 +209,15 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
             <LcdPanel xstyle={styles.totalsRow}>
               <div>
                 <div {...stylex.props(styles.totalLabel)}>
-                  {current.status === "completed" ? "ACTUAL TOTAL" : "EST. TOTAL"}
+                  {current.status === "completed" ? t("costs.actualTotal") : t("costs.estTotal")}
                 </div>
-                {showEstimateDiff && <div {...stylex.props(styles.totalSub)}>est. ~{rm(estimate)}</div>}
+                {showEstimateDiff && <div {...stylex.props(styles.totalSub)}>{t("costs.estPrefix", { amount: rm(estimate) })}</div>}
               </div>
               <LcdValue xstyle={styles.totalValue}>{rm(actual)}</LcdValue>
             </LcdPanel>
 
             {expenses.length === 0 ? (
-              <div {...stylex.props(styles.emptyList)}>No expenses logged for this date yet.</div>
+              <div {...stylex.props(styles.emptyList)}>{t("costs.emptyExpenses")}</div>
             ) : (
               <div {...stylex.props(styles.list)}>
                 {expenses.map((ex) => (
@@ -235,7 +238,7 @@ export function DateSpendSheet({ itinerary, onClose }: Props) {
               xstyle={styles.addBtn}
               onClick={() => setAddingExpense(true)}
             >
-              + Add expense
+              {t("costs.addExpensePlus")}
             </JellyButton>
           </>
         )}

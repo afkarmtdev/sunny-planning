@@ -1,8 +1,10 @@
 import * as stylex from "@stylexjs/stylex";
+import type { ReactElement } from "react";
 import { NavLink } from "react-router-dom";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { IconClock, IconCoin, IconHeart, IconHome, IconPaw, IconPhoto } from "./icons";
 import { sfx } from "../lib/sfx";
+import { useT, type MessageKey } from "../lib/i18n";
 
 const styles = stylex.create({
   bar: {
@@ -68,22 +70,23 @@ const styles = stylex.create({
   },
 });
 
-const TABS = [
-  { to: "/", end: true, label: "Home", rot: -4, icon: (active: boolean) => <IconHome size={active ? 18 : 16} /> },
-  { to: "/plan", end: false, label: "Plan", rot: 3, icon: (active: boolean) => <IconHeart size={active ? 15 : 13} /> },
-  { to: "/today", end: false, label: "Today", rot: 4, icon: (active: boolean) => <IconClock size={active ? 16 : 15} /> },
+const TABS: { to: string; end: boolean; label: MessageKey; rot: number; icon: (active: boolean) => ReactElement }[] = [
+  { to: "/", end: true, label: "common.home", rot: -4, icon: (active: boolean) => <IconHome size={active ? 18 : 16} /> },
+  { to: "/plan", end: false, label: "ui.tab.plan", rot: 3, icon: (active: boolean) => <IconHeart size={active ? 15 : 13} /> },
+  { to: "/today", end: false, label: "ui.tab.today", rot: 4, icon: (active: boolean) => <IconClock size={active ? 16 : 15} /> },
   {
     to: "/costs",
     end: false,
-    label: "Costs",
+    label: "ui.tab.costs",
     rot: -3,
     icon: (active: boolean) => <IconCoin size={active ? 16 : 15} ringColor={active ? "#FFD3E8" : "#FFFFFF"} />,
   },
-  { to: "/album", end: false, label: "Album", rot: 4, icon: (active: boolean) => <IconPhoto size={active ? 18 : 17} /> },
-  { to: "/ratings", end: false, label: "Ratings", rot: -4, icon: (active: boolean) => <IconPaw size={active ? 18 : 17} /> },
+  { to: "/album", end: false, label: "ui.tab.album", rot: 4, icon: (active: boolean) => <IconPhoto size={active ? 18 : 17} /> },
+  { to: "/ratings", end: false, label: "ui.tab.ratings", rot: -4, icon: (active: boolean) => <IconPaw size={active ? 18 : 17} /> },
 ];
 
 export function StickerTabBar() {
+  const t = useT();
   const barProps = stylex.props(styles.bar);
   return (
     <nav {...barProps} className={`${barProps.className ?? ""} no-print`}>
@@ -92,7 +95,7 @@ export function StickerTabBar() {
           {({ isActive }) => (
             <div {...stylex.props(styles.tab, isActive && styles.tabActive, styles.sticker(tab.rot))}>
               {tab.icon(isActive)}
-              <div {...stylex.props(styles.label, isActive && styles.labelActive)}>{tab.label}</div>
+              <div {...stylex.props(styles.label, isActive && styles.labelActive)}>{t(tab.label)}</div>
             </div>
           )}
         </NavLink>

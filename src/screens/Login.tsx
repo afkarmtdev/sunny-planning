@@ -9,6 +9,7 @@ import { Field, TextInput } from "../components/Field";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { takeMagicLinkError } from "../lib/authRedirect";
 import { useOnline } from "../lib/useOnline";
+import { useT } from "../lib/i18n";
 
 const styles = stylex.create({
   column: {
@@ -125,6 +126,7 @@ const styles = stylex.create({
 });
 
 export function Login() {
+  const t = useT();
   const navigate = useNavigate();
   const online = useOnline();
   const [email, setEmail] = useState("");
@@ -142,7 +144,7 @@ export function Login() {
       return;
     }
     if (!email.trim()) {
-      setError("Type your email first");
+      setError(t("auth.emailFirst"));
       return;
     }
     setPhase("sending");
@@ -165,15 +167,13 @@ export function Login() {
 
         <div>
           <div {...stylex.props(styles.title)}>Sunny Planning</div>
-          <div {...stylex.props(styles.sub)}>Just for the two of you</div>
+          <div {...stylex.props(styles.sub)}>{t("auth.tagline")}</div>
         </div>
 
         {phase === "sent" ? (
           <div {...stylex.props(styles.sentCard)}>
-            <div {...stylex.props(styles.sentTitle)}>Magic link sent</div>
-            <div {...stylex.props(styles.sentSub)}>
-              Check {email} and tap the link to hop back in here.
-            </div>
+            <div {...stylex.props(styles.sentTitle)}>{t("auth.sentTitle")}</div>
+            <div {...stylex.props(styles.sentSub)}>{t("auth.sentSub", { email })}</div>
           </div>
         ) : (
           <>
@@ -185,10 +185,10 @@ export function Login() {
             )}
 
             <div {...stylex.props(styles.fieldWrap)}>
-              <Field label="Email">
+              <Field label={t("auth.emailLabel")}>
                 <TextInput
                   type="email"
-                  placeholder="you@email.com"
+                  placeholder={t("auth.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && online && void sendLink()}
@@ -202,28 +202,24 @@ export function Login() {
               onClick={() => void sendLink()}
               disabled={phase === "sending" || !online}
             >
-              {phase === "sending" ? "Sending..." : "Send me a magic link"}
+              {phase === "sending" ? t("auth.sending") : t("auth.sendLink")}
             </JellyButton>
 
             {error && <div {...stylex.props(styles.error)}>{error}</div>}
             {!online ? (
-              <div {...stylex.props(styles.offlineNote)}>
-                You are offline. Reconnect to get your magic link.
-              </div>
+              <div {...stylex.props(styles.offlineNote)}>{t("auth.offline")}</div>
             ) : (
-              <div {...stylex.props(styles.note)}>No password. We will email you a one-tap link.</div>
+              <div {...stylex.props(styles.note)}>{t("auth.noPassword")}</div>
             )}
           </>
         )}
 
         <div {...stylex.props(styles.divider)} />
 
-        <div {...stylex.props(styles.inviteHint)}>Have an invite link? Just tap it to join</div>
+        <div {...stylex.props(styles.inviteHint)}>{t("auth.inviteHint")}</div>
 
         {!isSupabaseConfigured && (
-          <div {...stylex.props(styles.demoHint)}>
-            demo mode: Supabase is not connected yet, the button just lets you in
-          </div>
+          <div {...stylex.props(styles.demoHint)}>{t("auth.demoHint")}</div>
         )}
       </div>
     </Screen>

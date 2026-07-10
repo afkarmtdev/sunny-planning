@@ -10,6 +10,7 @@ import { AVATAR_COLORS, initialFor } from "../lib/avatar";
 import { longDate } from "../lib/dates";
 import { fileToDataUrl } from "../lib/images";
 import { useApp } from "../store/useApp";
+import { useT } from "../lib/i18n";
 
 // Avatars ride along in the space_members row (and localStorage), so keep them
 // small: a tightly downscaled square is plenty for a chip.
@@ -136,6 +137,7 @@ type Props = {
  * only commit on Save; closing without saving discards them.
  */
 export function ProfileSheet({ open, onClose }: Props) {
+  const t = useT();
   const profile = useApp((s) => s.profile);
   const setProfile = useApp((s) => s.setProfile);
 
@@ -176,11 +178,11 @@ export function ProfileSheet({ open, onClose }: Props) {
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="Your profile">
+    <Sheet open={open} onClose={onClose} title={t("auth.profileTitle")}>
       <div {...stylex.props(styles.preview)}>
         <button
           type="button"
-          aria-label={avatarUrl ? "Change your photo" : "Add a photo"}
+          aria-label={avatarUrl ? t("auth.changePhoto") : t("auth.addPhoto")}
           onClick={() => fileInput.current?.click()}
           {...stylex.props(styles.avatarBtn)}
         >
@@ -200,9 +202,9 @@ export function ProfileSheet({ open, onClose }: Props) {
           }}
         />
         <div>
-          <div {...stylex.props(styles.previewName)}>{name.trim() || "Your name"}</div>
+          <div {...stylex.props(styles.previewName)}>{name.trim() || t("auth.yourName")}</div>
           <div {...stylex.props(styles.previewHint)}>
-            {avatarUrl ? "Tap your photo to change it" : "Tap to add a photo"}
+            {avatarUrl ? t("auth.tapChangePhoto") : t("auth.tapAddPhoto")}
           </div>
           {avatarUrl && (
             <button
@@ -210,17 +212,17 @@ export function ProfileSheet({ open, onClose }: Props) {
               onClick={() => setAvatarUrl(undefined)}
               {...stylex.props(styles.removePhoto)}
             >
-              Remove photo
+              {t("auth.removePhoto")}
             </button>
           )}
         </div>
       </div>
 
-      <Field label="Display name">
-        <TextInput value={name} placeholder="Your name" onChange={(e) => setName(e.target.value)} />
+      <Field label={t("auth.displayName")}>
+        <TextInput value={name} placeholder={t("auth.yourName")} onChange={(e) => setName(e.target.value)} />
       </Field>
 
-      <Field label="Your color">
+      <Field label={t("auth.yourColor")}>
         <div {...stylex.props(styles.swatchRow)}>
           {AVATAR_COLORS.map((c) => (
             <button
@@ -234,13 +236,13 @@ export function ProfileSheet({ open, onClose }: Props) {
         </div>
       </Field>
 
-      <Field label="Birthday">
+      <Field label={t("auth.birthday")}>
         <button
           type="button"
           onClick={() => setPickingDate((v) => !v)}
           {...stylex.props(styles.birthdayBtn, !birthdayISO && styles.birthdayEmpty)}
         >
-          {birthdayISO ? longDate(birthdayISO) : "Pick your birthday"}
+          {birthdayISO ? longDate(birthdayISO) : t("auth.pickBirthday")}
         </button>
       </Field>
       {pickingDate && (
@@ -256,7 +258,7 @@ export function ProfileSheet({ open, onClose }: Props) {
       )}
 
       <JellyButton variant="primary" onClick={save}>
-        Save profile
+        {t("auth.saveProfile")}
       </JellyButton>
     </Sheet>
   );

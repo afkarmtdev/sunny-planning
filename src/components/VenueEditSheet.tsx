@@ -7,6 +7,7 @@ import { PawRating } from "./PawRating";
 import { JellyButton } from "./JellyButton";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useApp } from "../store/useApp";
+import { useT } from "../lib/i18n";
 import type { Venue } from "../lib/types";
 
 const styles = stylex.create({
@@ -70,6 +71,7 @@ type Props = {
  * touches the store until Save.
  */
 export function VenueEditSheet({ target, onClose }: Props) {
+  const t = useT();
   const venues = useApp((s) => s.venues);
   const rateVenue = useApp((s) => s.rateVenue);
   const setVenueCategory = useApp((s) => s.setVenueCategory);
@@ -125,7 +127,7 @@ export function VenueEditSheet({ target, onClose }: Props) {
       <Sheet
         open={target !== null}
         onClose={requestClose}
-        title={current ? `Edit ${current.venue.name}` : undefined}
+        title={current ? t("ratings.editVenue", { name: current.venue.name }) : undefined}
       >
         {current && (
           <>
@@ -135,7 +137,7 @@ export function VenueEditSheet({ target, onClose }: Props) {
             <div {...stylex.props(styles.pawRow)}>
               <PawRating value={stagedRating} onChange={setStagedRating} size={34} />
             </div>
-            <Field label="Tag">
+            <Field label={t("ratings.tagLabel")}>
               <div {...stylex.props(styles.chipRow)}>
                 {categories.map((c) => (
                   <button
@@ -153,12 +155,12 @@ export function VenueEditSheet({ target, onClose }: Props) {
               </div>
               <TextInput
                 value={typed}
-                placeholder="Or make a new tag"
+                placeholder={t("ratings.tagPlaceholder")}
                 onChange={(e) => setTyped(e.target.value)}
               />
             </Field>
             <JellyButton variant="primary" onClick={save}>
-              {isDirty ? "Save changes" : "Done"}
+              {isDirty ? t("ratings.saveChanges") : t("common.done")}
             </JellyButton>
           </>
         )}
@@ -166,12 +168,12 @@ export function VenueEditSheet({ target, onClose }: Props) {
 
       <ConfirmDialog
         open={confirmDiscard}
-        title="Discard changes?"
+        title={t("ratings.discardTitle")}
         message={
-          current ? `Your unsaved edits to ${current.venue.name} will be lost.` : ""
+          current ? t("ratings.discardMessage", { name: current.venue.name }) : ""
         }
-        confirmLabel="Discard"
-        cancelLabel="Keep editing"
+        confirmLabel={t("common.discard")}
+        cancelLabel={t("ratings.keepEditing")}
         tone="danger"
         onConfirm={() => {
           setConfirmDiscard(false);

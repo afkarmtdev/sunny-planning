@@ -11,6 +11,7 @@ import { PhotoLightbox } from "./PhotoLightbox";
 import { useApp } from "../store/useApp";
 import { latestRating, venuePhotos, venueVisits } from "../lib/derive";
 import { shortDate } from "../lib/dates";
+import { useT } from "../lib/i18n";
 import type { Photo, Venue } from "../lib/types";
 
 const styles = stylex.create({
@@ -109,6 +110,7 @@ type Props = {
 };
 
 export function VenueDetailSheet({ venue, onClose }: Props) {
+  const t = useT();
   const navigate = useNavigate();
   const itineraries = useApp((s) => s.itineraries);
   const photos = useApp((s) => s.photos);
@@ -150,14 +152,16 @@ export function VenueDetailSheet({ venue, onClose }: Props) {
             </Card>
 
             <div {...stylex.props(styles.ratingRow)}>
-              <div {...stylex.props(styles.ratingLabel)}>YOUR RATING</div>
+              <div {...stylex.props(styles.ratingLabel)}>{t("ratings.yourRating")}</div>
               <PawRating value={latestRating(current)} size={24} />
             </div>
 
             {visits.length > 0 && (
               <>
                 <div {...stylex.props(styles.sectionTitle)}>
-                  You have been here {visits.length} {visits.length === 1 ? "time" : "times"}
+                  {t(visits.length === 1 ? "ratings.visitCount.one" : "ratings.visitCount.other", {
+                    count: visits.length,
+                  })}
                 </div>
                 <div {...stylex.props(styles.visitList)}>
                   {visits.map((visit, i) => {
@@ -172,16 +176,16 @@ export function VenueDetailSheet({ venue, onClose }: Props) {
                       >
                         <div>
                           <div {...stylex.props(styles.visitTitle)}>
-                            {visit.itinerary?.title ?? "Manual rating"}
+                            {visit.itinerary?.title ?? t("ratings.manualRating")}
                           </div>
                           <div {...stylex.props(styles.visitSub)}>
-                            {visit.dateISO ? shortDate(visit.dateISO) : "rated earlier"}
+                            {visit.dateISO ? shortDate(visit.dateISO) : t("ratings.ratedEarlier")}
                           </div>
                         </div>
                         {visit.rating ? (
                           <PawRating value={visit.rating} size={13} />
                         ) : (
-                          <div {...stylex.props(styles.visitUnrated)}>not rated</div>
+                          <div {...stylex.props(styles.visitUnrated)}>{t("ratings.notRated")}</div>
                         )}
                       </button>
                     );
@@ -192,7 +196,7 @@ export function VenueDetailSheet({ venue, onClose }: Props) {
 
             {snaps.length > 0 && (
               <>
-                <div {...stylex.props(styles.sectionTitle)}>Snaps from here</div>
+                <div {...stylex.props(styles.sectionTitle)}>{t("ratings.snapsHere")}</div>
                 <div {...stylex.props(styles.photoGrid)}>
                   {snaps.map((photo) => (
                     <Polaroid

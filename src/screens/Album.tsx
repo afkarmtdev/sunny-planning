@@ -11,6 +11,7 @@ import { useApp } from "../store/useApp";
 import { fileToDataUrl } from "../lib/images";
 import { todayISO, shortDate } from "../lib/dates";
 import { photoDecoration } from "../lib/photos";
+import { useT } from "../lib/i18n";
 import type { Photo } from "../lib/types";
 
 const PAGE_SIZE = 8;
@@ -173,6 +174,7 @@ const styles = stylex.create({
 });
 
 export function Album() {
+  const t = useT();
   const navigate = useNavigate();
   const photos = useApp((s) => s.photos);
   const itineraries = useApp((s) => s.itineraries);
@@ -213,8 +215,8 @@ export function Album() {
       .sort((a, b) => b.dateISO.localeCompare(a.dateISO))
       .map((it) => ({ id: it.id, label: it.title }));
     const hasUntagged = photos.some((p) => !p.itineraryId);
-    return hasUntagged ? [...withPhotos, { id: "untagged", label: "Unsorted" }] : withPhotos;
-  }, [itineraries, photos]);
+    return hasUntagged ? [...withPhotos, { id: "untagged", label: t("album.unsorted") }] : withPhotos;
+  }, [itineraries, photos, t]);
 
   // "All" shuffles the cross-itinerary mix; a specific filter keeps date order.
   const ordered =
@@ -289,7 +291,7 @@ export function Album() {
 
   return (
     <Screen dots dotsTight gap={16}>
-      <div {...stylex.props(styles.title)}>Our Album</div>
+      <div {...stylex.props(styles.title)}>{t("album.title")}</div>
 
       {dateFilters.length > 0 && (
         <div {...stylex.props(styles.filterRow)}>
@@ -298,7 +300,7 @@ export function Album() {
             {...stylex.props(styles.filterChip, filter === null && styles.filterChipOn)}
             onClick={() => changeFilter(null)}
           >
-            All
+            {t("album.filterAll")}
           </button>
           {dateFilters.map((f) => (
             <button
@@ -314,7 +316,7 @@ export function Album() {
       )}
 
       {filter !== null && shown.length === 0 && (
-        <div {...stylex.props(styles.emptyFiltered)}>No photos from this date yet.</div>
+        <div {...stylex.props(styles.emptyFiltered)}>{t("album.emptyFiltered")}</div>
       )}
 
       {groups.map((group, gi) => {
@@ -355,14 +357,14 @@ export function Album() {
           {...stylex.props(styles.showMore)}
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
         >
-          Show more
+          {t("album.showMore")}
         </button>
       )}
 
       <UploadDropzone
         multiple
-        title="+ Add a photo"
-        subtitle="Sunny is waiting for more memories"
+        title={t("album.addPhoto")}
+        subtitle={t("album.addPhotoSub")}
         onFiles={(files) => void handleFiles(files)}
       />
 
@@ -376,10 +378,11 @@ export function Album() {
         onDelete={lightboxId ? () => removePhoto(lightboxId) : undefined}
       />
 
-      <Sheet open={pending !== null} onClose={() => setPending(null)} title="Which date is this from?">
+      <Sheet open={pending !== null} onClose={() => setPending(null)} title={t("album.pickTitle")}>
         <div {...stylex.props(styles.pickerHint)}>
-          Tag your {pending && pending.length > 1 ? `${pending.length} photos` : "photo"} to a date so
-          they show up together.
+          {pending && pending.length > 1
+            ? t("album.pickHintMany", { count: pending.length })
+            : t("album.pickHintOne")}
         </div>
         <div {...stylex.props(styles.pickerList)}>
           {pickable.map((it) => {
@@ -392,7 +395,7 @@ export function Album() {
                 onClick={() => commitPending(it.id)}
               >
                 <span {...stylex.props(styles.optionMain)}>
-                  {isToday && <span {...stylex.props(styles.todayBadge)}>Today</span>}
+                  {isToday && <span {...stylex.props(styles.todayBadge)}>{t("album.todayBadge")}</span>}
                   <span {...stylex.props(styles.optionTitle)}>{it.title}</span>
                 </span>
                 <span {...stylex.props(styles.optionDate)}>{shortDate(it.dateISO)}</span>
@@ -404,8 +407,8 @@ export function Album() {
             {...stylex.props(styles.option, styles.optionSkip)}
             onClick={() => commitPending(undefined)}
           >
-            <span {...stylex.props(styles.optionTitle)}>Skip for now</span>
-            <span {...stylex.props(styles.optionDate)}>no date</span>
+            <span {...stylex.props(styles.optionTitle)}>{t("album.skip")}</span>
+            <span {...stylex.props(styles.optionDate)}>{t("album.noDate")}</span>
           </button>
         </div>
       </Sheet>
