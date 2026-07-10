@@ -38,10 +38,35 @@ StyleX conventions in this repo:
 
 - **State**: one Zustand store, `src/store/useApp.ts`, persisted to localStorage key `sunny-planning-v1`. Seed data (`src/data/demo.ts`, matching the design mockups around July 2026) loads on first run; clearing that key resets the demo. Derived numbers (month totals, streak weeks, mascot happiness, next planned date) are computed in `src/lib/derive.ts` and never stored.
 - **Supabase is optional**: `src/lib/supabase.ts` exposes `isSupabaseConfigured` from `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`. Absent env vars mean demo mode: `RequireAuth` passes everyone and Login's button just enters the app. Present env vars gate the app behind a session and Login sends real magic links. The couple-space schema with RLS is `supabase/schema.sql`; screens still read and write only the local store, so server data sync is the known open work.
-- **Routing** (`src/App.tsx`): tab roots (`/`, `/plan/:id`, `/today`, `/costs`, `/album`, `/ratings`) render inside `TabLayout`, which appends the `StickerTabBar`. `/plan/:id/export`, `/invite`, and `/print/:id` sit outside it (back button instead of tabs). `/plan` redirects to the next planned itinerary, creating one when none exists.
+- **Routing** (`src/App.tsx`): a data router (`createBrowserRouter`) so screens can call `useBlocker` to guard unsaved edits; do not revert it to the plain `BrowserRouter`/`Routes` form. Tab roots (`/`, `/plan/:id`, `/today`, `/costs`, `/album`, `/ratings`) render inside `TabLayout`, which appends the `StickerTabBar`. `/plan/:id/export`, `/invite`, and `/print/:id` sit outside it (back button instead of tabs). `/plan` redirects to the next planned itinerary, creating one when none exists.
 - **Day-of flow**: `store.dayOf` holds `{ itineraryId, stopIdx, completed }`. `advanceDay` on the final stop completes the date: itinerary status flips to completed and an expense is appended (keyed by `itineraryId`). `resetDay` reverses both.
 - **PDF export**: `ExportPicker` saves the skin on the itinerary, then navigates to `/print/:id?skin=...`. `src/print/PrintView.tsx` styles the document per skin (Strawberry Milk, Retro LCD, Scrapbook, Love Letter) and auto-calls `window.print()`; saving as PDF from the dialog is the export. Printing depends on the `.no-print` class and `@page` rules in `src/global.css`.
 - **Design language**: tokens (shellPink, bubblegum, heartPop, cream, lcdMint, marmalade, lavender, ink), fonts (Baloo 2 display, Nunito body, Silkscreen for LCD numerals, Gaegu handwriting), 2-3px ink borders, hard offset shadows, sticker rotations. Sprites live in `src/assets/sunny/`.
+
+## No native browser UI
+
+Never use native browser dialogs or inputs that render OS chrome: no `window.confirm`, `window.alert`, or `window.prompt`, and no `<input type="date">`. They break the themed look and feel. Use the in-app equivalents instead: `src/components/ConfirmDialog.tsx` for confirmations (pass `tone="danger"` for destructive actions) and `src/components/Calendar.tsx` for date picking.
+
+## Forms: save and discard (standard)
+
+Any screen that edits store data is transactional from the user's point of view,
+even though the store persists to localStorage on every write. The standard, on
+every editable screen: an explicit **Save** action that commits the edits, a
+themed **discard prompt** on any exit with unsaved edits that reverts to the last
+saved state, and locked (completed/cancelled) states that hide edit affordances so
+the user must reopen to edit. The mechanism is a baseline snapshot plus reference
+`isDirty` detection plus `useBlocker` (never persist-blocking or native prompts).
+`src/screens/ItineraryBuilder.tsx` is the reference implementation. Before building
+or changing a form, follow the `form-save-discard` skill.
+
+## Capture reusable work as skills
+
+After any session, create or update a skill under `.claude/skills/<name>/SKILL.md`
+for anything that could be reused or should become a standard: a non-obvious
+procedure, a pattern worth repeating, a convention future work must follow, or a
+gotcha and its fix. Prefer updating an existing skill over adding a near-duplicate.
+When a skill encodes a house standard (not just a how-to), also add a short pointer
+to it from this file so it is discoverable, as the `form-save-discard` section does.
 
 ## Copy style
 
