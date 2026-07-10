@@ -2,6 +2,7 @@ import { transformAsync } from "@babel/core";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import pkg from "./package.json";
 
 /**
  * @vitejs/plugin-react v6 is oxc-based and no longer runs Babel, so StyleX's
@@ -42,6 +43,9 @@ function stylexBabel(mode: string): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   server: {
     port: 5180,
   },
