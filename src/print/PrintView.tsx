@@ -1,9 +1,10 @@
 import * as stylex from "@stylexjs/stylex";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { colors, fonts } from "../theme/tokens.stylex";
 import { BackButton } from "../components/BackButton";
 import { JellyButton } from "../components/JellyButton";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 import { useApp } from "../store/useApp";
 import { itineraryTotal } from "../lib/derive";
 import { longDate } from "../lib/dates";
@@ -251,12 +252,21 @@ export function PrintView() {
   const [params] = useSearchParams();
   const itinerary = useApp((s) => s.itineraries.find((it) => it.id === id));
   const printed = useRef(false);
+  // Cover the brief prep (fonts settling before the print dialog) with the
+  // shared loading state, captioned for the operation.
+  const [packing, setPacking] = useState(true);
 
   useEffect(() => {
     if (printed.current || !itinerary) return;
     printed.current = true;
     void document.fonts.ready.then(() => {
-      setTimeout(() => window.print(), 300);
+      setTimeout(() => {
+        try {
+          window.print();
+        } finally {
+          setPacking(false);
+        }
+      }, 300);
     });
   }, [itinerary]);
 
@@ -274,6 +284,7 @@ export function PrintView() {
 
   return (
     <div {...stylex.props(styles.page)}>
+      {packing && <LoadingOverlay mode="fullscreen" caption="packing up your PDF..." delayMs={0} />}
       <div {...toolbarProps} className={`${toolbarProps.className ?? ""} no-print`}>
         <BackButton label="Back to export" to={`/plan/${id}/export`} />
       </div>
