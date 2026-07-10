@@ -26,6 +26,15 @@ Each of these is roughly a day or less, independently shippable, in any order.
 
 ### Sound effects (12) and touch feedback (13)
 
+**Status (2026-07-10): DONE (infrastructure), sound wiring in progress.** `src/lib/sfx.ts`
+synthesizes chiptune blips over WebAudio and pairs `navigator.vibrate`, both gated on a
+new `prefs` slice (`soundOn` / `hapticsOn`, default on) in `useApp.ts`. Wired into
+JellyButton (press) and StickerTabBar (nav tap). The nav tap voice is "Pop", a sine
+glide, chosen from an audition page that drafts five candidates per interaction. Still
+to wire: the remaining per-scenario picks (toggle, save, delete are new voices; press and
+date-completed swap) once finalized, and their trigger points in the store actions. The
+on/off toggles surface in the Settings screen (Milestone 2).
+
 One `src/lib/sfx.ts` module that synthesizes chiptune blips with WebAudio (no audio
 assets, no dependencies, no licensing). Pair each sound with `navigator.vibrate`
 micro-haptics on devices that support it; the existing `:active` press states in
@@ -34,11 +43,24 @@ get on/off toggles that land in the preferences slice (see Settings below).
 
 ### App version (14)
 
+**Status (2026-07-10): DONE (plumbing).** `__APP_VERSION__` is injected by a `define`
+in `vite.config.ts` from package.json (declared in `src/env.d.ts`, needed `resolveJsonModule`
+in `tsconfig.json`). The Settings display lands with the Settings screen (Milestone 2).
+
 Expose the `package.json` version at build time via `define` in `vite.config.ts`
 (`__APP_VERSION__`). Displayed in Settings. Careful: `vite.config.ts` also hosts the
 fragile StyleX pipeline; the change is additive only.
 
 ### Splash screen (16) and loading states (19)
+
+**Status (2026-07-10): DONE.** `src/screens/Splash.tsx` (hopping Sunny, `hop.png` ported
+to `src/assets/sunny/`) and a reusable `src/components/LoadingOverlay.tsx` (fullscreen +
+overlay modes, staggered dots, fade-in delay, inline error + retry, cancel), both built
+from the loading-splash spec. A `Boot` gate in `App.tsx` shows the splash while the store
+hydrates and fonts load (with a hard timeout ceiling), then reveals the router; it also
+runs `purgeDeletedExpenses` on load. First consumer wired: the "packing up your PDF..."
+overlay in `PrintView.tsx`. The auth-aware splash routing and timeout-to-Login only fully
+activate with Supabase (Milestone 4), as planned.
 
 Both are fully designed in `design/extracted/loading-splash/loading-splash.html`;
 implement from that spec, do not invent.
@@ -69,6 +91,13 @@ mutation in Milestone 4, and the splash timeout-to-Login behavior also only full
 activates then.
 
 ### Soft-deleted transactions (9)
+
+**Status (2026-07-10): DONE.** `deletedAt` on the expense type; delete now soft-deletes
+(recoverable) via `removeExpense`, `derive.ts` excludes deleted rows from every total
+(`activeExpenses`), the Costs screen gained a "Recently deleted" section with restore
+(`restoreExpense`), and `purgeDeletedExpenses` hard-purges rows deleted over 30 days ago
+on app load (receipts kept until purge). The Supabase `deleted_at` / `deleted_by` columns
+landed with the audit trail below.
 
 Add `deletedAt?: string` to the expense type. Swipe-to-delete sets it instead of
 removing the row (with the existing SwipeRow plus ConfirmDialog `tone="danger"`).
@@ -194,6 +223,17 @@ and expired states, and the RequireAuth wrapper becoming a real gate in configur
 mode, which it already is; feature 3 is mostly done once first-time setup hooks in.
 
 ### Created by / updated by (7)
+
+**Status (2026-07-10): audit trail landed early (data model + schema); UI chip still
+pending sync.** Every stored record now carries an `Audit` mixin (`createdAt` / `createdBy`
+/ `updatedAt` / `updatedBy`) and expenses also carry `SoftDelete` (`deletedAt` /
+`deletedBy`), defined in `src/lib/types.ts`. Timestamps are stamped live in `useApp.ts`
+(`createdAudit` / `touchedAudit`, with `patchItinerary` auto-bumping `updatedAt`); all the
+`*By` fields stay unset until auth supplies the acting member. The persist store bumped to
+v5 with a best-effort backfill. `supabase/schema.sql` mirrors the columns (the `*By`
+columns reference `auth.users`) with a `set_updated_at` trigger per table. Convention
+captured in the `audit-trail` skill. What remains for feature 7 proper: populate the `*By`
+fields from `auth.uid()` in the sync layer, and the author-chip UI.
 
 Schema migration: `created_by uuid` and `updated_by uuid` columns plus a trigger to
 stamp them. UI: a tiny author chip (partner's initial in their color) on
