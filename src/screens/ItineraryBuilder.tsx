@@ -9,6 +9,7 @@ import { JellyButton } from "../components/JellyButton";
 import { LcdPanel, LcdValue } from "../components/Lcd";
 import { Sheet } from "../components/Sheet";
 import { Field, TextInput } from "../components/Field";
+import { TimePicker } from "../components/TimePicker";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { Calendar } from "../components/Calendar";
 import { Polaroid } from "../components/Polaroid";
@@ -1056,27 +1057,17 @@ export function ItineraryBuilder() {
             ))}
           </div>
         )}
-        <div {...stylex.props(styles.sheetRow)}>
-          <div {...stylex.props(styles.sheetHalf)}>
-            <Field label="Time">
-              <TextInput
-                value={draft.time}
-                placeholder="3:00 PM"
-                onChange={(e) => setDraft({ ...draft, time: e.target.value })}
-              />
-            </Field>
-          </div>
-          <div {...stylex.props(styles.sheetHalf)}>
-            <Field label="Est. cost (RM)">
-              <TextInput
-                value={draft.cost}
-                placeholder="28"
-                inputMode="numeric"
-                onChange={(e) => setDraft({ ...draft, cost: e.target.value })}
-              />
-            </Field>
-          </div>
-        </div>
+        <Field label="Time">
+          <TimePicker value={draft.time} onChange={(time) => setDraft({ ...draft, time })} />
+        </Field>
+        <Field label="Est. cost (RM)">
+          <TextInput
+            value={draft.cost}
+            placeholder="28"
+            inputMode="numeric"
+            onChange={(e) => setDraft({ ...draft, cost: e.target.value })}
+          />
+        </Field>
         <Field label="Note">
           <TextInput
             value={draft.note}

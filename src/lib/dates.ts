@@ -88,6 +88,23 @@ export function isSameMonthDay(iso: string, ref: Date): boolean {
   return d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
 }
 
+export type TimeParts = { hour12: number; minute: number; ampm: "AM" | "PM" };
+
+/** Parse a "3:00 PM" style string into parts, or null when it does not match. */
+export function parseTime(value: string): TimeParts | null {
+  const m = value.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return null;
+  const hour12 = Number(m[1]);
+  const minute = Number(m[2]);
+  if (hour12 < 1 || hour12 > 12 || minute < 0 || minute > 59) return null;
+  return { hour12, minute, ampm: m[3].toUpperCase() as "AM" | "PM" };
+}
+
+/** "3:00 PM" from parts. */
+export function formatTime({ hour12, minute, ampm }: TimeParts): string {
+  return `${hour12}:${String(minute).padStart(2, "0")} ${ampm}`;
+}
+
 export function greeting(d: Date): string {
   const h = d.getHours();
   if (h < 12) return "Good morning";
