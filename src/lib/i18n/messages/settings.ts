@@ -30,7 +30,7 @@ export const settings = {
   "settings.reset.cancel": { en: "Keep my data", zh: "保留我的数据", pinyin: "bao3 liu2 wo3 de5 shu4 ju4" },
 
   "settings.logout.title": { en: "Log out?", zh: "退出登录？", pinyin: "tui4 chu1 deng1 lu4？" },
-  "settings.logout.message.auth": { en: "You will need your magic link to hop back in.", zh: "你需要用魔法链接才能重新登录。", pinyin: "ni3 xu1 yao4 yong4 mo2 fa3 lian4 jie1 cai2 neng2 chong2 xin1 deng1 lu4。" },
+  "settings.logout.message.auth": { en: "Your photos and data are removed from this device and sync back on your next login. You will need your magic link to hop back in.", zh: "你的照片和数据会从这台设备移除，下次登录后会同步回来。你需要用魔法链接才能重新登录。", pinyin: "ni3 de5 zhao4 pian4 he2 shu4 ju4 hui4 cong2 zhe4 tai2 she4 bei4 yi2 chu2，xia4 ci4 deng1 lu4 hou4 hui4 tong2 bu4 hui2 lai2。ni3 xu1 yao4 yong4 mo2 fa3 lian4 jie1 cai2 neng2 chong2 xin1 deng1 lu4。" },
   "settings.logout.message.demo": { en: "This takes you back to the welcome screen.", zh: "这会带你回到欢迎界面。", pinyin: "zhe4 hui4 dai4 ni3 hui2 dao4 huan1 ying2 jie4 mian4。" },
   "settings.logout.cancel": { en: "Stay", zh: "留下", pinyin: "liu2 xia4" },
 } satisfies Record<string, Msg>;

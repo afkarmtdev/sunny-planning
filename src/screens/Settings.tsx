@@ -11,6 +11,8 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ProfileSheet } from "../components/ProfileSheet";
 import { IconPencil } from "../components/icons";
 import { useApp } from "../store/useApp";
+import { stopSync } from "../lib/sync";
+import { clearReceipts } from "../lib/receipts";
 import { longDate } from "../lib/dates";
 import { useT, LOCALES } from "../lib/i18n";
 import { sfx } from "../lib/sfx";
@@ -213,7 +215,14 @@ export function Settings() {
   const doLogout = async () => {
     setConfirmLogout(false);
     if (isSupabaseConfigured && supabase) {
+      // Sign out first so the session is revoked and no late sync push can run,
+      // then leave nothing personal on this device: the persisted store goes back
+      // to the demo seed and every local receipt blob is dropped. All synced data
+      // lives in Supabase and returns on the next login's initial fetch.
       await supabase.auth.signOut();
+      stopSync();
+      resetDemo();
+      await clearReceipts();
     }
     navigate("/login");
   };

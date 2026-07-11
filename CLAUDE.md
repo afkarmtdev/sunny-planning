@@ -83,6 +83,15 @@ the user must reopen to edit. The mechanism is a baseline snapshot plus referenc
 `src/screens/ItineraryBuilder.tsx` is the reference implementation. Before building
 or changing a form, follow the `form-save-discard` skill.
 
+## Storage privacy (standard)
+
+User images (photos, receipts, avatars) live in private member-scoped Supabase
+buckets with server-side size and MIME constraints, are canvas re-encoded before
+upload (strips EXIF), and are read through 24-hour signed URLs cached in memory
+only (`src/lib/storage.ts`). Logout in auth mode wipes personal data from the
+device. Before adding a bucket, an image upload or display path, or touching
+logout teardown, follow the `storage-privacy` skill.
+
 ## Multi-language (standard)
 
 The app ships three locales (en, zh, zh-pinyin). Every user-facing string routes

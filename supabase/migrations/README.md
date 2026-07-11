@@ -58,6 +58,9 @@ If you use the Supabase CLI instead, `supabase db reset` applies everything in
 - `0005_member_avatar` - adds `space_members.avatar_path` and a private
   `avatars` storage bucket (member-scoped, like photos/receipts) for the optional
   profile photo shown on the author chip.
+- `0006_storage_upload_limits` - bucket-level upload constraints on `photos`,
+  `receipts`, and `avatars` (5 MiB size cap, image-only MIME types), defense in
+  depth behind the member-scoped RLS policies.
 
 ## Adding a migration
 

@@ -9,9 +9,12 @@ import { supabase } from "./supabase";
 /** A private bucket from the migrations. */
 export type Bucket = "avatars" | "photos" | "receipts";
 
-// Signed URLs are re-minted on every load, so this only bounds a single long
-// session; a year is comfortably beyond that and avoids mid-session expiry.
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365;
+// Signed URLs are re-minted on every load (the cache below is memory-only), so
+// the TTL only needs to outlast one long session. Keep it short: a signed URL is
+// a bearer token that cannot be revoked individually, so the TTL bounds how long
+// a leaked URL, or one minted by someone since removed from the space, keeps
+// serving the image.
+const SIGNED_URL_TTL = 60 * 60 * 24;
 
 /** Decode a `data:` URL into a Blob for upload. */
 function dataUrlToBlob(dataUrl: string): Blob {
@@ -80,8 +83,25 @@ export async function removePath(bucket: Bucket, path: string): Promise<void> {
 }
 
 // Signed URLs by `${bucket}:${path}`, shared across every hook instance so a grid
-// of images signs each path once. Cleared on logout.
-const urlCache = new Map<string, string>();
+// of images signs each path once. Entries carry their expiry so a URL nearing the
+// end of its TTL is re-signed instead of served stale. Cleared on logout.
+type SignedEntry = { url: string; expiresAt: number };
+const urlCache = new Map<string, SignedEntry>();
+
+// Treat a cached URL as stale a little before it actually expires, so an image
+// never mounts with a URL about to die mid-render.
+const EXPIRY_MARGIN_MS = 5 * 60 * 1000;
+
+/** The cached URL for `key` if still comfortably within its TTL, else null. */
+function freshUrl(key: string): string | null {
+  const entry = urlCache.get(key);
+  if (!entry) return null;
+  if (Date.now() >= entry.expiresAt - EXPIRY_MARGIN_MS) {
+    urlCache.delete(key);
+    return null;
+  }
+  return entry.url;
+}
 
 /** Drop cached signed URLs (on logout, so a later account never reuses them). */
 export function clearStorageUrlCache(): void {
@@ -95,14 +115,14 @@ export function clearStorageUrlCache(): void {
  */
 export function useStorageUrl(bucket: Bucket, path?: string): string | null {
   const key = path ? `${bucket}:${path}` : "";
-  const [url, setUrl] = useState<string | null>(() => (key ? urlCache.get(key) ?? null : null));
+  const [url, setUrl] = useState<string | null>(() => (key ? freshUrl(key) : null));
 
   useEffect(() => {
     if (!path) {
       setUrl(null);
       return;
     }
-    const cached = urlCache.get(key);
+    const cached = freshUrl(key);
     if (cached) {
       setUrl(cached);
       return;
@@ -110,7 +130,7 @@ export function useStorageUrl(bucket: Bucket, path?: string): string | null {
     let cancelled = false;
     void signPath(bucket, path).then((signed) => {
       if (cancelled || !signed) return;
-      urlCache.set(key, signed);
+      urlCache.set(key, { url: signed, expiresAt: Date.now() + SIGNED_URL_TTL * 1000 });
       setUrl(signed);
     });
     return () => {

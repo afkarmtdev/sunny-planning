@@ -136,6 +136,24 @@ export async function deleteReceipt(id: string): Promise<void> {
   }
 }
 
+/** Wipe every stored receipt blob (logout leaves nothing personal behind); best effort. */
+export async function clearReceipts(): Promise<void> {
+  try {
+    const db = await openDb();
+    if (!db) return;
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+      tx.onabort = () => resolve();
+    });
+    db.close();
+  } catch {
+    // Best effort; nothing more to do if this fails.
+  }
+}
+
 /** Loads a receipt blob and exposes an object URL, revoked on unmount or id change. */
 export function useReceiptUrl(id?: string): string | null {
   const [url, setUrl] = useState<string | null>(null);
