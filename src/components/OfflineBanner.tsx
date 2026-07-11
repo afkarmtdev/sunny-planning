@@ -59,8 +59,12 @@ export function OfflineBanner() {
   const t = useT();
   const online = useOnline();
   if (online) return null;
+  // Merge the .no-print utility with the StyleX className rather than
+  // overwriting it: a bare className="no-print" after the spread would drop
+  // every StyleX class and leave the pill unstyled.
+  const pillProps = stylex.props(styles.pill);
   return (
-    <div {...stylex.props(styles.pill)} role="status" aria-live="polite" className="no-print">
+    <div {...pillProps} className={`${pillProps.className ?? ""} no-print`} role="status" aria-live="polite">
       <span {...stylex.props(styles.icon)}>
         <IconWifiOff size={16} />
       </span>

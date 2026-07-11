@@ -111,8 +111,12 @@ export function ErrorScreen({
   const messageText = message ?? t("ui.error.message");
   const actionText = actionLabel ?? t("ui.error.reload");
   const reload = onAction ?? (() => window.location.reload());
+  // Merge the .no-print utility with the StyleX className rather than
+  // overwriting it: a bare className="no-print" after the spread would drop
+  // every StyleX class and leave the screen unstyled at the top left.
+  const pageProps = stylex.props(styles.page);
   return (
-    <div {...stylex.props(styles.page)} role="alert" className="no-print">
+    <div {...pageProps} className={`${pageProps.className ?? ""} no-print`} role="alert">
       <SunnySprite expression={expression} size={104} hop hopFast />
       <div {...stylex.props(styles.card)}>
         <div {...stylex.props(styles.title)}>{titleText}</div>
