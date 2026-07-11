@@ -19,7 +19,7 @@ import { IconShare, IconPencil } from "../components/icons";
 import { PawRating } from "../components/PawRating";
 import { VenueEditSheet, type VenueEditTarget } from "../components/VenueEditSheet";
 import { AuthorChip } from "../components/AuthorChip";
-import { useApp } from "../store/useApp";
+import { getActingUser, useApp } from "../store/useApp";
 import { dateSpend, itineraryTotal } from "../lib/derive";
 import { longDate, todayISO } from "../lib/dates";
 import { fileToDataUrl } from "../lib/images";
@@ -55,6 +55,11 @@ const styles = stylex.create({
     cursor: "pointer",
     backgroundColor: "transparent",
     borderWidth: 0,
+  },
+  stopPartnerRate: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
   },
   headerRow: {
     display: "flex",
@@ -181,6 +186,12 @@ const styles = stylex.create({
     fontSize: 11,
     color: colors.ink,
     opacity: 0.6,
+  },
+  stopSide: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexShrink: 0,
   },
   handle: {
     display: "flex",
@@ -617,7 +628,10 @@ export function ItineraryBuilder() {
           dateISO: itinerary.dateISO,
           label: itinerary.title,
         },
-        value: rateVenueRecord.ratings.find((r) => r.itineraryId === itinerary.id)?.rating ?? 0,
+        value:
+          rateVenueRecord.ratings.find(
+            (r) => r.itineraryId === itinerary.id && r.createdBy === getActingUser()
+          )?.rating ?? 0,
       };
     }
   }
@@ -773,7 +787,10 @@ export function ItineraryBuilder() {
           const next = stops[i + 1];
           const travel = next ? travelBetween(stop, next) : null;
           const venue = completed && stop.venueId ? venues.find((v) => v.id === stop.venueId) : undefined;
-          const visitRating = venue ? venue.ratings.find((r) => r.itineraryId === id)?.rating ?? 0 : 0;
+          const visitEntries = venue ? venue.ratings.filter((r) => r.itineraryId === id) : [];
+          // This member's own rating drives the label/edit; the partner's is read-only.
+          const visitRating = visitEntries.find((r) => r.createdBy === getActingUser())?.rating ?? 0;
+          const partnerVisitRatings = visitEntries.filter((r) => r.createdBy !== getActingUser());
           return (
             <div
               key={stop.id}
@@ -812,16 +829,25 @@ export function ItineraryBuilder() {
                         >
                           <IconPencil />
                         </button>
+                        {partnerVisitRatings.map((p) => (
+                          <span key={p.id} {...stylex.props(styles.stopPartnerRate)}>
+                            <AuthorChip by={p.createdBy} size={16} />
+                            <PawRating value={p.rating} size={16} />
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
-                  {!locked && (
-                    <div {...stylex.props(styles.handle)} aria-hidden>
-                      <div {...stylex.props(styles.handleDot)} />
-                      <div {...stylex.props(styles.handleDot)} />
-                      <div {...stylex.props(styles.handleDot)} />
-                    </div>
-                  )}
+                  <div {...stylex.props(styles.stopSide)}>
+                    <AuthorChip by={stop.createdBy} size={16} />
+                    {!locked && (
+                      <div {...stylex.props(styles.handle)} aria-hidden>
+                        <div {...stylex.props(styles.handleDot)} />
+                        <div {...stylex.props(styles.handleDot)} />
+                        <div {...stylex.props(styles.handleDot)} />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div {...stylex.props(styles.stopBottom)}>
                   <div {...stylex.props(styles.stopCost)}>

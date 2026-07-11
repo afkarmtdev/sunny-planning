@@ -13,8 +13,8 @@ import { VenueDetailSheet } from "../components/VenueDetailSheet";
 import { VenueEditSheet, type VenueEditTarget } from "../components/VenueEditSheet";
 import { AuthorChip } from "../components/AuthorChip";
 import { IconPencil } from "../components/icons";
-import { useApp } from "../store/useApp";
-import { latestRating, venueVisits } from "../lib/derive";
+import { getActingUser, useApp } from "../store/useApp";
+import { latestRating, memberRatingEntries, venueVisits } from "../lib/derive";
 import { shortDate } from "../lib/dates";
 import { useT } from "../lib/i18n";
 import type { Venue } from "../lib/types";
@@ -131,6 +131,11 @@ const styles = stylex.create({
   pawEditRow: {
     display: "flex",
     alignItems: "center",
+    gap: 6,
+  },
+  memberRatings: {
+    display: "flex",
+    flexDirection: "column",
     gap: 6,
   },
   pencilBtn: {
@@ -270,14 +275,18 @@ export function Ratings() {
     setText("");
   };
 
+  // The signed-in member, so the pencil always stages this member's own rating
+  // and never forks the partner's number into their entry. Undefined in demo.
+  const acting = getActingUser();
+
   // Resolve the edit sheet's target from live store state.
   let editTarget: VenueEditTarget | null = null;
   if (editFor) {
     const v = venues.find((x) => x.id === editFor.venueId);
     if (v) {
       const value = editFor.visit
-        ? v.ratings.find((r) => r.itineraryId === editFor.visit?.itineraryId)?.rating ?? 0
-        : latestRating(v);
+        ? v.ratings.find((r) => r.itineraryId === editFor.visit?.itineraryId && r.createdBy === acting)?.rating ?? 0
+        : memberRatingEntries(v).find((r) => r.createdBy === acting)?.rating ?? 0;
       editTarget = { venue: v, visit: editFor.visit, value };
     }
   }
@@ -325,33 +334,44 @@ export function Ratings() {
             <div {...stylex.props(styles.bannerRow)}>{t("ratings.nothingToRate")}</div>
           ) : (
             bannerVenues.map(({ stop, venue }) => {
-              const entry = venue.ratings.find((r) => r.itineraryId === ratingItinerary.id);
+              const visitEntries = venue.ratings.filter((r) => r.itineraryId === ratingItinerary.id);
+              const mine = visitEntries.find((r) => r.createdBy === acting);
+              const partners = visitEntries.filter((r) => r.createdBy !== acting);
               return (
                 <div key={venue.id} {...stylex.props(styles.bannerRow)}>
                   <div>
                     <div {...stylex.props(styles.bannerName)}>{venue.name}</div>
                     <span {...stylex.props(styles.bannerTag)}>{venue.category}</span>
                   </div>
-                  <div {...stylex.props(styles.pawEditRow)}>
-                    <PawRating value={entry?.rating ?? 0} size={18} />
-                    <button
-                      type="button"
-                      aria-label={t("ratings.editVenue", { name: venue.name })}
-                      {...stylex.props(styles.pencilBtn)}
-                      onClick={() =>
-                        setEditFor({
-                          venueId: venue.id,
-                          visit: {
-                            itineraryId: ratingItinerary.id,
-                            stopId: stop.id,
-                            dateISO: ratingItinerary.dateISO,
-                            label: ratingItinerary.title,
-                          },
-                        })
-                      }
-                    >
-                      <IconPencil />
-                    </button>
+                  <div {...stylex.props(styles.memberRatings)}>
+                    <div {...stylex.props(styles.pawEditRow)}>
+                      <AuthorChip by={mine?.createdBy ?? acting} size={16} />
+                      <PawRating value={mine?.rating ?? 0} size={18} />
+                      <button
+                        type="button"
+                        aria-label={t("ratings.editVenue", { name: venue.name })}
+                        {...stylex.props(styles.pencilBtn)}
+                        onClick={() =>
+                          setEditFor({
+                            venueId: venue.id,
+                            visit: {
+                              itineraryId: ratingItinerary.id,
+                              stopId: stop.id,
+                              dateISO: ratingItinerary.dateISO,
+                              label: ratingItinerary.title,
+                            },
+                          })
+                        }
+                      >
+                        <IconPencil />
+                      </button>
+                    </div>
+                    {partners.map((p) => (
+                      <div key={p.id} {...stylex.props(styles.pawEditRow)}>
+                        <AuthorChip by={p.createdBy} size={16} />
+                        <PawRating value={p.rating} size={18} />
+                      </div>
+                    ))}
                   </div>
                 </div>
               );
@@ -364,6 +384,9 @@ export function Ratings() {
 
       {shown.map((venue) => {
         const lastVisit = venueVisits(venue, itineraries).find((v) => v.itinerary);
+        const memberEntries = [...memberRatingEntries(venue)].sort(
+          (a, b) => (a.createdBy === acting ? 0 : 1) - (b.createdBy === acting ? 0 : 1)
+        );
         return (
           <Card key={venue.id} xstyle={styles.venueCard} onClick={() => setDetailFor(venue.id)}>
             <div onClick={(e) => e.stopPropagation()}>
@@ -380,7 +403,20 @@ export function Ratings() {
               </div>
             )}
             <div {...stylex.props(styles.paws, styles.pawEditRow)} onClick={(e) => e.stopPropagation()}>
-              <PawRating value={latestRating(venue)} />
+              <div {...stylex.props(styles.memberRatings)}>
+                {memberEntries.length === 0 ? (
+                  <div {...stylex.props(styles.pawEditRow)}>
+                    <PawRating value={0} />
+                  </div>
+                ) : (
+                  memberEntries.map((entry) => (
+                    <div key={entry.id} {...stylex.props(styles.pawEditRow)}>
+                      <AuthorChip by={entry.createdBy} size={18} />
+                      <PawRating value={entry.rating} />
+                    </div>
+                  ))
+                )}
+              </div>
               <button
                 type="button"
                 aria-label={`Edit ${venue.name}`}

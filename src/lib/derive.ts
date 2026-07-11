@@ -1,4 +1,4 @@
-import type { Expense, Itinerary, Photo, Venue } from "./types";
+import type { Expense, Itinerary, Photo, Venue, VenueRating } from "./types";
 import { daysAgo, isSameMonth, parseISO, todayISO, weekStart } from "./dates";
 
 /** Planned estimate: sum of stop costs. */
@@ -136,22 +136,41 @@ export function nextPlanned(itineraries: Itinerary[]): Itinerary | undefined {
 }
 
 /**
- * The newest rating for a venue, 0 when it has never been rated. Newest = the
- * entry with the highest `dateISO`; entries without a `dateISO` (legacy,
- * migrated ratings) count as the oldest. Ties (including two entries with no
- * date at all) are broken by array position, later wins.
+ * One rating entry per owner for a venue: each member's newest entry, plus one
+ * for the unattributed (demo / pre-auth) bucket when present. Newest within an
+ * owner = highest `dateISO`; entries without a `dateISO` (legacy, migrated
+ * ratings) count as the oldest, and ties are broken by array position, later
+ * wins. Rows come back in the order each owner first appears in the venue's
+ * ratings array; callers that want the acting member first reorder themselves.
  */
-export function latestRating(venue: Venue): number {
-  let best: string | undefined;
-  let value = 0;
-  for (const entry of venue.ratings ?? []) {
-    const key = entry.dateISO ?? "";
-    if (best === undefined || key >= best) {
-      best = key;
-      value = entry.rating;
+export function memberRatingEntries(venue: Venue): VenueRating[] {
+  const chosen = new Map<string, VenueRating>();
+  const bestKey = new Map<string, string>();
+  const order: string[] = [];
+  for (const r of venue.ratings ?? []) {
+    const owner = r.createdBy ?? "";
+    const key = r.dateISO ?? "";
+    if (!chosen.has(owner)) {
+      order.push(owner);
+      chosen.set(owner, r);
+      bestKey.set(owner, key);
+    } else if (key >= bestKey.get(owner)!) {
+      chosen.set(owner, r);
+      bestKey.set(owner, key);
     }
   }
-  return value;
+  return order.map((o) => chosen.get(o)!);
+}
+
+/**
+ * A venue's aggregate score for sorting: the average of each owner's newest
+ * rating, 0 when it has never been rated. A float is fine; it only feeds the
+ * sort order, never a paw display.
+ */
+export function latestRating(venue: Venue): number {
+  const entries = memberRatingEntries(venue);
+  if (entries.length === 0) return 0;
+  return entries.reduce((sum, e) => sum + e.rating, 0) / entries.length;
 }
 
 export type VenueVisit = {
@@ -159,8 +178,8 @@ export type VenueVisit = {
   itinerary?: Itinerary;
   /** Falls back to the rating entry's own date when the itinerary is gone. */
   dateISO?: string;
-  /** This visit's paw rating, when one was ever recorded for it. */
-  rating?: number;
+  /** Every paw rating recorded for this visit, one per member who rated it. */
+  ratings: Array<{ rating: number; ratedBy?: string }>;
 };
 
 /**
@@ -177,15 +196,19 @@ export function venueVisits(venue: Venue, itineraries: Itinerary[]): VenueVisit[
   for (const it of itineraries) {
     if (it.status !== "completed") continue;
     const stopMatch = it.stops.some((s) => s.venueId === venue.id);
-    const ratingEntry = ratings.find((r) => r.itineraryId === it.id);
-    if (!stopMatch && !ratingEntry) continue;
-    if (ratingEntry) claimedRatingItineraryIds.add(it.id);
-    rows.push({ itinerary: it, dateISO: it.dateISO, rating: ratingEntry?.rating });
+    const visitRatings = ratings.filter((r) => r.itineraryId === it.id);
+    if (!stopMatch && visitRatings.length === 0) continue;
+    if (visitRatings.length > 0) claimedRatingItineraryIds.add(it.id);
+    rows.push({
+      itinerary: it,
+      dateISO: it.dateISO,
+      ratings: visitRatings.map((r) => ({ rating: r.rating, ratedBy: r.createdBy })),
+    });
   }
 
   for (const entry of ratings) {
     if (entry.itineraryId && claimedRatingItineraryIds.has(entry.itineraryId)) continue;
-    rows.push({ dateISO: entry.dateISO, rating: entry.rating });
+    rows.push({ dateISO: entry.dateISO, ratings: [{ rating: entry.rating, ratedBy: entry.createdBy }] });
   }
 
   rows.sort((a, b) => (b.dateISO ?? "").localeCompare(a.dateISO ?? ""));

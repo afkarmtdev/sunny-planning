@@ -28,7 +28,8 @@ export const ratings = {
   "ratings.discardMessage": { en: "Your unsaved edits to {name} will be lost.", zh: "你对 {name} 未保存的修改将丢失。", pinyin: "ni3 dui4 {name} wei4 bao3 cun2 de5 xiu1 gai3 jiang1 diu1 shi1。" },
   "ratings.keepEditing": { en: "Keep editing", zh: "继续编辑", pinyin: "ji4 xu4 bian1 ji2" },
 
-  "ratings.yourRating": { en: "YOUR RATING", zh: "你的评分", pinyin: "ni3 de5 ping2 fen1" },
+  "ratings.ourRating": { en: "OUR RATINGS", zh: "我们的评分", pinyin: "wo3 men5 de5 ping2 fen1" },
+  "ratings.otherRatings": { en: "Other ratings", zh: "其他评分", pinyin: "qi2 ta1 ping2 fen1" },
   "ratings.visitCount.one": { en: "You have been here {count} time", zh: "你来过这里 {count} 次", pinyin: "ni3 lai2 guo4 zhe4 li3 {count} ci4" },
   "ratings.visitCount.other": { en: "You have been here {count} times", zh: "你来过这里 {count} 次", pinyin: "ni3 lai2 guo4 zhe4 li3 {count} ci4" },
   "ratings.manualRating": { en: "Manual rating", zh: "手动评分", pinyin: "shou3 dong4 ping2 fen1" },

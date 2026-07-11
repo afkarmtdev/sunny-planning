@@ -8,8 +8,9 @@ import { FaveBadge } from "./FaveBadge";
 import { PawRating } from "./PawRating";
 import { Polaroid } from "./Polaroid";
 import { PhotoLightbox } from "./PhotoLightbox";
-import { useApp } from "../store/useApp";
-import { latestRating, venuePhotos, venueVisits } from "../lib/derive";
+import { AuthorChip } from "./AuthorChip";
+import { getActingUser, useApp } from "../store/useApp";
+import { memberRatingEntries, venuePhotos, venueVisits } from "../lib/derive";
 import { shortDate } from "../lib/dates";
 import { useT } from "../lib/i18n";
 import type { Photo, Venue } from "../lib/types";
@@ -44,6 +45,24 @@ const styles = stylex.create({
     color: colors.ink,
     opacity: 0.55,
     letterSpacing: 0.5,
+  },
+  ratingValue: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+  memberRatings: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 6,
+  },
+  visitRatings: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 4,
+    flexShrink: 0,
   },
   sectionTitle: {
     fontFamily: fonts.display,
@@ -129,6 +148,13 @@ export function VenueDetailSheet({ venue, onClose }: Props) {
   };
 
   const visits = current ? venueVisits(current, itineraries) : [];
+  // The acting member's rows first, so "our rating" reads yours-then-partner.
+  const acting = getActingUser();
+  const memberEntries = current
+    ? [...memberRatingEntries(current)].sort(
+        (a, b) => (a.createdBy === acting ? 0 : 1) - (b.createdBy === acting ? 0 : 1)
+      )
+    : [];
   const snaps: Photo[] = current ? venuePhotos(current, itineraries, photos) : [];
   const lightboxPhoto = lightboxId ? snaps.find((p) => p.id === lightboxId) ?? null : null;
   const lightboxItinerary = lightboxPhoto
@@ -152,8 +178,21 @@ export function VenueDetailSheet({ venue, onClose }: Props) {
             </Card>
 
             <div {...stylex.props(styles.ratingRow)}>
-              <div {...stylex.props(styles.ratingLabel)}>{t("ratings.yourRating")}</div>
-              <PawRating value={latestRating(current)} size={24} />
+              <div {...stylex.props(styles.ratingLabel)}>{t("ratings.ourRating")}</div>
+              <div {...stylex.props(styles.memberRatings)}>
+                {memberEntries.length === 0 ? (
+                  <div {...stylex.props(styles.ratingValue)}>
+                    <PawRating value={0} size={24} />
+                  </div>
+                ) : (
+                  memberEntries.map((entry) => (
+                    <div key={entry.id} {...stylex.props(styles.ratingValue)}>
+                      <AuthorChip by={entry.createdBy} size={18} />
+                      <PawRating value={entry.rating} size={24} />
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             {visits.length > 0 && (
@@ -182,8 +221,15 @@ export function VenueDetailSheet({ venue, onClose }: Props) {
                             {visit.dateISO ? shortDate(visit.dateISO) : t("ratings.ratedEarlier")}
                           </div>
                         </div>
-                        {visit.rating ? (
-                          <PawRating value={visit.rating} size={13} />
+                        {visit.ratings.length > 0 ? (
+                          <div {...stylex.props(styles.visitRatings)}>
+                            {visit.ratings.map((r, ri) => (
+                              <div key={ri} {...stylex.props(styles.ratingValue)}>
+                                <AuthorChip by={r.ratedBy} size={15} />
+                                <PawRating value={r.rating} size={13} />
+                              </div>
+                            ))}
+                          </div>
                         ) : (
                           <div {...stylex.props(styles.visitUnrated)}>{t("ratings.notRated")}</div>
                         )}

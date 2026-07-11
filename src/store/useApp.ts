@@ -28,6 +28,11 @@ export function setActingUser(id: string | undefined): void {
   actingUserId = id;
 }
 
+/** The signed-in member's id, for telling the partner's roster row from ours. */
+export function getActingUser(): string | undefined {
+  return actingUserId;
+}
+
 // Audit stamps. The timestamps are always live; createdBy / updatedBy /
 // deletedBy fill in only when there is a session (actingUserId set), per the
 // audit-trail house standard.
@@ -39,6 +44,41 @@ const createdAudit = () => {
 };
 const touchedAudit = () =>
   actingUserId ? { updatedAt: nowISO(), updatedBy: actingUserId } : { updatedAt: nowISO() };
+
+/**
+ * Apply a rating within one dedup context (a visit, or a manual same-day slot),
+ * per the per-member semantics: each member owns at most one entry per context.
+ *
+ * 1. The acting member's own entry (matched by `createdBy === actingUserId`;
+ *    in demo mode actingUserId is undefined, so this matches the single
+ *    unattributed entry, collapsing to the old single-shared-rating behavior).
+ * 2. If none and signed in, claim an unattributed entry for the same context in
+ *    place, stamping createdBy so a pre-auth/legacy rating becomes the member's
+ *    own rather than lingering as a duplicate row.
+ * 3. Otherwise append a fresh entry.
+ */
+function upsertMemberRating(
+  ratings: VenueRating[],
+  inContext: (r: VenueRating) => boolean,
+  patch: Partial<VenueRating>,
+  makeEntry: () => VenueRating
+): VenueRating[] {
+  const ownIdx = ratings.findIndex((r) => inContext(r) && r.createdBy === actingUserId);
+  if (ownIdx >= 0) {
+    const next = [...ratings];
+    next[ownIdx] = { ...next[ownIdx], ...patch, ...touchedAudit() };
+    return next;
+  }
+  if (actingUserId) {
+    const claimIdx = ratings.findIndex((r) => inContext(r) && !r.createdBy);
+    if (claimIdx >= 0) {
+      const next = [...ratings];
+      next[claimIdx] = { ...next[claimIdx], ...patch, ...touchedAudit(), createdBy: actingUserId };
+      return next;
+    }
+  }
+  return [...ratings, makeEntry()];
+}
 
 type DayOf = {
   itineraryId: string | null;
@@ -589,42 +629,31 @@ export const useApp = create<AppState>()(
           venues: s.venues.map((v) => {
             if (v.id !== venueId) return v;
             if (visit) {
-              const idx = v.ratings.findIndex((r) => r.itineraryId === visit.itineraryId);
-              if (idx >= 0) {
-                const ratings = [...v.ratings];
-                ratings[idx] = {
-                  ...ratings[idx],
+              const ratings = upsertMemberRating(
+                v.ratings,
+                (r) => r.itineraryId === visit.itineraryId,
+                { rating, stopId: visit.stopId, dateISO: visit.dateISO },
+                () => ({
+                  id: uid(),
                   rating,
+                  itineraryId: visit.itineraryId,
                   stopId: visit.stopId,
                   dateISO: visit.dateISO,
-                  ...touchedAudit(),
-                };
-                return { ...v, ratings, ...touchedAudit() };
-              }
-              const entry: VenueRating = {
-                id: uid(),
-                rating,
-                itineraryId: visit.itineraryId,
-                stopId: visit.stopId,
-                dateISO: visit.dateISO,
-                ...createdAudit(),
-              };
-              return { ...v, ratings: [...v.ratings, entry], ...touchedAudit() };
-            }
-            // No visit context: a manual rating from the card, dated today.
-            // Re-rating later the same day updates that entry in place.
-            const today = todayISO();
-            const idx = v.ratings.findIndex((r) => !r.itineraryId && r.dateISO === today);
-            if (idx >= 0) {
-              const ratings = [...v.ratings];
-              ratings[idx] = { ...ratings[idx], rating, ...touchedAudit() };
+                  ...createdAudit(),
+                })
+              );
               return { ...v, ratings, ...touchedAudit() };
             }
-            return {
-              ...v,
-              ratings: [...v.ratings, { id: uid(), rating, dateISO: today, ...createdAudit() }],
-              ...touchedAudit(),
-            };
+            // No visit context: a manual rating from the card, dated today.
+            // Re-rating later the same day updates the member's entry in place.
+            const today = todayISO();
+            const ratings = upsertMemberRating(
+              v.ratings,
+              (r) => !r.itineraryId && r.dateISO === today,
+              { rating },
+              () => ({ id: uid(), rating, dateISO: today, ...createdAudit() })
+            );
+            return { ...v, ratings, ...touchedAudit() };
           }),
         })),
 

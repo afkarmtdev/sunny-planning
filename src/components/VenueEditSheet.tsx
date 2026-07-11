@@ -6,7 +6,9 @@ import { Field, TextInput } from "./Field";
 import { PawRating } from "./PawRating";
 import { JellyButton } from "./JellyButton";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { useApp } from "../store/useApp";
+import { AuthorChip } from "./AuthorChip";
+import { getActingUser, useApp } from "../store/useApp";
+import { memberRatingEntries } from "../lib/derive";
 import { useT } from "../lib/i18n";
 import type { Venue } from "../lib/types";
 
@@ -23,6 +25,32 @@ const styles = stylex.create({
     display: "flex",
     justifyContent: "center",
     paddingBlock: 10,
+  },
+  othersWrap: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+    marginTop: -4,
+    marginBottom: 8,
+  },
+  othersLabel: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.ink,
+    opacity: 0.55,
+    letterSpacing: 0.5,
+  },
+  otherRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+  otherNote: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.ink,
+    opacity: 0.45,
   },
   chipRow: {
     display: "flex",
@@ -96,6 +124,18 @@ export function VenueEditSheet({ target, onClose }: Props) {
     a.localeCompare(b)
   );
 
+  // Ratings already on record for this context that the picker does NOT edit
+  // (the partner's, or an unattributed pre-auth entry), shown read-only so an
+  // empty picker never reads as a lost rating. The acting member's own entry
+  // is excluded: its value is what the picker stages.
+  const acting = getActingUser();
+  const otherEntries = current
+    ? (current.visit
+        ? current.venue.ratings.filter((r) => r.itineraryId === current.visit?.itineraryId)
+        : memberRatingEntries(current.venue)
+      ).filter((r) => r.createdBy !== acting)
+    : [];
+
   // A typed tag wins over a chip pick; empty text falls back to the pick.
   const stagedTag = typed.trim() !== "" ? typed.trim() : picked;
   const ratingDirty = current != null && stagedRating !== current.value;
@@ -137,6 +177,20 @@ export function VenueEditSheet({ target, onClose }: Props) {
             <div {...stylex.props(styles.pawRow)}>
               <PawRating value={stagedRating} onChange={setStagedRating} size={34} />
             </div>
+            {otherEntries.length > 0 && (
+              <div {...stylex.props(styles.othersWrap)}>
+                <div {...stylex.props(styles.othersLabel)}>{t("ratings.otherRatings")}</div>
+                {otherEntries.map((r) => (
+                  <div key={r.id} {...stylex.props(styles.otherRow)}>
+                    <AuthorChip by={r.createdBy} size={16} />
+                    <PawRating value={r.rating} size={16} />
+                    {!r.createdBy && (
+                      <span {...stylex.props(styles.otherNote)}>{t("ratings.ratedEarlier")}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             <Field label={t("ratings.tagLabel")}>
               <div {...stylex.props(styles.chipRow)}>
                 {categories.map((c) => (

@@ -477,7 +477,7 @@ const CONTENT_COLS: Record<TableName, readonly string[]> = {
   ],
   expenses: ["space_id", "itinerary_id", "stop_id", "label", "amount", "spent_on", "receipt_path", "deleted_at"],
   photos: ["space_id", "itinerary_id", "stop_id", "caption", "taken_on", "storage_path", "art", "rot", "tape", "dot"],
-  venue_ratings: ["venue_id", "rating", "itinerary_id", "stop_id", "rated_on"],
+  venue_ratings: ["venue_id", "rating", "itinerary_id", "stop_id", "rated_on", "created_by"],
   venue_notes: ["venue_id", "body"],
 };
 

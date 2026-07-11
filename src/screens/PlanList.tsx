@@ -7,6 +7,7 @@ import { SwipeRow } from "../components/SwipeRow";
 import type { SwipeAction } from "../components/SwipeRow";
 import { JellyButton } from "../components/JellyButton";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { AuthorChip } from "../components/AuthorChip";
 import { useApp } from "../store/useApp";
 import { useT, type MessageKey, type TFn } from "../lib/i18n";
 import { dateSpend, isEstimateSpend } from "../lib/derive";
@@ -90,6 +91,9 @@ const styles = stylex.create({
     fontSize: 11,
     color: colors.ink,
     opacity: 0.55,
+  },
+  cardAuthor: {
+    marginLeft: "auto",
   },
   doneChip: {
     fontFamily: fonts.body,
@@ -269,6 +273,7 @@ export function PlanList() {
                 <div {...stylex.props(styles.meta)}>{metaLine(it, t)}</div>
                 {it.status === "completed" && <div {...stylex.props(styles.doneChip)}>{t("dayplan.doneChip")}</div>}
                 {it.status === "cancelled" && <div {...stylex.props(styles.cancelledChip)}>{t("dayplan.cancelledChip")}</div>}
+                <AuthorChip by={it.createdBy} size={16} xstyle={styles.cardAuthor} />
               </div>
             </SwipeRow>
           ))}
