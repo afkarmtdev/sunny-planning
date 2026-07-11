@@ -6,9 +6,9 @@ import { Field, TextInput } from "./Field";
 import { JellyButton } from "./JellyButton";
 import { Calendar } from "./Calendar";
 import { Avatar } from "./Avatar";
+import { AvatarCropSheet } from "./AvatarCropSheet";
 import { AVATAR_COLORS, initialFor } from "../lib/avatar";
 import { longDate } from "../lib/dates";
-import { fileToDataUrl } from "../lib/images";
 import { useApp } from "../store/useApp";
 import { useT } from "../lib/i18n";
 
@@ -146,6 +146,8 @@ export function ProfileSheet({ open, onClose }: Props) {
   const [birthdayISO, setBirthdayISO] = useState<string | undefined>(undefined);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [pickingDate, setPickingDate] = useState(false);
+  // Object URL of a freshly picked file, alive while the crop sheet frames it.
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -157,13 +159,21 @@ export function ProfileSheet({ open, onClose }: Props) {
     setPickingDate(false);
   }, [open, profile]);
 
-  const pickPhoto = async (file: File | undefined) => {
+  const discardCrop = () => {
+    setCropSrc((src) => {
+      if (src) URL.revokeObjectURL(src);
+      return null;
+    });
+  };
+
+  // Closing the profile sheet abandons any crop in progress.
+  useEffect(() => {
+    if (!open) discardCrop();
+  }, [open]);
+
+  const pickPhoto = (file: File | undefined) => {
     if (!file) return;
-    try {
-      setAvatarUrl(await fileToDataUrl(file, AVATAR_MAX_DIM));
-    } catch {
-      // Unreadable image: leave the current photo untouched.
-    }
+    setCropSrc(URL.createObjectURL(file));
   };
 
   const save = () => {
@@ -178,6 +188,7 @@ export function ProfileSheet({ open, onClose }: Props) {
   };
 
   return (
+    <>
     <Sheet open={open} onClose={onClose} title={t("auth.profileTitle")}>
       <div {...stylex.props(styles.preview)}>
         <button
@@ -197,7 +208,7 @@ export function ProfileSheet({ open, onClose }: Props) {
           accept="image/*"
           {...stylex.props(styles.hiddenInput)}
           onChange={(e) => {
-            void pickPhoto(e.target.files?.[0]);
+            pickPhoto(e.target.files?.[0]);
             e.target.value = "";
           }}
         />
@@ -261,5 +272,17 @@ export function ProfileSheet({ open, onClose }: Props) {
         {t("auth.saveProfile")}
       </JellyButton>
     </Sheet>
+    {/* Sibling of the Sheet: a fixed-position sheet nested inside the panel
+        would position against the panel's transform, not the viewport. */}
+    <AvatarCropSheet
+      imageUrl={cropSrc}
+      maxDim={AVATAR_MAX_DIM}
+      onCancel={discardCrop}
+      onDone={(dataUrl) => {
+        setAvatarUrl(dataUrl);
+        discardCrop();
+      }}
+    />
+    </>
   );
 }

@@ -33,6 +33,7 @@ StyleX conventions in this repo:
 - `stylex.create` only at module top level. Dynamic values use function styles, for example `sticker: (deg: number) => ({ transform: ... })`.
 - Components accept an `xstyle?: StyleXStyles` prop for overrides, merged via `stylex.props(base, variant, xstyle)`.
 - Interaction states are conditional values, for example `transform: { default: "translateY(0)", ":active": "translateY(5px)" }`.
+- Never use the `"::thumb"` pseudo-element key for range sliders: StyleX 0.19 compiles it to one grouped selector list (`::-webkit-slider-thumb, ::-moz-range-thumb, ::-ms-thumb`) and Chromium drops the entire rule because of the foreign selectors. Write `"::-webkit-slider-thumb"` and `"::-moz-range-thumb"` as two separate keys with duplicated bodies instead (see `src/components/AvatarCropSheet.tsx`).
 
 ## Architecture
 
