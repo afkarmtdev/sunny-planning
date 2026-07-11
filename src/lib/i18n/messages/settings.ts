@@ -4,6 +4,8 @@ export const settings = {
   "settings.title": { en: "Settings", zh: "设置", pinyin: "she4 zhi4" },
   "settings.addName": { en: "Add your name", zh: "添加你的名字", pinyin: "tian1 jia1 ni3 de5 ming2 zi5" },
   "settings.birthday": { en: "Birthday: {date}", zh: "生日：{date}", pinyin: "sheng1 ri4：{date}" },
+  "settings.viewPhoto": { en: "View your photo", zh: "查看你的照片", pinyin: "cha2 kan4 ni3 de5 zhao4 pian4" },
+  "settings.photoAlt": { en: "Profile photo", zh: "头像照片", pinyin: "tou2 xiang4 zhao4 pian4" },
 
   "settings.section.language": { en: "Language", zh: "语言", pinyin: "yu3 yan2" },
   "settings.section.preferences": { en: "Preferences", zh: "偏好设置", pinyin: "pian1 hao4 she4 zhi4" },

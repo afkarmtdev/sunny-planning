@@ -11,7 +11,9 @@ import { SunnySprite } from "../components/SunnySprite";
 import { WashiTape } from "../components/WashiTape";
 import { Confetti } from "../components/Confetti";
 import { IconPlus, IconSliders } from "../components/icons";
-import { useApp } from "../store/useApp";
+import { Avatar } from "../components/Avatar";
+import { AvatarLightbox } from "../components/AvatarLightbox";
+import { getActingUser, useApp } from "../store/useApp";
 import { dateSpend, datesLogged, happiness, isEstimateSpend, monthStats, moodFor, nextPlanned, streakWeeks } from "../lib/derive";
 import { greeting, isSameMonthDay, stampDate, todayISO } from "../lib/dates";
 import { rm, rmCompact } from "../lib/format";
@@ -66,6 +68,15 @@ const styles = stylex.create({
   settingsBtn: {
     backgroundColor: colors.white,
     color: colors.ink,
+  },
+  partnerBtn: {
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    borderRadius: "50%",
+    flexShrink: 0,
+    cursor: "pointer",
+    transform: { default: "translateY(0)", ":active": "translateY(2px)" },
   },
   birthdayCard: {
     display: "flex",
@@ -237,6 +248,7 @@ export function Home() {
   const itineraries = useApp((s) => s.itineraries);
   const createItinerary = useApp((s) => s.createItinerary);
   const profile = useApp((s) => s.profile);
+  const members = useApp((s) => s.members);
   const birthdayCelebratedYear = useApp((s) => s.birthdayCelebratedYear);
   const markBirthdayCelebrated = useApp((s) => s.markBirthdayCelebrated);
   const syncDayOf = useApp((s) => s.syncDayOf);
@@ -255,6 +267,13 @@ export function Home() {
   const todayPlan = itineraries.find(
     (it) => !it.draft && it.status === "planned" && it.dateISO === todayISO()
   );
+
+  // The partner is the roster row that is not the signed-in member. The roster
+  // only fills under sync (empty in demo mode), so the invite button remains
+  // until she has actually joined.
+  const selfId = getActingUser();
+  const partner = selfId ? members.find((m) => m.userId !== selfId) : undefined;
+  const [viewingPartner, setViewingPartner] = useState(false);
 
   // Fire the birthday confetti once per year, on the first Home open that day.
   const [confettiKey, setConfettiKey] = useState(0);
@@ -275,6 +294,15 @@ export function Home() {
   return (
     <Screen dots gap={16}>
       <Confetti fireKey={confettiKey} />
+      <AvatarLightbox
+        open={viewingPartner}
+        title={t("home.partner.title")}
+        src={partner?.avatarUrl}
+        name={partner?.displayName}
+        initial={partner?.initial}
+        color={partner?.color}
+        onClose={() => setViewingPartner(false)}
+      />
       <div {...stylex.props(styles.headerRow)}>
         <div>
           <div {...stylex.props(styles.greeting)}>{t(GREETING_KEY[greeting(new Date())])}</div>
@@ -289,14 +317,25 @@ export function Home() {
           >
             <IconSliders />
           </button>
-          <button
-            type="button"
-            aria-label={t("home.aria.invite")}
-            onClick={() => navigate("/invite")}
-            {...stylex.props(styles.iconBtn)}
-          >
-            <IconPlus />
-          </button>
+          {partner ? (
+            <button
+              type="button"
+              aria-label={t("home.aria.partnerPhoto")}
+              onClick={() => setViewingPartner(true)}
+              {...stylex.props(styles.partnerBtn)}
+            >
+              <Avatar initial={partner.initial} color={partner.color} photoUrl={partner.avatarUrl} size={36} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              aria-label={t("home.aria.invite")}
+              onClick={() => navigate("/invite")}
+              {...stylex.props(styles.iconBtn)}
+            >
+              <IconPlus />
+            </button>
+          )}
         </div>
       </div>
 

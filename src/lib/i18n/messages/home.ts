@@ -6,6 +6,8 @@ export const home = {
   "home.greeting.evening": { en: "Good evening", zh: "晚上好", pinyin: "wan3 shang4 hao3" },
 
   "home.aria.invite": { en: "Invite your partner", zh: "邀请你的伴侣", pinyin: "yao1 qing3 ni3 de5 ban4 lv3" },
+  "home.aria.partnerPhoto": { en: "View your partner's photo", zh: "查看伴侣的照片", pinyin: "cha2 kan4 ban4 lv3 de5 zhao4 pian4" },
+  "home.partner.title": { en: "Your Partner", zh: "你的伴侣", pinyin: "ni3 de5 ban4 lv3" },
 
   "home.birthday.title": { en: "Happy birthday!", zh: "生日快乐！", pinyin: "sheng1 ri4 kuai4 le4！" },
   "home.birthday.titleNamed": { en: "Happy birthday, {name}!", zh: "{name}，生日快乐！", pinyin: "{name}，sheng1 ri4 kuai4 le4！" },

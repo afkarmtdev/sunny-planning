@@ -9,6 +9,7 @@ import { Avatar } from "../components/Avatar";
 import { Toggle } from "../components/Toggle";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ProfileSheet } from "../components/ProfileSheet";
+import { AvatarLightbox } from "../components/AvatarLightbox";
 import { IconPencil } from "../components/icons";
 import { useApp } from "../store/useApp";
 import { stopSync } from "../lib/sync";
@@ -62,6 +63,14 @@ const styles = stylex.create({
     color: colors.ink,
     opacity: 0.6,
     marginTop: 2,
+  },
+  avatarBtn: {
+    padding: 0,
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    borderRadius: "50%",
+    flexShrink: 0,
+    cursor: "pointer",
   },
   editPill: {
     marginLeft: "auto",
@@ -176,6 +185,7 @@ export function Settings() {
   const resetDemo = useApp((s) => s.resetDemo);
 
   const [editing, setEditing] = useState(false);
+  const [viewingPhoto, setViewingPhoto] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [permission, setPermission] = useState<PermissionState>(() => notificationPermission());
@@ -235,7 +245,21 @@ export function Settings() {
       <div {...stylex.props(styles.title)}>{t("settings.title")}</div>
 
       <Card xstyle={styles.profileCard} onClick={() => setEditing(true)}>
-        <Avatar initial={profile.initial} color={profile.color} photoUrl={profile.avatarUrl} size={56} />
+        {profile.avatarUrl ? (
+          <button
+            type="button"
+            aria-label={t("settings.viewPhoto")}
+            {...stylex.props(styles.avatarBtn)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewingPhoto(true);
+            }}
+          >
+            <Avatar initial={profile.initial} color={profile.color} photoUrl={profile.avatarUrl} size={56} />
+          </button>
+        ) : (
+          <Avatar initial={profile.initial} color={profile.color} size={56} />
+        )}
         <div>
           <div {...stylex.props(styles.profileName)}>{profile.displayName || t("settings.addName")}</div>
           <div {...stylex.props(styles.profileSub)}>{t("settings.birthday", { date: birthday })}</div>
@@ -331,6 +355,15 @@ export function Settings() {
       </button>
 
       <ProfileSheet open={editing} onClose={() => setEditing(false)} />
+
+      <AvatarLightbox
+        open={viewingPhoto}
+        src={profile.avatarUrl}
+        name={profile.displayName}
+        initial={profile.initial}
+        color={profile.color}
+        onClose={() => setViewingPhoto(false)}
+      />
 
       <ConfirmDialog
         open={confirmReset}
