@@ -67,6 +67,16 @@ export const builder = {
   "builder.ph.location": { en: "Paste a Google Maps link or lat, lng", zh: "粘贴 Google Maps 链接或 lat, lng", pinyin: "zhan1 tie1 Google Maps lian4 jie1 huo4 lat, lng" },
 
   "builder.pinned": { en: "Pinned", zh: "已定位", pinyin: "yi3 ding4 wei4" },
+  "builder.locationNoPin": {
+    en: "No pin found in this text yet",
+    zh: "还没有从这段文字读到位置",
+    pinyin: "hai2 mei2 you3 cong2 zhe4 duan4 wen2 zi4 du2 dao4 wei4 zhi4",
+  },
+  "builder.locationShortLink": {
+    en: "This short link does not carry a pin. Open it in a browser, then paste the full URL from the address bar.",
+    zh: "这个短链接不包含位置。请在浏览器中打开后，粘贴地址栏里的完整链接。",
+    pinyin: "zhe4 ge4 duan3 lian4 jie1 bu4 bao1 han2 wei4 zhi4。qing3 zai4 liu2 lan3 qi4 zhong1 da3 kai1 hou4，zhan1 tie1 di4 zhi3 lan2 li3 de5 wan2 zheng3 lian4 jie1。",
+  },
 
   "builder.mode.drive": { en: "drive", zh: "驾车", pinyin: "jia4 che1" },
   "builder.mode.walk": { en: "walk", zh: "步行", pinyin: "bu4 xing2" },

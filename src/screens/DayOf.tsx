@@ -17,9 +17,8 @@ import { clockLabel, stampDate, todayISO } from "../lib/dates";
 import { rm, travelReadout } from "../lib/format";
 import { travelBetween } from "../lib/travel";
 import { fileToDataUrl } from "../lib/images";
-import { openGoogleMaps } from "../lib/maps";
+import { openGoogleMaps, openWaze } from "../lib/nav";
 import { photoDecoration } from "../lib/photos";
-import { openWaze } from "../lib/waze";
 
 const confetti = stylex.keyframes({
   "0%": { transform: "translateY(0) rotate(45deg)", opacity: 1 },

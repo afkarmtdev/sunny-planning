@@ -21,6 +21,12 @@ export function parseLatLng(input: string): { lat: number; lng: number } | null 
   const plain = text.match(new RegExp(`^(${NUM})\\s*,\\s*(${NUM})$`));
   if (plain) return toLatLng(plain[1], plain[2]);
 
+  // Place-detail pin coordinates, e.g. "!3d3.139!4d101.6869". Checked before
+  // the "@" segment: place URLs carry both, and "@" is only the viewport
+  // center, which drifts from the pin if the map was panned before copying.
+  const bang = text.match(new RegExp(`!3d(${NUM})!4d(${NUM})`));
+  if (bang) return toLatLng(bang[1], bang[2]);
+
   // Google Maps map-center segment, e.g. "/@3.1390,101.6869,17z/".
   const at = text.match(new RegExp(`@(${NUM}),(${NUM}),`));
   if (at) return toLatLng(at[1], at[2]);
@@ -29,9 +35,15 @@ export function parseLatLng(input: string): { lat: number; lng: number } | null 
   const param = text.match(new RegExp(`[?&](?:q|query|ll)=(${NUM}),(${NUM})`));
   if (param) return toLatLng(param[1], param[2]);
 
-  // Place-detail pin coordinates, e.g. "!3d3.139!4d101.6869".
-  const bang = text.match(new RegExp(`!3d(${NUM})!4d(${NUM})`));
-  if (bang) return toLatLng(bang[1], bang[2]);
-
   return null;
+}
+
+/**
+ * True for Google Maps short links (mobile share sheet output). They are
+ * opaque redirects with no coordinates in the URL, and the browser cannot
+ * follow the redirect client-side (CORS), so parseLatLng can never succeed
+ * on one; the UI should tell the user to paste the expanded URL instead.
+ */
+export function isMapsShortLink(input: string): boolean {
+  return /\b(?:maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(input);
 }

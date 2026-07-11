@@ -24,10 +24,9 @@ import { dateSpend, itineraryTotal } from "../lib/derive";
 import { longDate, todayISO } from "../lib/dates";
 import { fileToDataUrl } from "../lib/images";
 import { photoDecoration } from "../lib/photos";
-import { parseLatLng } from "../lib/geo";
+import { isMapsShortLink, parseLatLng } from "../lib/geo";
 import { rm } from "../lib/format";
-import { openGoogleMaps, openDirections } from "../lib/maps";
-import { openWaze } from "../lib/waze";
+import { openGoogleMaps, openDirections, openWaze } from "../lib/nav";
 import { travelBetween } from "../lib/travel";
 import { useT } from "../lib/i18n";
 import type { Itinerary, Photo, Stop } from "../lib/types";
@@ -673,7 +672,9 @@ export function ItineraryBuilder() {
         )
         .slice(0, 4)
     : [];
-  const locationParses = draft.location.trim() !== "" && parseLatLng(draft.location.trim()) != null;
+  const locationText = draft.location.trim();
+  const locationParses = locationText !== "" && parseLatLng(locationText) != null;
+  const locationIsShortLink = !locationParses && isMapsShortLink(locationText);
 
   const openEditor = (stop: Stop) => {
     setDraft(draftFrom(stop));
@@ -1097,7 +1098,15 @@ export function ItineraryBuilder() {
             onChange={(e) => setDraft({ ...draft, location: e.target.value })}
           />
         </Field>
-        {locationParses && <div {...stylex.props(styles.locationHint)}>{t("builder.pinned")}</div>}
+        {locationText !== "" && (
+          <div {...stylex.props(styles.locationHint)}>
+            {locationParses
+              ? t("builder.pinned")
+              : locationIsShortLink
+                ? t("builder.locationShortLink")
+                : t("builder.locationNoPin")}
+          </div>
+        )}
         <div {...stylex.props(styles.sheetRow)}>
           <div {...stylex.props(styles.sheetHalf)}>
             <Field label={t("builder.field.travelNext")}>
