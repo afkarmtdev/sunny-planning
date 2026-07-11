@@ -39,8 +39,9 @@ const styles = stylex.create({
   },
   receiptRow: {
     display: "flex",
-    alignItems: "center",
-    gap: 12,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 8,
   },
   receiptThumb: {
     width: 84,
